@@ -66,11 +66,19 @@ handles.image_files_offset = 1;
 handles.image_files_regex_string = '*.gif;*.jpg;*.png;*.jpeg,*.GIF;*.JPG;*.PNG;*.JPEG';
 handles.image_files_current_dir = pwd;
 
-% Current selected label in label pop up
+% Current selected label in label pop up.  This is an offset.  Not a
+% string.
 handles.label_selected_label = -1;
 
-% Current selected file in file list.
+% Current selected file in file list.  Notice that this is an offset.
+% Not a string.
 handles.list_selected_file = -1;
+handles.list_file_paths = [];
+
+% The variable that will temporarily hold the annotation activity per
+% image. curr_ann(current annotation)
+handles.curr_ann.file_name = '';
+handles.curr_ann.regions(1) = annotation_init;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -98,8 +106,26 @@ function file_list_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns file_list contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from file_list
+
+% We ingore the users interaction if there is nothing in the list.
+if size (handles.list_file_paths,2) == 0
+    return;
+end
+
+% Update the var that holds the current status of the list.
 handles.list_selected_file = get(hObject,'Value');
 
+% Every time the user selects an image in the file list we change the image
+% in the axis.
+selected_file = handles.list_file_paths(handles.list_selected_file);
+axis_handler = handles.image_axis;
+put_image_in_axis (selected_file, axis_handler, handles);
+
+% Modify handles.ann_curr to reflect the change
+handles.curr_ann = read_annotations(selected_file);
+
+% Remember to save the changes.
+guidata(hObject, handles);
 
 % --- Executes during object creation, after setting all properties.
 function file_list_CreateFcn(hObject, eventdata, handles)
@@ -119,6 +145,7 @@ function save_annotation_Callback(hObject, eventdata, handles)
 % hObject    handle to save_annotation (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+save_annotation(handles.curr_ann);
 
 
 % --- Executes on button press in clear_annotation.
@@ -145,6 +172,9 @@ function labels_Callback(hObject, eventdata, handles)
 %        contents{get(hObject,'Value')} returns selected item from labels
 handles.label_selected_label = get(hObject, 'Value');
 
+% Remember to save the changes.
+guidata(hObject, handles);
+
 
 % --- Executes during object creation, after setting all properties.
 function labels_CreateFcn(hObject, eventdata, handles)
@@ -167,7 +197,6 @@ catch
     msgbox(msgboxText,'File Not Found', 'error');
 end
 
-
 % --- Executes on button press in add_files.
 function add_files_Callback(hObject, eventdata, handles)
 % hObject    handle to add_files (see GCBO)
@@ -178,6 +207,12 @@ function add_files_Callback(hObject, eventdata, handles)
 % We change dir so the user sees the previous place he searched.
 ifo = handles.image_files_offset;
 [filename, pathname, filterindex] = uigetfile(handles.image_files_regex_string,'Pick an image file', 'MultiSelect', 'on', handles.image_files_current_dir);
+
+% Handle the cancel option
+if ~iscellstr(filename) && ~iscellstr(pathname) && ~iscellstr(filterindex)
+    return
+end
+
 handles.image_files(ifo).image_files = filename;
 handles.image_files(ifo).directory = pathname;
 handles.image_files(ifo).full_paths = strcat(pathname,filename);
@@ -191,10 +226,96 @@ for i = 1:ifo
 end
 % I don't want repeated values in the list.
 file_names_temp = unique(file_names_temp);
+
+% Set the values in the file path list.
 set(handles.file_list,'String',file_names_temp,'Value',1);
+
+% Keep track of the new list so we don't have to calculate it twice
+handles.list_file_paths = file_names_temp;
 
 % Keep track of the image_file_offset.
 handles.image_files_offset = handles.image_files_offset + 1;
 
 % Remember to save the changes.
 guidata(hObject, handles);
+
+% --- Called when an image needs to be uploaded to an axis.
+function put_image_in_axis (input_image, axis_handler, handles)
+% input_image   is the string that references the image
+% axis_handler  the handler use as parent of the image
+if exist (char(input_image)) > 0
+    img = imread(char(input_image));
+    imagesc(img, 'Parent', axis_handler, 'ButtonDownFcn', @button_pressed_on_image);
+    set(gca,'Units','pixels');
+else
+    msgboxText{1} =  strcat('File not foun: ', input_image);
+    msgbox(msgboxText,'File Not Found', 'error');
+end
+
+% --- Called when the a button is pressed on the figure/image
+function button_pressed_on_image(hObject, eventdata)
+% hObject       is the handle to the related object.
+% eventdata     I have no idea what Matlab puts here.
+
+% We help the user create a square.
+p1=get(gca,'CurrentPoint');
+rbbox; % the rubber box thingy :)
+p2=get(gca,'CurrentPoint');
+p=round([p1;p2]);
+
+% We define the coordinates.
+xmin=min(p(:,1));
+xmax=max(p(:,1));
+ymin=min(p(:,2));
+ymax=max(p(:,2));
+
+% Here we expect curr_ann to be in a special state.  We assume that that
+% var has a certain number of region elements (N).  The Nth element will not
+% contain any info and we can use it.  We will leave curr_ann in the same
+% state by adding an empty element when we are done.
+
+%initialize handles.
+handles = guidata(hObject);
+% Create a new region
+reg_offset = size(handles.curr_ann.regions, 2);
+handles.curr_ann.regions(reg_offset).bbox = [xmin ymin xmax ymax];
+
+% We will use the label that is currently selected.
+l_offset = get(handles.labels, 'Value');
+l_strings = get(handles.labels, 'String');
+handles.curr_ann.regions(reg_offset).label = l_strings(l_offset);
+
+% We create an empty region...
+handles.curr_ann.regions(reg_offset + 1) = annotation_init;
+
+% What the hell is this??? I think this draws the box after creating it.
+%handles(numobjects)=drawbox(record.objects(numobjects).bbox);
+drawbox(handles.curr_ann.regions(reg_offset).bbox);
+
+% Remember to save the changes.
+guidata(hObject, handles);
+
+% --- Returns an empty annotation.  Initialized annotation.
+% --- This is a helper function.
+function object=annotation_init
+  object.label='';
+  object.orglabel='';
+  object.bbox=[];
+  object.polygon=[];
+  object.mask='';
+return
+
+% --- Returns a curr_ann structure from the annotation file.
+function annotation = read_annotations(filename)
+% filename  is the file name of the image.  This function will search for
+%           the filename.txt e.p. (flower.png.txt)
+
+% FIXME : actually implement this function.
+annotation.file_name = filename;
+annotation.regions(1) = annotation_init;
+
+% --- Helper function, draws a box.
+function h=drawbox(pts)
+  h=line(pts([1 3 3 1 1]),pts([2 2 4 4 2]),'Color',[1 0 0],'LineWidth',1);
+return
+
