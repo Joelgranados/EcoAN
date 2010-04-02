@@ -251,6 +251,14 @@ handles.list_file_paths = file_names_temp;
 % Keep track of the image_file_offset.
 handles.image_files_offset = handles.image_files_offset + 1;
 
+% For the users convinience select the first file in the list.
+handles.list_selected_file = 1;
+selected_file = handles.list_file_paths(handles.list_selected_file);
+set(handles.file_list, 'Value', handles.list_selected_file);
+put_image_in_axis (selected_file, handles.image_axis, handles);
+handles.curr_ann = read_annotation(selected_file);
+put_annotations_in_axis (handles.curr_ann);
+  
 % Remember to save the changes.
 guidata(hObject, handles);
 
