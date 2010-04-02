@@ -63,7 +63,8 @@ handles.image_files(1).image_files = [];
 handles.image_files(1).directory = '';
 handles.image_files(1).full_paths = [];
 handles.image_files_offset = 1;
-handles.image_files_regex_string = '*.gif;*.jpg;*.png;*.jpeg,*.GIF;*.JPG;*.PNG;*.JPEG';
+handles.image_files_regex_string =...
+    '*.gif;*.jpg;*.png;*.jpeg,*.GIF;*.JPG;*.PNG;*.JPEG';
 handles.image_files_current_dir = pwd;
 
 % Current selected label in label pop up.  This is an offset.  Not a
@@ -79,6 +80,9 @@ handles.list_file_paths = [];
 % image. curr_ann(current annotation)
 handles.curr_ann.file_name = '';
 handles.curr_ann.regions(1) = annotation_init;
+
+% Initialize the figure1 callback definitions.
+set(handles.figure1, 'KeyPressFcn', @on_key_press_callback);
 
 % Update handles structure
 guidata(hObject, handles);
@@ -104,7 +108,8 @@ function file_list_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns file_list contents as cell array
+% Hints: contents = cellstr(get(hObject,'String')) returns file_list 
+%        contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from file_list
 
 % We ingore the users interaction if there is nothing in the list.
@@ -136,7 +141,8 @@ function file_list_CreateFcn(hObject, eventdata, handles)
 
 % Hint: listbox controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+if ispc && isequal(get(hObject,'BackgroundColor'),...
+        get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
 
@@ -169,7 +175,8 @@ function labels_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns labels contents as cell array
+% Hints: contents = cellstr(get(hObject,'String')) returns labels contents
+%        as cell array
 %        contents{get(hObject,'Value')} returns selected item from labels
 handles.label_selected_label = get(hObject, 'Value');
 
@@ -185,7 +192,8 @@ function labels_CreateFcn(hObject, eventdata, handles)
 
 % Hint: popupmenu controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+if ispc && isequal(get(hObject,'BackgroundColor'),...
+        get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
 
@@ -194,7 +202,9 @@ try
     set(hObject, 'String', labels);
 catch
     % The file is not where we expect.... error out with a message.
-    msgboxText{1} =  strcat('I cant find the file where the labels are stored.  Please create this file, name it labels.txt and put it in:', pwd);
+    msgboxText{1} =  strcat('I cant find the file where the labels',...
+        ' are stored.  Please create this file, name it labels.txt',...
+        ' and put it in:', pwd);
     msgbox(msgboxText,'File Not Found', 'error');
 end
 
@@ -207,7 +217,10 @@ function add_files_Callback(hObject, eventdata, handles)
 % This is where I find the files that we are to annotate.
 % We change dir so the user sees the previous place he searched.
 ifo = handles.image_files_offset;
-[filename, pathname, filterindex] = uigetfile(handles.image_files_regex_string,'Pick an image file', 'MultiSelect', 'on', handles.image_files_current_dir);
+[filename, pathname, filterindex] =...
+    uigetfile(handles.image_files_regex_string,...
+    'Pick an image file', 'MultiSelect', 'on',...
+    handles.image_files_current_dir);
 
 % Handle the cancel option
 if ~iscellstr(filename) && ~iscellstr(pathname) && ~iscellstr(filterindex)
@@ -223,7 +236,8 @@ handles.image_files_current_dir = pathname;
 % create a temp var with all the names we have up until now
 file_names_temp = [];
 for i = 1:ifo
-    file_names_temp = cat(2,file_names_temp, cellstr(handles.image_files(i).full_paths));
+    file_names_temp = cat(2,file_names_temp,...
+        cellstr(handles.image_files(i).full_paths));
 end
 % I don't want repeated values in the list.
 file_names_temp = unique(file_names_temp);
@@ -246,7 +260,8 @@ function put_image_in_axis (input_image, axis_handler, handles)
 % axis_handler  the handler use as parent of the image
 if exist (char(input_image)) > 0
     img = imread(char(input_image));
-    imagesc(img, 'Parent', axis_handler, 'ButtonDownFcn', @button_pressed_on_image);
+    imagesc(img, 'Parent', axis_handler, 'ButtonDownFcn',...
+        @button_pressed_on_image);
     set(gca,'Units','pixels');
 else
     msgboxText{1} =  strcat('File not foun: ', input_image);
@@ -296,3 +311,46 @@ drawbox(pts);
 % Remember to save the changes.
 guidata(hObject, handles);
 
+function on_key_press_callback(hObject, eventdata)
+
+if strcmp(eventdata.Character, 'n') == 1 ||...
+        strcmp(eventdata.Character, 'N') == 1
+  %initialize handles
+  handles = guidata(hObject);
+
+  % We ignore if there is nothing in the list.
+  if size (handles.list_file_paths,2) == 0
+    return;
+  end
+
+  % We search for the next image in the list.  If we have gotten to the end
+  % of the list, we go to element 1.
+  % Update the var that holds the current status of the list.
+  axis_handler = handles.image_axis;
+
+  % we use > and < to make sure we put the counter back to the first image
+  % if we encounter some inconsistent values.
+  if handles.list_selected_file >= size(handles.list_file_paths,2) ||...
+          handles.list_selected_file < 1;
+      handles.list_selected_file = 1;
+  else
+      handles.list_selected_file = handles.list_selected_file + 1;
+  end
+
+  % We get the selected file name.
+  selected_file = handles.list_file_paths(handles.list_selected_file);
+
+  % We select the corresponding file in the list of files.
+  set(handles.file_list, 'Value', handles.list_selected_file);
+
+  % We put the image in the axis.
+  put_image_in_axis (selected_file, axis_handler, handles);
+
+  % Modify handles.ann_curr to reflect the change
+  handles.curr_ann = read_annotation(selected_file);
+  put_annotations_in_axis (handles.curr_ann);
+
+  % Remember to save the changes.
+  guidata(hObject, handles);
+end
+    
