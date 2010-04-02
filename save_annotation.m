@@ -1,10 +1,10 @@
 function save_annotation(annotation)
-  VERSION=1.0;
+ VERSION=1.0;
   ann_file_name = char(strcat(annotation.file_name, '.txt'));
   
   [fd,syserrmsg]=fopen(ann_file_name,'wt');
   if (fd==-1),
-    msgboxText{1} =  strcat('Error saving to file: ', ann_file_name, '.txt');
+    msgboxText{1} =  strcat('Error saving to file: ', ann_file_name);
     msgbox(msgboxText,'Please try to save again.');
     return;
   end;

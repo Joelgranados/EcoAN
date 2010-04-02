@@ -122,7 +122,8 @@ axis_handler = handles.image_axis;
 put_image_in_axis (selected_file, axis_handler, handles);
 
 % Modify handles.ann_curr to reflect the change
-handles.curr_ann = read_annotations(selected_file);
+handles.curr_ann = read_annotation(selected_file);
+put_annotations_in_axis (handles.curr_ann);
 
 % Remember to save the changes.
 guidata(hObject, handles);
@@ -288,34 +289,10 @@ handles.curr_ann.regions(reg_offset).label = l_strings(l_offset);
 % We create an empty region...
 handles.curr_ann.regions(reg_offset + 1) = annotation_init;
 
-% What the hell is this??? I think this draws the box after creating it.
-%handles(numobjects)=drawbox(record.objects(numobjects).bbox);
-drawbox(handles.curr_ann.regions(reg_offset).bbox);
+% Draw the box in red.
+pts = handles.curr_ann.regions(reg_offset).bbox;
+drawbox(pts);
 
 % Remember to save the changes.
 guidata(hObject, handles);
-
-% --- Returns an empty annotation.  Initialized annotation.
-% --- This is a helper function.
-function object=annotation_init
-  object.label='';
-  object.orglabel='';
-  object.bbox=[];
-  object.polygon=[];
-  object.mask='';
-return
-
-% --- Returns a curr_ann structure from the annotation file.
-function annotation = read_annotations(filename)
-% filename  is the file name of the image.  This function will search for
-%           the filename.txt e.p. (flower.png.txt)
-
-% FIXME : actually implement this function.
-annotation.file_name = filename;
-annotation.regions(1) = annotation_init;
-
-% --- Helper function, draws a box.
-function h=drawbox(pts)
-  h=line(pts([1 3 3 1 1]),pts([2 2 4 4 2]),'Color',[1 0 0],'LineWidth',1);
-return
 
