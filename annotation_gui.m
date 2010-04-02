@@ -117,18 +117,11 @@ if size (handles.list_file_paths,2) == 0
     return;
 end
 
-% Update the var that holds the current status of the list.
-handles.list_selected_file = get(hObject,'Value');
+% see what the user has chossen
+offset = get(hObject,'Value');
 
-% Every time the user selects an image in the file list we change the image
-% in the axis.
-selected_file = handles.list_file_paths(handles.list_selected_file);
-axis_handler = handles.image_axis;
-put_image_in_axis (selected_file, axis_handler, handles);
-
-% Modify handles.ann_curr to reflect the change
-handles.curr_ann = read_annotation(selected_file);
-put_annotations_in_axis (handles.curr_ann);
+% do the selection.
+handles = select_offset_from_list(offset, handles, hObject)
 
 % Remember to save the changes.
 guidata(hObject, handles);
@@ -252,12 +245,7 @@ handles.list_file_paths = file_names_temp;
 handles.image_files_offset = handles.image_files_offset + 1;
 
 % For the users convinience select the first file in the list.
-handles.list_selected_file = 1;
-selected_file = handles.list_file_paths(handles.list_selected_file);
-set(handles.file_list, 'Value', handles.list_selected_file);
-put_image_in_axis (selected_file, handles.image_axis, handles);
-handles.curr_ann = read_annotation(selected_file);
-put_annotations_in_axis (handles.curr_ann);
+handles = select_offset_from_list(1, handles, hObject);
   
 % Remember to save the changes.
 guidata(hObject, handles);
@@ -326,6 +314,18 @@ if strcmp(eventdata.Character, 'n') == 1 ||...
   %initialize handles
   handles = guidata(hObject);
 
+  % This function takes care of strange values in offset, so we will feel
+  % save putting the next offset that we see.
+  offset = handles.list_selected_file + 1;
+  handles = select_offset_from_list(offset, handles, hObject);
+  
+  % Remember to save the changes.
+  guidata(hObject, handles);
+end
+
+% --- helper function.  It selects the offset in the file list.
+% it was code that was being repeated.
+function ret_handles = select_offset_from_list(offset, handles, hObject)
   % We ignore if there is nothing in the list.
   if size (handles.list_file_paths,2) == 0
     return;
@@ -338,11 +338,10 @@ if strcmp(eventdata.Character, 'n') == 1 ||...
 
   % we use > and < to make sure we put the counter back to the first image
   % if we encounter some inconsistent values.
-  if handles.list_selected_file >= size(handles.list_file_paths,2) ||...
-          handles.list_selected_file < 1;
+  if offset >= size(handles.list_file_paths,2) + 1 || offset < 1;
       handles.list_selected_file = 1;
   else
-      handles.list_selected_file = handles.list_selected_file + 1;
+      handles.list_selected_file = offset;
   end
 
   % We get the selected file name.
@@ -357,8 +356,12 @@ if strcmp(eventdata.Character, 'n') == 1 ||...
   % Modify handles.ann_curr to reflect the change
   handles.curr_ann = read_annotation(selected_file);
   put_annotations_in_axis (handles.curr_ann);
+  
+  % FIXME : HACK!!!
+  %For some reason Matlab does not keep the handles with the guidata call
+  % this is a workaround.
+  ret_handles = handles;
 
   % Remember to save the changes.
   guidata(hObject, handles);
-end
-    
+
