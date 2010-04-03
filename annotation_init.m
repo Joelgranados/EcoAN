@@ -3,7 +3,9 @@
 function object=annotation_init
   object.label='';
   object.orglabel='';
-  object.bbox=[];
+  object.bbox=[];       % The line coordinates
+  object.bboxline.l = -1;  %linehandle
+  object.bboxline.t = -1;  %texthandle
   object.polygon=[];
   object.mask='';
 return

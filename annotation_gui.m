@@ -157,6 +157,23 @@ function clear_annotation_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+% we need to traverse all the regions for current image, erase them from
+% the axis and from the regions struct.
+% firs erase all the regions.
+regions = handles.curr_ann.regions;
+num_reg = size(regions, 2) - 1;
+for i = 1:num_reg
+    bbl = handles.curr_ann.regions(i).bboxline;
+    set(bbl.l, 'Visible', 'off');
+    set(bbl.t, 'Visible', 'off');
+end
+
+% Now replace the regions struct.
+new_regions(1) = annotation_init;
+handles.curr_ann.regions = new_regions;
+
+% Remember to save the changes.
+guidata(hObject, handles);
 
 % --- Executes on button press in exit.
 function exit_Callback(hObject, eventdata, handles)
@@ -303,10 +320,10 @@ handles.curr_ann.regions(reg_offset).label = l_strings(l_offset);
 % We create an empty region...
 handles.curr_ann.regions(reg_offset + 1) = annotation_init;
 
-% Draw the box in red.
+% Draw the box in red and save in regions.
 pts = handles.curr_ann.regions(reg_offset).bbox;
 lbl = handles.curr_ann.regions(reg_offset).label;
-drawbox(pts, lbl);
+handles.curr_ann.regions(reg_offset).bboxline = drawbox(pts, lbl);
 
 % Remember to save the changes.
 guidata(hObject, handles);
@@ -360,7 +377,7 @@ function ret_handles = select_offset_from_list(offset, handles, hObject)
 
   % Modify handles.ann_curr to reflect the change
   handles.curr_ann = read_annotation(selected_file);
-  put_annotations_in_axis (handles.curr_ann);
+  handles.curr_ann = put_annotations_in_axis (handles.curr_ann);
   
   % FIXME : HACK!!!
   %For some reason Matlab does not keep the handles with the guidata call
