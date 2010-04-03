@@ -9,6 +9,5 @@ regions = annotation.regions;
 num_reg = size(regions, 2) - 1;
 
 for i = 1:num_reg
-    pts = regions(i).bbox;
-    drawbox(pts);
+    drawbox(regions(i).bbox, regions(i).label);
 end
