@@ -22,7 +22,7 @@ function varargout = annotation_gui(varargin)
 
 % Edit the above text to modify the response to help annotation_gui
 
-% Last Modified by GUIDE v2.5 31-Mar-2010 18:00:12
+% Last Modified by GUIDE v2.5 03-Apr-2010 15:02:30
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -81,6 +81,9 @@ handles.list_file_paths = [];
 handles.curr_ann.file_name = '';
 handles.curr_ann.regions(1) = annotation_init;
 
+% Initialize handle responsible for zoom
+% handles.zoom_handle = zoom;
+
 % Initialize the figure1 callback definitions.
 set(handles.figure1, 'KeyPressFcn', @on_key_press_callback);
 
@@ -121,7 +124,7 @@ end
 offset = get(hObject,'Value');
 
 % do the selection.
-handles = select_offset_from_list(offset, handles, hObject)
+handles = select_offset_from_list(offset, handles, hObject);
 
 % Remember to save the changes.
 guidata(hObject, handles);
@@ -308,20 +311,21 @@ drawbox(pts);
 guidata(hObject, handles);
 
 function on_key_press_callback(hObject, eventdata)
+%initialize handles
+handles = guidata(hObject);
 
 if strcmp(eventdata.Character, 'n') == 1 ||...
         strcmp(eventdata.Character, 'N') == 1
-  %initialize handles
-  handles = guidata(hObject);
-
   % This function takes care of strange values in offset, so we will feel
   % save putting the next offset that we see.
   offset = handles.list_selected_file + 1;
   handles = select_offset_from_list(offset, handles, hObject);
-  
-  % Remember to save the changes.
-  guidata(hObject, handles);
+
 end
+
+% Remember to save the changes.
+guidata(hObject, handles);
+
 
 % --- helper function.  It selects the offset in the file list.
 % it was code that was being repeated.
@@ -365,3 +369,23 @@ function ret_handles = select_offset_from_list(offset, handles, hObject)
   % Remember to save the changes.
   guidata(hObject, handles);
 
+
+% --- Executes on button press in zoom_toggle.
+function zoom_toggle_Callback(hObject, eventdata, handles)
+% hObject    handle to zoom_toggle (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of zoom_toggle
+zoom_toggle_state = get(hObject, 'Value');
+h = zoom;
+
+if zoom_toggle_state == 0
+    %set(hObject, 'Value', 'off');
+    set(h, 'Enable', 'off');
+elseif zoom_toggle_state == 1
+    %set(hObject, 'Value', 'on');
+    set(h, 'Enable', 'on');
+else
+    % this should not be reached.
+end
