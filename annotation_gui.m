@@ -323,7 +323,9 @@ handles.curr_ann.regions(reg_offset + 1) = annotation_init;
 % Draw the box in red and save in regions.
 pts = handles.curr_ann.regions(reg_offset).bbox;
 lbl = handles.curr_ann.regions(reg_offset).label;
-handles.curr_ann.regions(reg_offset).bboxline = drawbox(pts, lbl);
+[l, t] = drawbox(pts, lbl);
+handles.curr_ann.regions(reg_offset).bboxline.l = l;
+handles.curr_ann.regions(reg_offset).bboxline.t = t;
 
 % Remember to save the changes.
 guidata(hObject, handles);
