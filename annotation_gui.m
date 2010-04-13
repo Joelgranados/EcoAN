@@ -79,6 +79,8 @@ function annotation_gui_OpeningFcn(hObject, eventdata, handles, varargin)
     % The variable that will temporarily hold the annotation activity per
     % image. curr_ann(current annotation)
     handles.curr_ann.file_name = '';
+    handles.curr_ann.image = -1;
+    handles.curr_ann.reg_offset = 0;
     handles.curr_ann.regions(1) = annotation_init;
 
     % Initialize handle responsible for zoom
@@ -95,7 +97,7 @@ function annotation_gui_OpeningFcn(hObject, eventdata, handles, varargin)
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = annotation_gui_OutputFcn(hObject, eventdata, handles) 
+function varargout = annotation_gui_OutputFcn(hObject, eventdata, handles)
     % varargout  cell array for returning output args (see VARARGOUT);
     % hObject    handle to figure
     % eventdata  reserved - to be defined in a future version of MATLAB
@@ -111,7 +113,7 @@ function file_list_Callback(hObject, eventdata, handles)
     % eventdata  reserved - to be defined in a future version of MATLAB
     % handles    structure with handles and user data (see GUIDATA)
 
-    % Hints: contents = cellstr(get(hObject,'String')) returns file_list 
+    % Hints: contents = cellstr(get(hObject,'String')) returns file_list
     %        contents as cell array
     %        contents{get(hObject,'Value')} returns selected item from file_list
 
@@ -157,20 +159,13 @@ function clear_annotation_Callback(hObject, eventdata, handles)
     % eventdata  reserved - to be defined in a future version of MATLAB
     % handles    structure with handles and user data (see GUIDATA)
 
-    % we need to traverse all the regions for current image, erase them from
-    % the axis and from the regions struct.
-    % firs erase all the regions.
-    regions = handles.curr_ann.regions;
-    num_reg = size(regions, 2) - 1;
-    for i = 1:num_reg
+    % We need to reset the reg_offset and make sure that regions(1) is -1.
+    for i = 1:handles.curr_ann.reg_offset
+        handles.curr_ann.regions(i).active = 0;
         bbl = handles.curr_ann.regions(i).bboxline;
         set(bbl.l, 'Visible', 'off');
         set(bbl.t, 'Visible', 'off');
     end
-
-    % Now replace the regions struct.
-    new_regions(1) = annotation_init;
-    handles.curr_ann.regions = new_regions;
 
     % Remember to save the changes.
     guidata(hObject, handles);
@@ -266,12 +261,12 @@ function add_files_Callback(hObject, eventdata, handles)
 
     % For the users convinience select the first file in the list.
     handles = select_offset_from_list(1, handles, hObject);
-  
+
     % Remember to save the changes.
     guidata(hObject, handles);
 
 % --- Called when an image needs to be uploaded to an axis.
-function put_image_in_axis (input_image, axis_handler, handles)
+function retimg = put_image_in_axis (input_image, axis_handler, handles)
     % input_image   is the string that references the image
     % axis_handler  the handler use as parent of the image
     if exist (char(input_image)) > 0
@@ -279,9 +274,11 @@ function put_image_in_axis (input_image, axis_handler, handles)
         imagesc(img, 'Parent', axis_handler, 'ButtonDownFcn',...
             @button_pressed_on_image);
         set(gca,'Units','pixels');
+        retimg = img;
     else
         msgboxText{1} =  strcat('File not foun: ', input_image);
         msgbox(msgboxText,'File Not Found', 'error');
+        retimg = 0;
     end
 
 % --- Called when the a button is pressed on the figure/image
@@ -289,43 +286,137 @@ function button_pressed_on_image(hObject, eventdata)
     % hObject       is the handle to the related object.
     % eventdata     I have no idea what Matlab puts here.
 
-    % We help the user create a square.
-    p1=get(gca,'CurrentPoint');
-    rbbox; % the rubber box thingy :)
-    p2=get(gca,'CurrentPoint');
-    p=round([p1;p2]);
-
-    % We define the coordinates.
-    xmin=min(p(:,1));
-    xmax=max(p(:,1));
-    ymin=min(p(:,2));
-    ymax=max(p(:,2));
-
-    % Here we expect curr_ann to be in a special state.  We assume that that
-    % var has a certain number of region elements (N).  The Nth element will not
-    % contain any info and we can use it.  We will leave curr_ann in the same
-    % state by adding an empty element when we are done.
-
     %initialize handles.
     handles = guidata(hObject);
-    % Create a new region
-    reg_offset = size(handles.curr_ann.regions, 2);
-    handles.curr_ann.regions(reg_offset).bbox = [xmin ymin xmax ymax];
 
-    % We will use the label that is currently selected.
-    l_offset = get(handles.labels, 'Value');
-    l_strings = get(handles.labels, 'String');
-    handles.curr_ann.regions(reg_offset).label = l_strings(l_offset);
+    % What button did the user click?
+    % normal -> left click
+    % alt -> right click
+    % extended -> middle button. (might be different for mice with more
+    % that dont have a middle button.
+    mouseid = get(gcf,'SelectionType');
 
-    % We create an empty region...
-    handles.curr_ann.regions(reg_offset + 1) = annotation_init;
+    if strcmp(mouseid, 'normal') == 1 || strcmp(mouseid, 'alt') == 1
+        % We get the first possition of the square.
+        p1=get(gca,'CurrentPoint');
 
-    % Draw the box in red and save in regions.
-    pts = handles.curr_ann.regions(reg_offset).bbox;
-    lbl = handles.curr_ann.regions(reg_offset).label;
-    [l, t] = drawbox(pts, lbl);
-    handles.curr_ann.regions(reg_offset).bboxline.l = l;
-    handles.curr_ann.regions(reg_offset).bboxline.t = t;
+        % What region was the last one to be created?
+        reg_offset = handles.curr_ann.reg_offset;
+
+        % When user left clicks.
+        % When there is no regions at all.
+        % When user right clicks but there is no previous info in th
+        %   bbox_figure
+        if strcmp(mouseid, 'normal') == 1 || reg_offset <= 0 || ...
+                (strcmp(mouseid, 'alt') == 1 &&...
+                 isempty(handles.curr_ann.regions(reg_offset).bbox_figure))
+            bbox_figure = rbbox; % the rubber box thingy :)
+
+        elseif strcmp(mouseid, 'alt') == 1 &&...
+                ~isempty(handles.curr_ann.regions(reg_offset).bbox_figure)
+            % this means modify == "streach".
+            % We must know in which part of the last annotation the user wants
+            % to streach.  We find this out by analysing the relation between
+            % the last annotation's center and the current possition of the
+            % cursor.
+            curr_point = [round(p1(1,1)), round(p1(1,2))];
+
+            % get center of annotation.
+            bbox_temp = handles.curr_ann.regions(reg_offset).bbox;
+            xmin = bbox_temp(1);
+            ymin = bbox_temp(2);
+            xmax = bbox_temp(3);
+            ymax = bbox_temp(4);
+            center = [ round( xmin + (abs(xmax-xmin)/2) ),...
+                round( ymin + (abs(ymax-ymin))/2) ];
+
+
+            % We define what point remains fixed in the rbbox.  We must also
+            % define the initial size of the rbbox.
+            % Initial size of the rbbox will be defined from the fixed point to
+            % the current point.
+            xdiff = center(1)-curr_point(1);
+            ydiff = center(2)-curr_point(2);
+
+            % Remember that bbox_figure[ x y width height] in cartesian coor.
+            bbox_figure = handles.curr_ann.regions(reg_offset).bbox_figure;
+            if xdiff < 0 && ydiff > 0
+                %fixed in lower left
+                fixed_figure = [ bbox_figure(1), bbox_figure(2) ];
+                fixed_axis = [ xmin, ymax ];
+            elseif xdiff >= 0 && ydiff >= 0
+                %fixed in lower right
+                fixed_figure = [ bbox_figure(1)+bbox_figure(3),...
+                    bbox_figure(2) ];
+                fixed_axis = [ xmax, ymax ];
+            elseif xdiff > 0 && ydiff < 0
+                %fixed in upper right
+                fixed_figure = [ bbox_figure(1)+bbox_figure(3),...
+                    bbox_figure(2)+bbox_figure(4) ];
+                fixed_axis = [xmax, ymin ];
+            elseif xdiff <= 0 && ydiff <= 0
+                %fixed in upper left
+                fixed_figure = [ bbox_figure(1),...
+                    bbox_figure(2)+bbox_figure(4) ];
+                fixed_axis = [ xmin, ymin ];
+            end
+
+            % erase the previous one from the axis and from the internal
+            % structure.
+            bbl = handles.curr_ann.regions(reg_offset).bboxline;
+            set(bbl.l, 'Visible', 'off');
+            set(bbl.t, 'Visible', 'off');
+
+            bbox_figure = rbbox( bbox_figure,...
+                [fixed_figure(1) fixed_figure(2)]);
+
+            % The end possition is p2 (whereever the user lets go of the
+            % mouse, but p1 is not where the user first clicked, its where
+            % fixed is.  We need to create a new p1 with the fixed info.
+            p1(:,1) = [fixed_axis(1);fixed_axis(1)];
+            p1(:,2) = [fixed_axis(2);fixed_axis(2)];
+            p1(:,3) = [1;0]; % Just to be consistent with what I saw prev.
+
+            % The code that comes after will create a new region in the
+            % region list using the reg_offset.  Lets make it think that
+            % nothing has happened
+            handles.curr_ann.reg_offset = handles.curr_ann.reg_offset - 1;
+
+        end
+
+        p2=get(gca,'CurrentPoint');
+        p=round([p1;p2]);
+
+        % We define the coordinates.
+        xmin=min(p(:,1));
+        xmax=max(p(:,1));
+        ymin=min(p(:,2));
+        ymax=max(p(:,2));
+
+        % Incremeant the offset.
+        reg_offset = handles.curr_ann.reg_offset + 1;
+        handles.curr_ann.reg_offset = reg_offset;
+
+        % Create a new region in the next offset
+        handles.curr_ann.regions(reg_offset) = annotation_init;
+        handles.curr_ann.regions(reg_offset).bbox = [xmin ymin xmax ymax];
+
+        % We will use the label that is currently selected.
+        l_offset = get(handles.labels, 'Value');
+        l_strings = get(handles.labels, 'String');
+        handles.curr_ann.regions(reg_offset).label = l_strings(l_offset);
+
+        % Draw the box in red and save in regions.
+        pts = handles.curr_ann.regions(reg_offset).bbox;
+        lbl = handles.curr_ann.regions(reg_offset).label;
+        [l, t] = drawbox(pts, lbl);
+        handles.curr_ann.regions(reg_offset).bboxline.l = l;
+        handles.curr_ann.regions(reg_offset).bboxline.t = t;
+        handles.curr_ann.regions(reg_offset).bbox_figure = bbox_figure;
+        handles.curr_ann.regions(reg_offset).active = 1;
+    else
+        % nothing for now.
+    end
 
     % Remember to save the changes.
     guidata(hObject, handles);
@@ -374,11 +465,12 @@ function ret_handles = select_offset_from_list(offset, handles, hObject)
     set(handles.file_list, 'Value', handles.list_selected_file);
 
     % We put the image in the axis.
-    put_image_in_axis (selected_file, axis_handler, handles);
+    img = put_image_in_axis (selected_file, axis_handler, handles);
 
     % Modify handles.ann_curr to reflect the change
     handles.curr_ann = read_annotation(selected_file);
     handles.curr_ann = put_annotations_in_axis (handles.curr_ann);
+    handles.curr_ann.image = size(img);
 
     % FIXME : HACK!!!
     %For some reason Matlab does not keep the handles with the guidata call
