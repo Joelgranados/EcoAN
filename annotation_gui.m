@@ -415,6 +415,21 @@ function on_key_press_callback(hObject, eventdata)
         % save putting the next offset that we see.
         offset = handles.list_selected_file + 1;
         handles = select_offset_from_list(offset, handles, hObject);
+
+    elseif strcmp(eventdata.Character, 'z') == 1 ||...
+            strcmp(eventdata.Character, 'Z') == 1
+        % will ONLY turn on zoom.  Matlab has a cute feature that it redefines
+        % the KeyPressFcn when zoom is active.  This means that you cannot
+        % deactivate zoom with a key press.   Thankyou Matlab.  I guess this is
+        % bad for this particular situation but good in others.
+        bstate = get(handles.zoom_toggle, 'Value');
+        if bstate == get(handles.zoom_toggle, 'Min') %it is not pressed.
+            set(handles.zoom_toggle, 'Value',...
+                get(handles.zoom_toggle, 'Max'))
+        end
+        % call the zoom callback..
+        zoom_toggle_Callback(handles.zoom_toggle, '', handles)
+
     end
 
     % Remember to save the changes.
