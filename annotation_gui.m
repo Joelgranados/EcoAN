@@ -305,8 +305,8 @@ function button_pressed_on_image(hObject, eventdata)
 
         % When user left clicks.
         % When there is no regions at all.
-        % When user right clicks but there is no previous info in th
-        %   bbox_figure
+        % When user right clicks but there is no previous info in the
+        %      bbox_figure
         if strcmp(mouseid, 'normal') == 1 || reg_offset <= 0 || ...
                 (strcmp(mouseid, 'alt') == 1 &&...
                  isempty(handles.curr_ann.regions(reg_offset).bbox_figure))
@@ -314,52 +314,49 @@ function button_pressed_on_image(hObject, eventdata)
 
         elseif strcmp(mouseid, 'alt') == 1 &&...
                 ~isempty(handles.curr_ann.regions(reg_offset).bbox_figure)
-            % this means modify == "streach".
-            % We must know in which part of the last annotation the user wants
-            % to streach.  We find this out by analysing the relation between
-            % the last annotation's center and the current possition of the
-            % cursor.
-            curr_point = [round(p1(1,1)), round(p1(1,2))];
-
-            % get center of annotation.
-            bbox_temp = handles.curr_ann.regions(reg_offset).bbox;
-            xmin = bbox_temp(1);
-            ymin = bbox_temp(2);
-            xmax = bbox_temp(3);
-            ymax = bbox_temp(4);
-            center = [ round( xmin + (abs(xmax-xmin)/2) ),...
-                round( ymin + (abs(ymax-ymin))/2) ];
-
-
-            % We define what point remains fixed in the rbbox.  We must also
-            % define the initial size of the rbbox.
-            % Initial size of the rbbox will be defined from the fixed point to
-            % the current point.
-            xdiff = center(1)-curr_point(1);
-            ydiff = center(2)-curr_point(2);
+            % this means modify the previous region.
+            % We find out which part of the last region will be stretched by
+            % analysing the relation between the last annotation's center
+            % and the current possition.
+            bbt = handles.curr_ann.regions(reg_offset).bbox;
+            % xdiff is center_x - current_x
+            xdiff = (bbt(1)+(abs(bbt(3)-bbt(1))/2)) - (p1(1,1));
+            % ydiff is center_y - current_y
+            ydiff = (bbt(2)+(abs(bbt(4)-bbt(2)))/2) - (p1(1,2));
 
             % Remember that bbox_figure[ x y width height] in cartesian coor.
+            % Remember bbt(1)=xmin bbt(2)=ymin bbt(3)=xmax bbt(4)=ymax
             bbox_figure = handles.curr_ann.regions(reg_offset).bbox_figure;
             if xdiff < 0 && ydiff > 0
                 %fixed in lower left
                 fixed_figure = [ bbox_figure(1), bbox_figure(2) ];
-                fixed_axis = [ xmin, ymax ];
+                fixed_axis = [ bbt(1), bbt(4) ];
             elseif xdiff >= 0 && ydiff >= 0
                 %fixed in lower right
                 fixed_figure = [ bbox_figure(1)+bbox_figure(3),...
                     bbox_figure(2) ];
-                fixed_axis = [ xmax, ymax ];
+                fixed_axis = [ bbt(3), bbt(4) ];
             elseif xdiff > 0 && ydiff < 0
                 %fixed in upper right
                 fixed_figure = [ bbox_figure(1)+bbox_figure(3),...
                     bbox_figure(2)+bbox_figure(4) ];
-                fixed_axis = [xmax, ymin ];
+                fixed_axis = [bbt(3), bbt(2) ];
             elseif xdiff <= 0 && ydiff <= 0
                 %fixed in upper left
                 fixed_figure = [ bbox_figure(1),...
                     bbox_figure(2)+bbox_figure(4) ];
-                fixed_axis = [ xmin, ymin ];
+                fixed_axis = [ bbt(1), bbt(2) ];
             end
+
+            % The end possition is p2 (whereever the user lets go of the mouse,
+            % but p1 is not where the user first clicked, its where fixed is.
+            p1 = [fixed_axis(1), fixed_axis(2), 1;...
+                  fixed_axis(1), fixed_axis(2), 0];
+
+            % The code that comes after will create a new region in the
+            % region list using the reg_offset.  Lets make it think that
+            % nothing has happened
+            handles.curr_ann.reg_offset = handles.curr_ann.reg_offset - 1;
 
             % erase the previous one from the axis and from the internal
             % structure.
@@ -369,19 +366,6 @@ function button_pressed_on_image(hObject, eventdata)
 
             bbox_figure = rbbox( bbox_figure,...
                 [fixed_figure(1) fixed_figure(2)]);
-
-            % The end possition is p2 (whereever the user lets go of the
-            % mouse, but p1 is not where the user first clicked, its where
-            % fixed is.  We need to create a new p1 with the fixed info.
-            p1(:,1) = [fixed_axis(1);fixed_axis(1)];
-            p1(:,2) = [fixed_axis(2);fixed_axis(2)];
-            p1(:,3) = [1;0]; % Just to be consistent with what I saw prev.
-
-            % The code that comes after will create a new region in the
-            % region list using the reg_offset.  Lets make it think that
-            % nothing has happened
-            handles.curr_ann.reg_offset = handles.curr_ann.reg_offset - 1;
-
         end
 
         p2=get(gca,'CurrentPoint');
