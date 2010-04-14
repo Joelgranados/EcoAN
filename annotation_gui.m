@@ -22,7 +22,7 @@ function varargout = annotation_gui(varargin)
 
     % Edit the above text to modify the response to help annotation_gui
 
-    % Last Modified by GUIDE v2.5 03-Apr-2010 15:02:30
+    % Last Modified by GUIDE v2.5 14-Apr-2010 11:23:13
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -491,10 +491,37 @@ function zoom_toggle_Callback(hObject, eventdata, handles)
     h = zoom;
 
     if zoom_toggle_state == 0
-        %set(hObject, 'Value', 'off');
         set(h, 'Enable', 'off');
     elseif zoom_toggle_state == 1
-        %set(hObject, 'Value', 'on');
+
+        % make sure we disable the grab first
+        set(pan, 'Enable', 'off');
+        set(handles.grab_toggle, 'Value', 0);
+
+        set(h, 'Enable', 'on');
+    else
+        % this should not be reached.
+    end
+
+
+% --- Executes on button press in grab_toggle.
+function grab_toggle_Callback(hObject, eventdata, handles)
+    % hObject    handle to grab_toggle (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+
+    % Hint: get(hObject,'Value') returns toggle state of grab_toggle
+    state = get(hObject, 'Value');
+    h = pan;
+
+    if state == 0
+        set(h, 'Enable', 'off');
+    elseif state == 1
+
+        % make sure we disable the zoom first
+        set(zoom, 'Enable', 'off');
+        set(handles.zoom_toggle, 'Value', 0);
+
         set(h, 'Enable', 'on');
     else
         % this should not be reached.
