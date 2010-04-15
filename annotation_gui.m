@@ -1,15 +1,17 @@
 function varargout = annotation_gui(varargin)
     % ANNOTATION_GUI M-file for annotation_gui.fig
-    %      ANNOTATION_GUI, by itself, creates a new ANNOTATION_GUI or raises the existing
-    %      singleton*.
-    %
-    %      H = ANNOTATION_GUI returns the handle to a new ANNOTATION_GUI or the handle to
+    %      ANNOTATION_GUI, by itself, creates a new ANNOTATION_GUI or raises
     %      the existing singleton*.
     %
-    %      ANNOTATION_GUI('CALLBACK',hObject,eventData,handles,...) calls the local
-    %      function named CALLBACK in ANNOTATION_GUI.M with the given input arguments.
+    %      H = ANNOTATION_GUI returns the handle to a new ANNOTATION_GUI or
+    %      the handle to the existing singleton*.
     %
-    %      ANNOTATION_GUI('Property','Value',...) creates a new ANNOTATION_GUI or raises the
+    %      ANNOTATION_GUI('CALLBACK',hObject,eventData,handles,...) calls the
+    %      local function named CALLBACK in ANNOTATION_GUI.M with the given
+    %      input arguments.
+    %
+    %      ANNOTATION_GUI('Property','Value',...) creates a new ANNOTATION_GUI
+    %      or raises the
     %      existing singleton*.  Starting from the left, property value pairs are
     %      applied to the GUI before annotation_gui_OpeningFcn gets called.  An
     %      unrecognized property name or invalid value makes property application
@@ -22,7 +24,7 @@ function varargout = annotation_gui(varargin)
 
     % Edit the above text to modify the response to help annotation_gui
 
-    % Last Modified by GUIDE v2.5 14-Apr-2010 11:23:13
+    % Last Modified by GUIDE v2.5 14-Apr-2010 15:18:04
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -82,6 +84,14 @@ function annotation_gui_OpeningFcn(hObject, eventdata, handles, varargin)
     handles.curr_ann.image = -1;
     handles.curr_ann.reg_offset = 0;
     handles.curr_ann.regions(1) = annotation_init;
+
+    % Offset of region to correct.  This is only valid when correcting.  It
+    % should be -1 otherwise.
+    handles.correction.offset = -1;
+    % Will have the line information.
+    handles.correction.box.l = -1;
+    handles.correction.box.t = -1;
+    handles.correction.active = 0;
 
     % Initialize handle responsible for zoom
     % handles.zoom_handle = zoom;
@@ -275,6 +285,7 @@ function retimg = put_image_in_axis (input_image, axis_handler, handles)
             @button_pressed_on_image);
         set(gca,'Units','pixels');
         retimg = img;
+
     else
         msgboxText{1} =  strcat('File not foun: ', input_image);
         msgbox(msgboxText,'File Not Found', 'error');
@@ -296,7 +307,8 @@ function button_pressed_on_image(hObject, eventdata)
     % that dont have a middle button.
     mouseid = get(gcf,'SelectionType');
 
-    if strcmp(mouseid, 'normal') == 1 || strcmp(mouseid, 'alt') == 1
+    if ((strcmp(mouseid, 'normal') == 1 || strcmp(mouseid, 'alt') == 1)) &&...
+            handles.correction.active == 0
         % We get the first possition of the square.
         p1=get(gca,'CurrentPoint');
 
@@ -393,13 +405,74 @@ function button_pressed_on_image(hObject, eventdata)
         % Draw the box in red and save in regions.
         pts = handles.curr_ann.regions(reg_offset).bbox;
         lbl = handles.curr_ann.regions(reg_offset).label;
-        [l, t] = drawbox(pts, lbl);
+        [l, t] = drawbox(pts, lbl, [1 0 0], @button_press_on_line);
         handles.curr_ann.regions(reg_offset).bboxline.l = l;
         handles.curr_ann.regions(reg_offset).bboxline.t = t;
         handles.curr_ann.regions(reg_offset).bbox_figure = bbox_figure;
         handles.curr_ann.regions(reg_offset).active = 1;
-    else
-        % nothing for now.
+    end
+
+    % Remember to save the changes.
+    guidata(hObject, handles);
+
+function button_press_on_line(hObject, eventdata)
+    %initialize handles.
+    handles = guidata(hObject);
+
+    % What button did the user click?
+    % normal -> left click
+    % alt -> right click
+    % extended -> middle button. (might be different for mice with more
+    % that dont have a middle button.
+    mouseid = get(gcf,'SelectionType');
+
+    if strcmp(mouseid, 'normal') == 1 && handles.correction.active == 1
+        % Get the current position of the click.
+        p1=get(gca,'CurrentPoint');
+        p = [p1(1,1), p1(1,2)];
+        m_d = 10; % consider clicks withing m_d pixels as good
+
+        % do a search in the current regions (the active ones) for the one
+        % that contains p in it's perimeter.
+        x = p(1);
+        y = p(2);
+        selected_offset = -1;
+        for i = 1:handles.curr_ann.reg_offset
+            bboxt = handles.curr_ann.regions(i).bbox;
+            xmin = bboxt(1);
+            ymin = bboxt(2);
+            xmax = bboxt(3);
+            ymax = bboxt(4);
+            if  ( (abs(x-xmin)<m_d || abs(x-xmax)<m_d)...
+                  && (y>=ymin && y<=ymax) ) ...
+                || ( (abs(y-ymin)<m_d || abs(y-ymax)<m_d)...
+                     && (x>=xmin && x<=xmax) )
+                % We have a winner.  The user clicked on a border pixel.
+                selected_offset = i;
+                break;
+            end
+        end
+
+        % If we did not find any regions, just continue
+        if selected_offset ~= -1
+            % If we find a box:
+            % Unpaint the previous green box if there is one.
+            % Update the global handles.correction var
+            % paint the new box.
+            if handles.correction.offset ~= -1
+                % We must undraw the green box
+                bbl = handles.correction.box;
+                set(bbl.l, 'Visible', 'off');
+                set(bbl.t, 'Visible', 'off');
+            end
+
+            handles.correction.offset = selected_offset;
+            pts = handles.curr_ann.regions(selected_offset).bbox;
+            lbl = handles.curr_ann.regions(selected_offset).label;
+            [l, t] = drawbox(pts, lbl, [0 1 0], @button_press_on_line);
+            handles.correction.box.l = l;
+            handles.correction.box.t = t;
+        end
     end
 
     % Remember to save the changes.
@@ -430,6 +503,28 @@ function on_key_press_callback(hObject, eventdata)
         % call the zoom callback..
         zoom_toggle_Callback(handles.zoom_toggle, '', handles)
 
+    elseif (strcmp(eventdata.Character, 'd') == 1 ||...
+            strcmp(eventdata.Character, 'D') == 1) &&...
+            handles.correction.active == 1
+        % we need to deactivate the region that is marked by
+        % handles.correction.offset. remove the green and red squares.
+        % fist deactivate the region
+        handles.curr_ann.regions(handles.correction.offset).active = 0;
+
+        % remove the green box
+        bbl = handles.correction.box;
+        set(bbl.l, 'Visible', 'off');
+        set(bbl.t, 'Visible', 'off');
+
+        % remove the red box
+        bbl = handles.curr_ann.regions(handles.correction.offset).bboxline;
+        set(bbl.l, 'Visible', 'off');
+        set(bbl.t, 'Visible', 'off');
+
+        handles.correction.offset = -1;
+        handles.correction.box.l = -1;
+        handles.correction.box.t = -1;
+        handles.correction.active = 0;
     end
 
     % Remember to save the changes.
@@ -468,7 +563,8 @@ function ret_handles = select_offset_from_list(offset, handles, hObject)
 
     % Modify handles.ann_curr to reflect the change
     handles.curr_ann = read_annotation(selected_file);
-    handles.curr_ann = put_annotations_in_axis (handles.curr_ann);
+    handles.curr_ann = put_annotations_in_axis (handles.curr_ann,...
+        @button_press_on_line);
     handles.curr_ann.image = size(img);
 
     % FIXME : HACK!!!
@@ -526,3 +622,28 @@ function grab_toggle_Callback(hObject, eventdata, handles)
     else
         % this should not be reached.
     end
+
+
+% --- Executes on button press in correct_toggle.
+% this function basically changes the onclick callback function.
+function correct_toggle_Callback(hObject, eventdata, handles)
+    % hObject    handle to correct_toggle (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+
+    % Hint: get(hObject,'Value') returns toggle state of correct_toggle
+    state = get(hObject, 'Value');
+
+    if state == 0
+        % change to the button_pressed_on_image callback,  I should change
+        % the name... :)
+        handles.correction.active = 0;
+
+    elseif state == 1
+        % change to the special call back function for the correction
+        % purposes.
+        handles.correction.active = 1;
+    end
+
+    % Remember to save the changes.
+    guidata(hObject, handles);
