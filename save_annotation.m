@@ -22,7 +22,7 @@ function save_annotation(annotation)
     fprintf(fd,'\n');
     %if (length(comments)>0),
     %  for i=1:length(comments), fprintf(fd,'# %s\n',char(comments(i))); end;
-    %  fprintf(fd,'\n');  
+    %  fprintf(fd,'\n');
     %end;
     %fprintf(fd,'# Note that there might be other objects in the image\n');
     %fprintf(fd,'# for which ground truth data has not been provided.\n');
