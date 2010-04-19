@@ -524,7 +524,6 @@ function on_key_press_callback(hObject, eventdata)
         handles.correction.offset = -1;
         handles.correction.box.l = -1;
         handles.correction.box.t = -1;
-        handles.correction.active = 0;
     end
 
     % Remember to save the changes.
