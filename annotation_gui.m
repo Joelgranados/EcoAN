@@ -242,7 +242,9 @@ function add_files_Callback(hObject, eventdata, handles)
 
     % Handle the cancel option
     if ~iscellstr(filename) && ~iscellstr(pathname) && ~iscellstr(filterindex)
-        return
+        % User only chose one file.  change to cellstr
+        filename = cellstr(filename);
+        pathname = cellstr(pathname);
     end
 
     handles.image_files(ifo).image_files = filename;
