@@ -43,7 +43,6 @@ else
 end
 % End initialization code - DO NOT EDIT
 
-
 % --- Executes just before ftp_conf_gui is made visible.
 function ftp_conf_gui_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
@@ -65,7 +64,6 @@ guidata(hObject, handles);
 % UIWAIT makes ftp_conf_gui wait for user response (see UIRESUME)
 % uiwait(handles.ftp_figure);
 
-
 % --- Outputs from this function are returned to the command line.
 function varargout = ftp_conf_gui_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
@@ -83,71 +81,6 @@ s.directory = get(handles.dir_edit, 'String');
 s.passwd = get(handles.passwd_edit, 'String');
 varargout{1} = s;
 close(handles.ftp_figure);
-
-function server_edit_Callback(hObject, eventdata, handles)
-% hObject    handle to server_edit (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of server_edit as text
-%        str2double(get(hObject,'String')) returns contents of server_edit as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function server_edit_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to server_edit (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-function user_edit_Callback(hObject, eventdata, handles)
-% hObject    handle to user_edit (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of user_edit as text
-%        str2double(get(hObject,'String')) returns contents of user_edit as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function user_edit_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to user_edit (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'),...
-        get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-function dir_edit_Callback(hObject, eventdata, handles)
-% hObject    handle to dir_edit (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of dir_edit as text
-%        str2double(get(hObject,'String')) returns contents of dir_edit as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function dir_edit_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to dir_edit (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'),...
-        get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
 
 % --- Executes on button press in ok_button.
 function ok_button_Callback(hObject, eventdata, handles)
@@ -172,7 +105,6 @@ end
 
 guidata(hObject, handles);
 
-
 % --- Executes on button press in cancel_button.
 function cancel_button_Callback(hObject, eventdata, handles)
 % hObject    handle to cancel_button (see GCBO)
@@ -187,22 +119,30 @@ uiresume();
 guidata(hObject, handles);
 
 function passwd_edit_Callback(hObject, eventdata, handles)
-% hObject    handle to passwd_edit (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of passwd_edit as text
-%        str2double(get(hObject,'String')) returns contents of passwd_edit as a double
-
+function dir_edit_Callback(hObject, eventdata, handles)
+function user_edit_Callback(hObject, eventdata, handles)
+function server_edit_Callback(hObject, eventdata, handles)
 
 % --- Executes during object creation, after setting all properties.
 function passwd_edit_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to passwd_edit (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+% --- Executes during object creation, after setting all properties.
+function server_edit_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+% --- Executes during object creation, after setting all properties.
+function user_edit_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'),...
+        get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+% --- Executes during object creation, after setting all properties.
+function dir_edit_CreateFcn(hObject, eventdata, handles)
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'),...
+        get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
