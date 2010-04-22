@@ -1,5 +1,5 @@
 function [ret_server, ret_username, ret_dir] =...
-        ftp_config(action, server, username, dir)
+        ftp_config(action, server, username, directory)
     ret_server = -1;
     ret_username = -1;
     ret_dir = -1;
@@ -43,7 +43,7 @@ function [ret_server, ret_username, ret_dir] =...
         fprintf(fd, '# Lines starting with a space or tab sre ignored.\n');
         fprintf(fd, '# Only "server", "dir" and "username" are keys for now.\n');
         fprintf(fd, 'server=%s\n', server);
-        fprintf(fd, 'dir=%s\n', dir);
+        fprintf(fd, 'dir=%s\n', directory);
         fprintf(fd, 'username=%s\n', username);
 
         fclose(fd);
