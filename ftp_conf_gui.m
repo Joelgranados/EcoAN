@@ -178,6 +178,13 @@ function cancel_button_Callback(hObject, eventdata, handles)
 % hObject    handle to cancel_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+set(handles.server_edit, 'String', '');
+set(handles.user_edit, 'String', '');
+set(handles.dir_edit, 'String', '');
+set(handles.passwd_edit, 'String', '');
+uiresume();
+
+guidata(hObject, handles);
 
 function passwd_edit_Callback(hObject, eventdata, handles)
 % hObject    handle to passwd_edit (see GCBO)
