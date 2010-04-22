@@ -1,0 +1,7 @@
+# Configuration file for fpt connection
+# Lines starting with '#' are ignored
+# Lines starting with a space or tab sre ignored.
+# Only 'server', 'dir' and 'username' are keys for now.
+server=
+dir=
+username=
