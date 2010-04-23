@@ -32,4 +32,5 @@ function [ret_ftp, error_message] = ftp_connect()
         error_message = exception.identifier;
         return;
     end
+    error_message = '';
     return
