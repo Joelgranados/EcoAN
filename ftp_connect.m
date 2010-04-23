@@ -1,4 +1,4 @@
-function [ret_ftp, ret_dir] = ftp_connect()
+function [ret_ftp, error_message] = ftp_connect()
 
     % We read the ftp configuration file
     [server, username, directory] = ftp_config('r', 0, 0, 0);
@@ -10,12 +10,26 @@ function [ret_ftp, ret_dir] = ftp_connect()
     % We handle the error.
     if isempty(s.server) || isempty(s.username) || isempty(s.directory)
         ret_ftp = -1;
-        ret_dir = -1;
+        error_message = 'Canceled';
         return;
     end
 
     % We try to connect using matlabs ftp utility.
-    ret_ftp = ftp(s.server,s.username,s.passwd);
+    try
+        ret_ftp = ftp(s.server, s.username,s.passwd);
 
-    ret_dir = s.directory;
+    catch exception
+        ret_ftp = -1;
+        error_message = exception.identifier;
+        return;
+    end
+
+    % We try to change to the dir that is specified
+    try
+        cd(ret_ftp, s.directory);
+    catch exception
+        ret_ftp = -1;
+        error_message = exception.identifier;
+        return;
+    end
     return
