@@ -16,7 +16,11 @@ function [ret_ftp, error_message] = ftp_connect()
 
     % We try to connect using matlabs ftp utility.
     try
-        ret_ftp = ftp(s.server, s.username,s.passwd);
+        ret_ftp.f = ftp(s.server, s.username,s.passwd);
+        ret_ftp.host = s.server;
+        ret_ftp.username = s.username;
+        ret_ftp.passwd = s.passwd;
+        ret_ftp.dir = s.directory;
 
     catch exception
         ret_ftp = -1;
@@ -26,11 +30,12 @@ function [ret_ftp, error_message] = ftp_connect()
 
     % We try to change to the dir that is specified
     try
-        cd(ret_ftp, s.directory);
+        cd(ret_ftp.f, s.directory);
     catch exception
+        close(ret_ftp.f);
         ret_ftp = -1;
         error_message = exception.identifier;
         return;
     end
     error_message = '';
-    return
+    return;

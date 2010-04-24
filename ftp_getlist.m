@@ -1,8 +1,9 @@
-function [filename, pathname] = ftp_getlist(f)
+function [filename, pathname, ret_ftp] = ftp_getlist(f)
 
+    ret_ftp = f;
     % See if we have a good ftp handle.
     try
-        pathname = strcat('ftp://', cd(f));
+        pathname = strcat('ftp://', cd(f.f));
     catch exception
         [f, error_m] = ftp_connect;
         if strcmp(error_m, '') ~= 1
@@ -12,13 +13,14 @@ function [filename, pathname] = ftp_getlist(f)
             msgbox(msgboxText,'FTP connect failed', 'error');
             return;
         else
-            pathname = strcat('ftp://', cd(f));
+            pathname = strcat('ftp://', cd(f.f));
+            ret_ftp = f;
         end
     end
 
     % get the dir list.  We assume that the ftp handle is on the correct
     % dir.
-    dir_list = dir(f);
+    dir_list = dir(f.f);
     
     % construct the filename array.  We will not include stuff that is not
     % a file.
