@@ -241,12 +241,13 @@ function add_files_Callback(hObject, eventdata, handles)
         handles.image_files_current_dir);
 
     % Handle the cancel option
-    if filename == 0 && pathname == 0 && filterindex == 0
-        % just return, user doesn't want anything done.
+    if ~iscellstr(filename) && ~ischar(filename) ...
+            && ~iscellstr(pathname) && ~ischar(filename)
+        % just return, user pushed cancel.
         return
     end
 
-    if ~iscellstr(filename) && ~iscellstr(pathname) && ~iscellstr(filterindex)
+    if ischar(filename) && ischar(pathname)
         % User only chose one file.  change to cellstr
         filename = cellstr(filename);
         pathname = cellstr(pathname);
