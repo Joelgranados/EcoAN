@@ -3,7 +3,7 @@ function [filename, pathname, ret_ftp] = ftp_getlist(f)
     ret_ftp = f;
     % See if we have a good ftp handle.
     try
-        pathname = strcat('ftp://', cd(f.f));
+        pathname = strcat('ftp://', cd(f.f), '/');
     catch exception
         [f, error_m] = ftp_connect;
         if strcmp(error_m, '') ~= 1
@@ -13,7 +13,7 @@ function [filename, pathname, ret_ftp] = ftp_getlist(f)
             msgbox(msgboxText,'FTP connect failed', 'error');
             return;
         else
-            pathname = strcat('ftp://', cd(f.f));
+            pathname = strcat('ftp://', cd(f.f), '/');
             ret_ftp = f;
         end
     end
