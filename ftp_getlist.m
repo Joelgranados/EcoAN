@@ -23,12 +23,14 @@ function [filename, pathname, ret_ftp] = ftp_getlist(f)
     dir_list = dir(f.f);
     
     % construct the filename array.  We will not include stuff that is not
-    % a file.
+    % a file.  We will not include stuff that ends with .ann.
     filename = [];
     for i = 1:length(dir_list)
 
         % We don't want dirs.
-        if dir_list(i).isdir == 1
+        if dir_list(i).isdir == 1 ...
+                || (length(dir_list) > 4 ...
+                    && strcmp(dir_list(i).name(end-3:end), '.ann') == 1)
             continue;
         end
 
