@@ -24,7 +24,7 @@ function varargout = annotation_gui(varargin)
 
     % Edit the above text to modify the response to help annotation_gui
 
-    % Last Modified by GUIDE v2.5 14-Apr-2010 15:18:04
+    % Last Modified by GUIDE v2.5 26-Apr-2010 14:32:02
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -92,6 +92,9 @@ function annotation_gui_OpeningFcn(hObject, eventdata, handles, varargin)
     handles.correction.box.l = -1;
     handles.correction.box.t = -1;
     handles.correction.active = 0;
+
+    % The ftp stuff.
+    handles.ftp_struct = -1;
 
     % Initialize handle responsible for zoom
     % handles.zoom_handle = zoom;
@@ -651,6 +654,48 @@ function correct_toggle_Callback(hObject, eventdata, handles)
         % purposes.
         handles.correction.active = 1;
     end
+
+    % Remember to save the changes.
+    guidata(hObject, handles);
+
+
+% --- Executes on button press in add_ftp.
+function add_ftp_Callback(hObject, eventdata, handles)
+% hObject    handle to add_ftp (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    [filename, pathname, handles.ftp_struct] = ...
+        ftp_getlist(handles.ftp_struct);
+
+    ifo = handles.image_files_offset;
+
+    handles.image_files(ifo).image_files = filename;
+    handles.image_files(ifo).directory = pathname;
+    handles.image_files(ifo).full_paths = strcat(pathname,filename);
+    handles.image_files_current_dir = char(pathname);
+
+    % Now I have to add those files to the list in file_list
+    % create a temp var with all the names we have up until now
+    file_names_temp = [];
+    for i = 1:ifo
+        file_names_temp = cat(2,file_names_temp,...
+            cellstr(handles.image_files(i).full_paths));
+    end
+    % I don't want repeated values in the list.
+    file_names_temp = unique(file_names_temp);
+
+    % Set the values in the file path list in the gui.
+    set(handles.file_list,'String',file_names_temp,'Value',1);
+
+    % Keep track of the new list so we don't have to calculate it twice
+    handles.list_file_paths = file_names_temp;
+
+    % Keep track of the image_file_offset.
+    handles.image_files_offset = handles.image_files_offset + 1;
+
+    % Don't do this for the ftp version.
+    % For the users convinience select the first file in the list.
+    % handles = select_offset_from_list(1, handles, hObject);
 
     % Remember to save the changes.
     guidata(hObject, handles);
