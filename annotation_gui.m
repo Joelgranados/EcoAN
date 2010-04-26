@@ -256,7 +256,7 @@ function add_files_Callback(hObject, eventdata, handles)
     handles.image_files(ifo).image_files = filename;
     handles.image_files(ifo).directory = pathname;
     handles.image_files(ifo).full_paths = strcat(pathname,filename);
-    handles.image_files_current_dir = pathname;
+    handles.image_files_current_dir = char(pathname);
 
     % Now I have to add those files to the list in file_list
     % create a temp var with all the names we have up until now
