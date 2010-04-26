@@ -21,7 +21,7 @@ function [ret_file_path, ret_ann_path, ret_ftp] = ftp_getfile(f, file_name, cach
             ret_ftp = f;
         end
     end
-    
+
     % FILE EXISTS?
     % Check if the filename exists in the ftp connection.  We should be in
     % the correct dir.  If dir returns an empty array, the file does not
@@ -35,46 +35,12 @@ function [ret_file_path, ret_ann_path, ret_ftp] = ftp_getfile(f, file_name, cach
         msgbox(msgboxText, 'FTP retrieve failed', 'error');
         return;
     end
-    
-    % FILE LOCKED?
-    % We checked if its locked before anything else so we avoid the user
-    % having to wait for a download and then realizing he can't edit...
-    % The lock will be named filename.lck
-    file_name_lck = strcat(file_name,'.lck');
-    if ~isempty(dir(f.f, file_name_lck))
-        % This means there is a lock file.  Tell the user and return
-        msgboxText{1} = strcat('The filename: ', file_name, ' is locked.', ...
-            ' You will have to wait until the lock is released in ', ...
-            ' the server');
-        msgbox(msgboxText, 'FTP retrieve failed', 'error');
-        return;
-    end
-    
-    % CREATE LOCK
-    % from now on we should delete the lock everytime we error out.  Just
-    % to be clean...
-    % We need to put something on the lock :)
-    local_host_name = java.net.InetAddress.getLocalHost().getHostName();
-    % We create a temp file with the lock name...
-    [fd,syserrmsg]=fopen(file_name_lck,'wt');
-    if (fd==-1),
-        msgboxText{1} =  strcat('Error creating lock file: ', ...
-            file_name_lck, '.  Try again at a latter time.');
-        msgbox(msgboxText,'FTP retrieve failed', 'error');
-        return;
-    end;
-    fprintf(fd, char(local_host_name));
-    fclose(fd);
-    % We upload the temp file...
-    try
-        mput(f.f, file_name_lck);
-        delete(file_name_lck); % we delete it locally.
-    catch exception
-        msgboxText{1} =  strcat('Error creating lock file: ', ...
-            file_name_lck, '.  Try again at a latter time.', ...
-            '  Message: ', exception.message);
-        msgbox(msgboxText,'FTP retrieve failed', 'error');
-        return;
+
+    % LOCK FILE
+    if ftp_lck(f, file_name, cache_dir, 'lock') == 0
+        % there was an issue locking.  There was already a message error.
+        % And we will return failed values.  Just return.
+        return
     end
 
     % RETRIEVE THE FILE
@@ -94,7 +60,7 @@ function [ret_file_path, ret_ann_path, ret_ftp] = ftp_getfile(f, file_name, cach
             return;
         end
     end
-            
+
     % RETRIEVE THE ANNOTATION
     % We put it in cache...  It does not matter if there is an error.  If
     % there is no annotation file, one will automatically get created.
@@ -109,5 +75,5 @@ function [ret_file_path, ret_ann_path, ret_ftp] = ftp_getfile(f, file_name, cach
 
     % HURRAY, WE HAVE DOWNLOADED A FILE!!!!
     ret_file_path = strcat(cache_dir, '/', file_name);
-    
+
 end

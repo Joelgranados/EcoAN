@@ -18,7 +18,7 @@ function [ret_ftp, error_m] = save_file(f, file_name, cache_dir)
             ret_ftp = f;
         end
     end
-    
+
     % CHECK THAT THE FILE EXISTS IN LOCAL
     file_name_path = strcat(cache_dir, '/', file_name);
     if ~exist(file_name_path) == 2
@@ -29,7 +29,7 @@ function [ret_ftp, error_m] = save_file(f, file_name, cache_dir)
         msgbox(msgboxText, 'FTP save failed', 'error');
         return;
     end
-    
+
     % CHECK THAT THE ANNOTATION FILE EXISTS
     file_name_ann = strcat(cache_dir, '/', file_name, '.ann');
     if exist(file_name_ann) == 0
@@ -41,10 +41,10 @@ function [ret_ftp, error_m] = save_file(f, file_name, cache_dir)
         msgbox(msgboxText, 'FTP save failed', 'error');
         return;
     end
-    
+
     % CHECK THAT THERE IS A LOCK FILE ON SERVER.
     file_name_lck = strcat(file_name, '.lck');
-    if isempty(dir(f.f, file_name_lck))
+    if ftp_lck(f, file_name, cache_dir, 'islocked') == 0
         % there is no lock file and we should not touch it.
         % then there is no annotation file and there is no point in saving
         error_m = strcat('I found no lock file for file:', file_name, ...
@@ -54,7 +54,7 @@ function [ret_ftp, error_m] = save_file(f, file_name, cache_dir)
         msgbox(msgboxText, 'FTP save failed', 'error');
         return;
     end
-    
+
     % CHECK THAT THE LOCK FILE IS FROM 'THIS' HOST.
     %FIXME: leave this for later.
     
@@ -70,20 +70,13 @@ function [ret_ftp, error_m] = save_file(f, file_name, cache_dir)
         msgbox(msgboxText, 'FTP save failed', 'error');
         return;
     end
-    
+
     % DELETE THE LOCK FILE FROM THE SERVER
-    try
-        delete(f.f, file_name_lck);
-    catch exception
-        error_m = strcat('There was an error while deleting', ...
-            ' the lock file:', file_name_lck, '.  Please contact', ...
-            ' the administrator and inform of the error.', ...
-            ' Message:', exception.message);
-        msgboxText{1} = error_m;
-        msgbox(msgboxText, 'FTP save failed', 'error');
+    if ftp_lck(f, file_name, cache_dir, 'ulock') == 0
+        error_m = 'error unlocking';
         return;
     end
-    
+
     % WE ARE DONE!!!
 end
     
