@@ -2,7 +2,7 @@
 function annotation=read_annotation(file_name)
     % file_name   is the name from the original image.  We will look for the
     % text file of that image.
-    ann_file_name = char(strcat(file_name, '.txt'));
+    ann_file_name = char(strcat(file_name, '.ann'));
 
     % We initialize the annotation.  Remeber that the regions vector will
     % always have an empty region at the end.

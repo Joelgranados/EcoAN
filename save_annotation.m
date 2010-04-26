@@ -1,6 +1,6 @@
 function save_annotation(annotation)
     VERSION=1.0;
-    ann_file_name = char(strcat(annotation.file_name, '.txt'));
+    ann_file_name = char(strcat(annotation.file_name, '.ann'));
 
     [fd,syserrmsg]=fopen(ann_file_name,'wt');
     if (fd==-1),
