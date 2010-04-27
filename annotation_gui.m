@@ -699,6 +699,16 @@ function add_ftp_Callback(hObject, eventdata, handles)
     [filename, pathname, handles.ftp_struct] = ...
         ftp_getlist(handles.ftp_struct);
 
+    % Do nothing if we did not get a ftp connection.  Mainly for when the
+    % user hits cancel.  The try catch thing is because Matlab is dumb.
+    try
+        if filename == 0
+            return;
+        end
+    catch exception
+        %nothing...
+    end
+
     ifo = handles.image_files_offset;
 
     handles.image_files(ifo).image_files = filename;
