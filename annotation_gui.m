@@ -577,7 +577,7 @@ function ret_handles = select_offset_from_list(offset, handles, hObject)
     img = put_image_in_axis (selected_file, axis_handler, handles);
 
     % Modify handles.ann_curr to reflect the change
-    handles.curr_ann = read_annotation(selected_file);
+    handles.curr_ann = annotation_read(selected_file);
     handles.curr_ann = put_annotations_in_axis (handles.curr_ann,...
         @button_press_on_line);
     handles.curr_ann.image = size(img);
