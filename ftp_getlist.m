@@ -3,7 +3,7 @@ function [filename, pathname, ret_ftp] = ftp_getlist(f)
     ret_ftp = f;
     % See if we have a good ftp handle.
     try
-        pathname = strcat('ftp://', cd(f.f), '/');
+        cd(f.f);
     catch exception
         [f, error_m] = ftp_connect;
         if strcmp(error_m, '') ~= 1
@@ -13,7 +13,7 @@ function [filename, pathname, ret_ftp] = ftp_getlist(f)
             msgbox(msgboxText,'FTP connect failed', 'error');
             return;
         else
-            pathname = strcat('ftp://', cd(f.f), '/');
+            cd(f.f);
             ret_ftp = f;
         end
     end
@@ -30,10 +30,12 @@ function [filename, pathname, ret_ftp] = ftp_getlist(f)
         % We don't want dirs.
         if dir_list(i).isdir == 1 ...
                 || (length(dir_list) > 4 ...
-                    && strcmp(dir_list(i).name(end-3:end), '.ann') == 1)
+                    && strcmp(dir_list(i).name(end-3:end), '.ann') == 1 ...
+                    && strcmp(dir_list(i).name(end-3:end), '.lck') == 1)
             continue;
         end
 
         filename = [filename, cellstr(dir_list(i).name)];
+        pathname = 'ftp://';
     end
 end
