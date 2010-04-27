@@ -96,6 +96,10 @@ function annotation_gui_OpeningFcn(hObject, eventdata, handles, varargin)
     % The ftp stuff.
     handles.ftp_struct = -1;
 
+    % The configuration stuff.  FIXME: we should have a function that reads
+    % everything into the variable.
+    handles.config.cache_dir = '/home/joel/src/fcount/annotation/cache/';
+
     % Initialize handle responsible for zoom
     % handles.zoom_handle = zoom;
 
@@ -298,7 +302,7 @@ function retimg = put_image_in_axis (input_image, axis_handler, handles)
         retimg = img;
 
     else
-        msgboxText{1} =  strcat('File not foun: ', input_image);
+        msgboxText{1} =  strcat('File not found: ', input_image);
         msgbox(msgboxText,'File Not Found', 'error');
         retimg = 0;
     end
