@@ -4,7 +4,7 @@ function [ret_server, ret_username, ret_dir] =...
     ret_username = -1;
     ret_dir = -1;
 
-    ftp_conf_file='ftp.configuration';
+    ftp_conf_file='annotation.conf';
     if strcmp(action, 'r') == 1
         %We read
         [fd,syserrmsg]=fopen(ftp_conf_file,'rt');
