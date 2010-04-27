@@ -420,7 +420,7 @@ function button_pressed_on_image(hObject, eventdata)
         % Draw the box in red and save in regions.
         pts = handles.curr_ann.regions(reg_offset).bbox;
         lbl = handles.curr_ann.regions(reg_offset).label;
-        [l, t] = drawbox(pts, lbl, [1 0 0], @button_press_on_line);
+        [l, t] = annotation_drawbox(pts, lbl, [1 0 0], @button_press_on_line);
         handles.curr_ann.regions(reg_offset).bboxline.l = l;
         handles.curr_ann.regions(reg_offset).bboxline.t = t;
         handles.curr_ann.regions(reg_offset).bbox_figure = bbox_figure;
@@ -484,7 +484,8 @@ function button_press_on_line(hObject, eventdata)
             handles.correction.offset = selected_offset;
             pts = handles.curr_ann.regions(selected_offset).bbox;
             lbl = handles.curr_ann.regions(selected_offset).label;
-            [l, t] = drawbox(pts, lbl, [0 1 0], @button_press_on_line);
+            [l, t] = annotation_drawbox(pts, lbl, [0 1 0], ...
+                @button_press_on_line);
             handles.correction.box.l = l;
             handles.correction.box.t = t;
         end

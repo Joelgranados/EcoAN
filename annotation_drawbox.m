@@ -1,5 +1,5 @@
 % Draws a red box over the specified points
-function [l, t] = drawbox(pts, lbl, color, callback)
+function [l, t] = annotation_drawbox(pts, lbl, color, callback)
 % pts   The points where we should draw the box.
 l = line(pts([1 3 3 1 1]),pts([2 2 4 4 2]),'Color',color,'LineWidth',1);
 set(l, 'ButtonDownFcn', callback);
