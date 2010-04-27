@@ -143,7 +143,7 @@ function file_list_Callback(hObject, eventdata, handles)
     offset = get(hObject,'Value');
 
     % do the selection.
-    handles = select_offset_from_list(offset, handles, hObject);
+    [success, handles] = select_offset_from_list(offset, handles, hObject);
 
     % Remember to save the changes.
     guidata(hObject, handles);
@@ -547,8 +547,12 @@ function on_key_press_callback(hObject, eventdata)
 
 
 % --- helper function.  It selects the offset in the file list.
-% it was code that was being repeated.
-function ret_handles = select_offset_from_list(offset, handles, hObject)
+% it was code that was being repeated.  If the return value  is not successfull one
+% can always reuse the previous handles var.
+function [success, ret_handles] = select_offset_from_list(offset, handles, hObject)
+    % We dafault to a successfull return :(
+    success = 1;
+
     % We ignore if there is nothing in the list.
     if size (handles.list_file_paths,2) == 0
         return;
@@ -562,13 +566,36 @@ function ret_handles = select_offset_from_list(offset, handles, hObject)
     % we use > and < to make sure we put the counter back to the first image
     % if we encounter some inconsistent values.
     if offset >= size(handles.list_file_paths,2) + 1 || offset < 1;
-        handles.list_selected_file = 1;
-    else
-        handles.list_selected_file = offset;
+        offset = 1;
     end
 
     % We get the selected file name.
-    selected_file = handles.list_file_paths(handles.list_selected_file);
+    selected_file = handles.list_file_paths(offset);
+
+    % If its an ftp we trick the algorithm that its looking at a local
+    % file in the cache.
+    temp_file = char(selected_file);
+    if length(temp_file) > 6 && strcmp(temp_file(1:6), 'ftp://') == 1
+        % then its an ftp file.
+        % We first make sure we put it in the cache...
+        [file_path, ann_path, handles.ftp_struct] =...
+            ftp_getfile(handles.ftp_struct, temp_file(7:end),...
+            handles.config.cache_dir);
+
+        % if it failes we return..
+        if file_path == 0
+            % something went wrong with the ftp.  an error has already
+            % been displayed.
+            success = 0;
+            ret_handles = handles;
+            return
+        else
+            selected_file = file_path;
+        end
+    end
+
+    % We 'officialize' the selection
+    handles.list_selected_file = offset;
 
     % We select the corresponding file in the list of files.
     set(handles.file_list, 'Value', handles.list_selected_file);
