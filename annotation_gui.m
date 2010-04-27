@@ -98,7 +98,7 @@ function annotation_gui_OpeningFcn(hObject, eventdata, handles, varargin)
 
     % The configuration stuff.  FIXME: we should have a function that reads
     % everything into the variable.
-    handles.config.cache_dir = '/home/joel/src/fcount/annotation/cache/';
+    handles.config = annotation_conf('annotation.conf', 0, 'r');
 
     % Initialize handle responsible for zoom
     % handles.zoom_handle = zoom;

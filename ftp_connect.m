@@ -1,7 +1,10 @@
 function [ret_ftp, error_message] = ftp_connect()
 
     % We read the ftp configuration file
-    [server, username, directory] = ftp_config('r', 0, 0, 0);
+    conf_struct = annotation_conf('annotation.conf', 0, 'r');
+    server = conf_struct.ftp_server;
+    username = conf_struct.ftp_username;
+    directory = conf_struct.ftp_dir;
 
     % We will always call the ftp gui so the user can put what is missing
     % and the passwd.
