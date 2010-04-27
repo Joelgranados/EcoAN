@@ -1,4 +1,4 @@
-function [ret_ftp, error_m] = save_file(f, file_name, cache_dir)
+function [ret_ftp, error_m] = ftp_savefile(f, file_name, cache_dir)
 
     ret_ftp = f;
     error_m = '';
