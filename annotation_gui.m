@@ -24,7 +24,7 @@ function varargout = annotation_gui(varargin)
 
     % Edit the above text to modify the response to help annotation_gui
 
-    % Last Modified by GUIDE v2.5 26-Apr-2010 14:32:02
+    % Last Modified by GUIDE v2.5 27-Apr-2010 13:33:23
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -162,12 +162,12 @@ function file_list_CreateFcn(hObject, eventdata, handles)
     end
 
 
-% --- Executes on button press in save_annotation.
-function save_annotation_Callback(hObject, eventdata, handles)
-    % hObject    handle to save_annotation (see GCBO)
+% --- Executes on button press in annotation_save.
+function annotation_save_Callback(hObject, eventdata, handles)
+    % hObject    handle to annotation_save (see GCBO)
     % eventdata  reserved - to be defined in a future version of MATLAB
     % handles    structure with handles and user data (see GUIDATA)
-    save_annotation(handles.curr_ann);
+    annotation_save(handles.curr_ann);
 
 
 % --- Executes on button press in clear_annotation.

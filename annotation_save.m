@@ -1,4 +1,4 @@
-function save_annotation(annotation)
+function annotation_save(annotation)
     VERSION=1.0;
     ann_file_name = char(strcat(annotation.file_name, '.ann'));
 
