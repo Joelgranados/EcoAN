@@ -142,6 +142,12 @@ function file_list_Callback(hObject, eventdata, handles)
         return;
     end
 
+    % We save before doing anything.  This will allow the lock to be
+    % released in the ftp server.
+    if handles.list_selected_file ~= -1
+        annotation_save_Callback(0,0, handles);
+    end
+
     % see what the user has chossen
     offset = get(hObject,'Value');
 
@@ -301,7 +307,9 @@ function add_files_Callback(hObject, eventdata, handles)
     handles.image_files_offset = handles.image_files_offset + 1;
 
     % For the users convinience select the first file in the list.
-    handles = select_offset_from_list(1, handles, hObject);
+    % if unsuccessfull it wont make much of a difference as we have a well
+    % constructed handles by now.
+    [success, handles] = select_offset_from_list(1, handles, hObject);
 
     % Remember to save the changes.
     guidata(hObject, handles);
@@ -519,7 +527,8 @@ function on_key_press_callback(hObject, eventdata)
         % This function takes care of strange values in offset, so we will feel
         % save putting the next offset that we see.
         offset = handles.list_selected_file + 1;
-        handles = select_offset_from_list(offset, handles, hObject);
+        [success, handles] = ...
+            select_offset_from_list(offset, handles, hObject);
 
     elseif strcmp(eventdata.Character, 'z') == 1 ||...
             strcmp(eventdata.Character, 'Z') == 1
@@ -757,10 +766,6 @@ function add_ftp_Callback(hObject, eventdata, handles)
 
     % Keep track of the image_file_offset.
     handles.image_files_offset = handles.image_files_offset + 1;
-
-    % Don't do this for the ftp version.
-    % For the users convinience select the first file in the list.
-    % handles = select_offset_from_list(1, handles, hObject);
 
     % Remember to save the changes.
     guidata(hObject, handles);
