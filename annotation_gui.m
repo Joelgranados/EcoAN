@@ -170,8 +170,21 @@ function annotation_save_Callback(hObject, eventdata, handles)
     % hObject    handle to annotation_save (see GCBO)
     % eventdata  reserved - to be defined in a future version of MATLAB
     % handles    structure with handles and user data (see GUIDATA)
-    annotation_save(handles.curr_ann);
+    if handles.curr_ann.ftp == 0
+        annotation_save(handles.curr_ann);
 
+    elseif handles.curr_ann.ftp == 1
+        % then we save to ftp. :)
+        annotation_save(handles.curr_ann); % save localy to cache.
+
+        [path, file_name, extension] = fileparts(handles.curr_ann.file_name);
+        file_name = strcat(file_name, extension);
+        [ret_ftp, error_m] = ftp_savefile(handles.ftp_struct, ...
+            file_name, handles.config.cache_dir);
+        
+        % FIXME : Handle the possible error.  It has already given a 
+        % message.
+    end
 
 % --- Executes on button press in clear_annotation.
 function clear_annotation_Callback(hObject, eventdata, handles)
@@ -611,6 +624,13 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
     handles.curr_ann = annotation_put_in_axis (handles.curr_ann,...
         @button_press_on_line);
     handles.curr_ann.image = size(img);
+    
+    % FIXME : there has got to be a better way!!!!
+    if length(temp_file) > 6 && strcmp(temp_file(1:6), 'ftp://') == 1
+        handles.curr_ann.ftp = 1;
+    else
+        handles.curr_ann.ftp = 0;
+    end
 
     % FIXME : HACK!!!
     %For some reason Matlab does not keep the handles with the guidata call

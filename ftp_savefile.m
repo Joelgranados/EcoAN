@@ -60,7 +60,7 @@ function [ret_ftp, error_m] = ftp_savefile(f, file_name, cache_dir)
     
     % CHANGE THE ANNOTATION FILE ONLY!!!!
     try
-        mput(f.f, file_name_ann)
+        mput(f.f, file_name_ann);
     catch exception
         error_m = strcat('There was an error while saving the', ...
             ' annotation for file:', file_name,'.  Please try', ...
