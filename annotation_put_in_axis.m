@@ -1,4 +1,4 @@
-function ret_ann = put_annotations_in_axis (annotation, callback)
+function ret_ann = annotation_put_in_axis (annotation, callback)
 % annotation    The annotation that contains the regions that we are going
 %               to paint.
 
