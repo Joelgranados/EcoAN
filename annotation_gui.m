@@ -214,6 +214,13 @@ function exit_Callback(hObject, eventdata, handles)
     % hObject    handle to exit (see GCBO)
     % eventdata  reserved - to be defined in a future version of MATLAB
     % handles    structure with handles and user data (see GUIDATA)
+
+    % We save before doing anything.  This will allow the lock to be
+    % released in the ftp server.
+    if handles.list_selected_file ~= -1
+        annotation_save_Callback(0,0, handles);
+    end
+
     close(handles.figure1);
 
 % --- Executes on selection change in labels.
