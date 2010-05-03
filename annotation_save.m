@@ -9,13 +9,14 @@ function annotation_save(annotation)
         return;
     end;
 
-
+    [p,f,e] = fileparts(annotation.file_name);
+    file_name = strcat(f,e);
     %if (~iscell(comments)),PASerrmsg('Comments must be a cell array','');end;
 
     %objlabels=sprintf(' "%s"',record.objects(:).label);
     fprintf(fd,'# PHENOLOGY ITU Annotation Version %0.2f\n',VERSION);
     fprintf(fd,'\n');
-    fprintf(fd,'Image filename : "%s"\n',char(annotation.file_name));
+    fprintf(fd,'Image filename : "%s"\n',char(file_name));
     %fprintf(fd,'Image size (X x Y x C) : %d x %d x %d\n',record.imgsize);
     %fprintf(fd,'Database : "%s"\n',record.database);
     %fprintf(fd,'Objects with ground truth : %d {%s }\n',nobjs,objlabels);

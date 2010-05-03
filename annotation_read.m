@@ -36,7 +36,9 @@ function annotation=annotation_read(file_name)
                     % We already know the image name, but its a good idea to check
                     % and see if the one in the file and the one we have actually
                     % coinside.
-                    if strcmp(char(file_name), imgname) == 0
+                    [p,f1,e1] = fileparts(file_name);
+                    [p,f2,e2] = fileparts(char(imgname));
+                    if strcmp(char(f1), char(f2)) == 0
                         % We have a problem.
                         % FIXME: probably be a good idea to erase this file and
                         % start a new one.  Lets error out for now.
