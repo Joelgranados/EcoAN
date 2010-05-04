@@ -19,3 +19,5 @@ SaxifragaOppositifolia-bud
 SaxifragaOppositifolia-flower
 SaxifragaOppositifolia-senescent
 SaxifragaOppositifolia-open
+Undefined
+Nothing
