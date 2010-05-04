@@ -9,7 +9,7 @@ function annotation_save(annotation)
         return;
     end;
 
-    [p,f,e] = fileparts(annotation.file_name);
+    [p,f,e] = fileparts(char(annotation.file_name));
     file_name = strcat(f,e);
     %if (~iscell(comments)),PASerrmsg('Comments must be a cell array','');end;
 
