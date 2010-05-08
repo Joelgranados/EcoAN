@@ -1,31 +1,4 @@
 function varargout = annotation_gui(varargin)
-    % ANNOTATION_GUI M-file for annotation_gui.fig
-    %      ANNOTATION_GUI, by itself, creates a new ANNOTATION_GUI or raises
-    %      the existing singleton*.
-    %
-    %      H = ANNOTATION_GUI returns the handle to a new ANNOTATION_GUI or
-    %      the handle to the existing singleton*.
-    %
-    %      ANNOTATION_GUI('CALLBACK',hObject,eventData,handles,...) calls the
-    %      local function named CALLBACK in ANNOTATION_GUI.M with the given
-    %      input arguments.
-    %
-    %      ANNOTATION_GUI('Property','Value',...) creates a new ANNOTATION_GUI
-    %      or raises the
-    %      existing singleton*.  Starting from the left, property value pairs are
-    %      applied to the GUI before annotation_gui_OpeningFcn gets called.  An
-    %      unrecognized property name or invalid value makes property application
-    %      stop.  All inputs are passed to annotation_gui_OpeningFcn via varargin.
-    %
-    %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
-    %      instance to run (singleton)".
-    %
-    % See also: GUIDE, GUIDATA, GUIHANDLES
-
-    % Edit the above text to modify the response to help annotation_gui
-
-    % Last Modified by GUIDE v2.5 08-May-2010 11:23:05
-
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
     gui_State = struct('gui_Name',       mfilename, ...
@@ -48,11 +21,6 @@ function varargout = annotation_gui(varargin)
 
 % --- Executes just before annotation_gui is made visible.
 function annotation_gui_OpeningFcn(hObject, eventdata, handles, varargin)
-    % This function has no output args, see OutputFcn.
-    % hObject    handle to figure
-    % eventdata  reserved - to be defined in a future version of MATLAB
-    % handles    structure with handles and user data (see GUIDATA)
-    % varargin   command line arguments to annotation_gui (see VARARGIN)
 
     % Choose default command line output for annotation_gui
     handles.output = hObject;
@@ -118,25 +86,12 @@ function annotation_gui_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % --- Outputs from this function are returned to the command line.
 function varargout = annotation_gui_OutputFcn(hObject, eventdata, handles)
-    % varargout  cell array for returning output args (see VARARGOUT);
-    % hObject    handle to figure
-    % eventdata  reserved - to be defined in a future version of MATLAB
-    % handles    structure with handles and user data (see GUIDATA)
-
     % Get default command line output from handles structure
     varargout{1} = handles.output;
 
 
 % --- Executes on selection change in file_list.
 function file_list_Callback(hObject, eventdata, handles)
-    % hObject    handle to file_list (see GCBO)
-    % eventdata  reserved - to be defined in a future version of MATLAB
-    % handles    structure with handles and user data (see GUIDATA)
-
-    % Hints: contents = cellstr(get(hObject,'String')) returns file_list
-    %        contents as cell array
-    %        contents{get(hObject,'Value')} returns selected item from file_list
-
     % We ingore the users interaction if there is nothing in the list.
     if size (handles.list_file_paths,2) == 0
         return;
@@ -159,12 +114,6 @@ function file_list_Callback(hObject, eventdata, handles)
 
 % --- Executes during object creation, after setting all properties.
 function file_list_CreateFcn(hObject, eventdata, handles)
-    % hObject    handle to file_list (see GCBO)
-    % eventdata  reserved - to be defined in a future version of MATLAB
-    % handles    empty - handles not created until after all CreateFcns called
-
-    % Hint: listbox controls usually have a white background on Windows.
-    %       See ISPC and COMPUTER.
     if ispc && isequal(get(hObject,'BackgroundColor'),...
             get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
@@ -173,9 +122,6 @@ function file_list_CreateFcn(hObject, eventdata, handles)
 
 % --- Executes on button press in annotation_save.
 function annotation_save_Callback(hObject, eventdata, handles)
-    % hObject    handle to annotation_save (see GCBO)
-    % eventdata  reserved - to be defined in a future version of MATLAB
-    % handles    structure with handles and user data (see GUIDATA)
     if handles.curr_ann.ftp == 0
         annotation_save(handles.curr_ann);
 
@@ -187,17 +133,13 @@ function annotation_save_Callback(hObject, eventdata, handles)
         file_name = strcat(file_name, extension);
         [ret_ftp, error_m] = ftp_savefile(handles.ftp_struct, ...
             file_name, handles.config.cache_dir);
-        
+
         % FIXME : Handle the possible error.  It has already given a 
         % message.
     end
 
 % --- Executes on button press in clear_annotation.
 function clear_annotation_Callback(hObject, eventdata, handles)
-    % hObject    handle to clear_annotation (see GCBO)
-    % eventdata  reserved - to be defined in a future version of MATLAB
-    % handles    structure with handles and user data (see GUIDATA)
-
     % We need to reset the reg_offset and make sure that regions(1) is -1.
     for i = 1:handles.curr_ann.reg_offset
         handles.curr_ann.regions(i).active = 0;
@@ -211,10 +153,6 @@ function clear_annotation_Callback(hObject, eventdata, handles)
 
 % --- Executes on button press in exit.
 function exit_Callback(hObject, eventdata, handles)
-    % hObject    handle to exit (see GCBO)
-    % eventdata  reserved - to be defined in a future version of MATLAB
-    % handles    structure with handles and user data (see GUIDATA)
-
     % We save before doing anything.  This will allow the lock to be
     % released in the ftp server.
     if handles.list_selected_file ~= -1
@@ -225,13 +163,6 @@ function exit_Callback(hObject, eventdata, handles)
 
 % --- Executes on selection change in labels.
 function labels_Callback(hObject, eventdata, handles)
-    % hObject    handle to labels (see GCBO)
-    % eventdata  reserved - to be defined in a future version of MATLAB
-    % handles    structure with handles and user data (see GUIDATA)
-
-    % Hints: contents = cellstr(get(hObject,'String')) returns labels contents
-    %        as cell array
-    %        contents{get(hObject,'Value')} returns selected item from labels
     handles.label_selected_label = get(hObject, 'Value');
 
     % Remember to save the changes.
@@ -240,12 +171,6 @@ function labels_Callback(hObject, eventdata, handles)
 
 % --- Executes during object creation, after setting all properties.
 function labels_CreateFcn(hObject, eventdata, handles)
-    % hObject    handle to labels (see GCBO)
-    % eventdata  reserved - to be defined in a future version of MATLAB
-    % handles    empty - handles not created until after all CreateFcns called
-
-    % Hint: popupmenu controls usually have a white background on Windows.
-    %       See ISPC and COMPUTER.
     if ispc && isequal(get(hObject,'BackgroundColor'),...
             get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
@@ -264,10 +189,6 @@ function labels_CreateFcn(hObject, eventdata, handles)
 
 % --- Executes on button press in add_files.
 function add_files_Callback(hObject, eventdata, handles)
-    % hObject    handle to add_files (see GCBO)
-    % eventdata  reserved - to be defined in a future version of MATLAB
-    % handles    structure with handles and user data (see GUIDATA)
-
     % This is where I find the files that we are to annotate.
     % We change dir so the user sees the previous place he searched.
     ifo = handles.image_files_offset;
@@ -340,9 +261,6 @@ function retimg = put_image_in_axis (input_image, axis_handler, handles)
 
 % --- Called when the a button is pressed on the figure/image
 function button_pressed_on_image(hObject, eventdata)
-    % hObject       is the handle to the related object.
-    % eventdata     I have no idea what Matlab puts here.
-
     %initialize handles.
     handles = guidata(hObject);
 
@@ -611,7 +529,7 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
         ret_handles = handles;
         return; 
     end% we have already shown an error.
-    
+
     % We 'officialize' the selection
     handles.list_selected_file = offset;
 
@@ -639,11 +557,6 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
 
 % --- Executes on button press in zoom_toggle.
 function zoom_toggle_Callback(hObject, eventdata, handles)
-    % hObject    handle to zoom_toggle (see GCBO)
-    % eventdata  reserved - to be defined in a future version of MATLAB
-    % handles    structure with handles and user data (see GUIDATA)
-
-    % Hint: get(hObject,'Value') returns toggle state of zoom_toggle
     zoom_toggle_state = get(hObject, 'Value');
     h = zoom;
 
@@ -663,11 +576,6 @@ function zoom_toggle_Callback(hObject, eventdata, handles)
 
 % --- Executes on button press in grab_toggle.
 function grab_toggle_Callback(hObject, eventdata, handles)
-    % hObject    handle to grab_toggle (see GCBO)
-    % eventdata  reserved - to be defined in a future version of MATLAB
-    % handles    structure with handles and user data (see GUIDATA)
-
-    % Hint: get(hObject,'Value') returns toggle state of grab_toggle
     state = get(hObject, 'Value');
     h = pan;
 
@@ -688,11 +596,6 @@ function grab_toggle_Callback(hObject, eventdata, handles)
 % --- Executes on button press in correct_toggle.
 % this function basically changes the onclick callback function.
 function correct_toggle_Callback(hObject, eventdata, handles)
-    % hObject    handle to correct_toggle (see GCBO)
-    % eventdata  reserved - to be defined in a future version of MATLAB
-    % handles    structure with handles and user data (see GUIDATA)
-
-    % Hint: get(hObject,'Value') returns toggle state of correct_toggle
     state = get(hObject, 'Value');
 
     if state == 0
@@ -712,9 +615,6 @@ function correct_toggle_Callback(hObject, eventdata, handles)
 
 % --- Executes on button press in add_ftp.
 function add_ftp_Callback(hObject, eventdata, handles)
-% hObject    handle to add_ftp (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
     % deactivate it for now
     return;
     [filename, pathname, handles.ftp_struct] = ...
@@ -762,10 +662,6 @@ function add_ftp_Callback(hObject, eventdata, handles)
 
 % --- Executes on button press in add_ssh.
 function add_ssh_Callback(hObject, eventdata, handles)
-% hObject    handle to add_ssh (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
     % We create the ssh_struct.
     s.server = handles.config.ssh_server;
     s.username = handles.config.ssh_username;
@@ -778,10 +674,8 @@ function add_ssh_Callback(hObject, eventdata, handles)
         msgbox(msgboxText,'Configuration error', 'error');
         return;
     end
-    
-    
-    % Get the file list.
 
+    % Get the file list.
     [filename, pathname] = ssh_getlist(handles.ssh_struct);
 
     ifo = handles.image_files_offset;
