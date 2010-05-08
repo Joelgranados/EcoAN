@@ -22,16 +22,27 @@ function conf_struct = annotation_conf(conf_file, input_conf_struct, action)
                 break;
             end
 
-            % Lets ignore stuff, we are interested in lines that start with
-            % 's', 'd' or 'u'
+            % Lets ignore stuff
             if length(line) >= 11 && strcmp(line(1:10),'ftp_server') == 1
                 conf_struct.ftp_server = line(12:end);
+
             elseif length(line) >= 8 && strcmp(line(1:7), 'ftp_dir') == 1
                 conf_struct.ftp_dir = line(9:end);
+
             elseif length(line) >= 13 && strcmp(line(1:12), 'ftp_username') == 1
                 conf_struct.ftp_username = line(14:end);
+
             elseif length(line) >= 10 && strcmp(line(1:9), 'cache_dir') == 1
                 conf_struct.cache_dir = line(11:end);
+
+            elseif length(line) >= 11 && strcmp(line(1:10), 'ssh_server') == 1
+                conf_struct.ssh_server = line(12:end);
+
+            elseif length(line) >= 13 && strcmp(line(1:12), 'ssh_username') == 1
+                conf_struct.ssh_username = line(14:end);
+
+            elseif length(line) >= 8 && strcmp(line(1:7), 'ssh_dir') == 1
+                conf_struct.ssh_dir = line(9:end);
             end
         end
         fclose(fd);
