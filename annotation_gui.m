@@ -661,6 +661,7 @@ function add_ssh_Callback(hObject, eventdata, handles)
 
     % Get the file list.
     [filename, pathname] = ssh_getlist(handles.ssh_struct);
+    if ~ischar(filename(1)) && ~iscellstr(filename(1)); return; end;
 
     ifo = handles.image_files_offset;
 
