@@ -64,6 +64,9 @@ function annotation_gui_OpeningFcn(hObject, eventdata, handles, varargin)
     % The ftp stuff.
     handles.ftp_struct = -1;
 
+    % The ssh stuff
+    handles.ssh_struct = -1;
+
     % The configuration stuff.  FIXME: we should have a function that reads
     % everything into the variable.
     handles.config = annotation_conf('annotation.conf', 0, 'r');
@@ -98,9 +101,9 @@ function file_list_Callback(hObject, eventdata, handles)
     end
 
     % We save before doing anything.  This will allow the lock to be
-    % released in the ftp server.
+    % released in the server.
     if handles.list_selected_file ~= -1
-        annotation_save_Callback(0,0, handles);
+        annotation_save(handles, handles.curr_ann);
     end
 
     % see what the user has chossen
@@ -119,25 +122,6 @@ function file_list_CreateFcn(hObject, eventdata, handles)
         set(hObject,'BackgroundColor','white');
     end
 
-
-% --- Executes on button press in annotation_save.
-function annotation_save_Callback(hObject, eventdata, handles)
-    if handles.curr_ann.ftp == 0
-        annotation_save(handles.curr_ann);
-
-    elseif handles.curr_ann.ftp == 1
-        % then we save to ftp. :)
-        annotation_save(handles.curr_ann); % save localy to cache.
-
-        [path, file_name, extension] = fileparts(handles.curr_ann.file_name);
-        file_name = strcat(file_name, extension);
-        [ret_ftp, error_m] = ftp_savefile(handles.ftp_struct, ...
-            file_name, handles.config.cache_dir);
-
-        % FIXME : Handle the possible error.  It has already given a 
-        % message.
-    end
-
 % --- Executes on button press in clear_annotation.
 function clear_annotation_Callback(hObject, eventdata, handles)
     % We need to reset the reg_offset and make sure that regions(1) is -1.
@@ -154,9 +138,9 @@ function clear_annotation_Callback(hObject, eventdata, handles)
 % --- Executes on button press in exit.
 function exit_Callback(hObject, eventdata, handles)
     % We save before doing anything.  This will allow the lock to be
-    % released in the ftp server.
+    % released in the server.
     if handles.list_selected_file ~= -1
-        annotation_save_Callback(0,0, handles);
+        annotation_save(handles, handles.curr_ann);
     end
 
     close(handles.figure1);
