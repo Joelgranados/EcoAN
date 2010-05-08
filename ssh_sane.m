@@ -8,8 +8,8 @@ function ret_sane = ssh_sane(ssh_struct)
     eb = java.io.BufferedReader(java.io.InputStreamReader(eo.getErrorStream()));
     ob = java.io.BufferedReader(java.io.InputStreamReader(eo.getInputStream()));
 
-    command_error = eb.readLine();
-    command_output = ob.readLine();
+    command_error = char(eb.readLine());
+    command_output = char(ob.readLine());
     eo.destroy();
 
     if ~isempty(command_error)
