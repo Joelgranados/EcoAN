@@ -3,7 +3,7 @@ function ret_sane = ssh_sane(ssh_struct)
     ret_sane = 0;
 
     % Check if we can do a simple echo.
-    command = ['ssh ', ssh_struct.user, '@', ssh_struct.server, ' echo test'];
+    command = ['ssh ', ssh_struct.username, '@', ssh_struct.server, ' echo test'];
     eo = java.lang.Runtime.getRuntime().exec(command);
     eb = java.io.BufferedReader(java.io.InputStreamReader(eo.getErrorStream()));
     ob = java.io.BufferedReader(java.io.InputStreamReader(eo.getInputStream()));
@@ -26,7 +26,7 @@ function ret_sane = ssh_sane(ssh_struct)
     end
 
     % Check and see if the given dir is valid.
-    command = ['ssh ' , ssh_struct.user, '@', ssh_struct.server, ' cd ', ssh_struct.dir];
+    command = ['ssh ' , ssh_struct.username, '@', ssh_struct.server, ' cd ', ssh_struct.dir];
     eo = java.lang.Runtime.getRuntime().exec(command);
     eb = java.io.BufferedReader(java.io.InputStreamReader(eo.getErrorStream()));
     ob = java.io.BufferedReader(java.io.InputStreamReader(eo.getInputStream()));

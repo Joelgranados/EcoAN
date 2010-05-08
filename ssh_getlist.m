@@ -9,7 +9,7 @@ function [filename, pathname] = ssh_getlist(ssh_struct)
 
     % We list the whole content of the directory and create the file list.
     % we use -l so the list is vertical.
-    command = ['ssh ', ssh_struct.user, '@', ssh_struct.server,...
+    command = ['ssh ', ssh_struct.username, '@', ssh_struct.server,...
             ' ls -1 ', ssh_struct.dir];
     [s, w] = unix(command);
 

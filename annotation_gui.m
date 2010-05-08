@@ -24,7 +24,7 @@ function varargout = annotation_gui(varargin)
 
     % Edit the above text to modify the response to help annotation_gui
 
-    % Last Modified by GUIDE v2.5 27-Apr-2010 13:33:23
+    % Last Modified by GUIDE v2.5 08-May-2010 11:23:05
 
     % Begin initialization code - DO NOT EDIT
     gui_Singleton = 1;
@@ -604,28 +604,14 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
     % We get the selected file name.
     selected_file = handles.list_file_paths(offset);
 
-    % If its an ftp we trick the algorithm that its looking at a local
-    % file in the cache.
-    temp_file = char(selected_file);
-    if length(temp_file) > 6 && strcmp(temp_file(1:6), 'ftp://') == 1
-        % then its an ftp file.
-        % We first make sure we put it in the cache...
-        [file_path, ann_path, handles.ftp_struct] =...
-            ftp_getfile(handles.ftp_struct, temp_file(7:end),...
-            handles.config.cache_dir);
-
-        % if it failes we return..
-        if file_path == 0
-            % something went wrong with the ftp.  an error has already
-            % been displayed.
-            success = 0;
-            ret_handles = handles;
-            return
-        else
-            selected_file = file_path;
-        end
-    end
-
+    % We make sure that the file is in the local filesystem
+    [local_file, success, handles] =...
+        annotation_getfile(handles, selected_file);
+    if ~success
+        ret_handles = handles;
+        return; 
+    end% we have already shown an error.
+    
     % We 'officialize' the selection
     handles.list_selected_file = offset;
 
@@ -633,20 +619,14 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
     set(handles.file_list, 'Value', handles.list_selected_file);
 
     % We put the image in the axis.
-    img = put_image_in_axis (selected_file, axis_handler, handles);
+    img = put_image_in_axis (local_file, axis_handler, handles);
 
     % Modify handles.ann_curr to reflect the change
-    handles.curr_ann = annotation_read(selected_file);
+    handles.curr_ann = annotation_read(local_file);
     handles.curr_ann = annotation_put_in_axis (handles.curr_ann,...
         @button_press_on_line);
     handles.curr_ann.image = size(img);
-    
-    % FIXME : there has got to be a better way!!!!
-    if length(temp_file) > 6 && strcmp(temp_file(1:6), 'ftp://') == 1
-        handles.curr_ann.ftp = 1;
-    else
-        handles.curr_ann.ftp = 0;
-    end
+    handles.curr_ann = annotation_settype(selected_file, handles.curr_ann);
 
     % FIXME : HACK!!!
     %For some reason Matlab does not keep the handles with the guidata call
@@ -735,6 +715,8 @@ function add_ftp_Callback(hObject, eventdata, handles)
 % hObject    handle to add_ftp (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+    % deactivate it for now
+    return;
     [filename, pathname, handles.ftp_struct] = ...
         ftp_getlist(handles.ftp_struct);
 
@@ -753,7 +735,61 @@ function add_ftp_Callback(hObject, eventdata, handles)
     handles.image_files(ifo).image_files = filename;
     handles.image_files(ifo).directory = pathname;
     handles.image_files(ifo).full_paths = strcat(pathname,filename);
-    handles.image_files_current_dir = char(pathname);
+    %handles.image_files_current_dir = char(pathname);
+
+    % Now I have to add those files to the list in file_list
+    % create a temp var with all the names we have up until now
+    file_names_temp = [];
+    for i = 1:ifo
+        file_names_temp = cat(2,file_names_temp,...
+            cellstr(handles.image_files(i).full_paths));
+    end
+    % I don't want repeated values in the list.
+    file_names_temp = unique(file_names_temp);
+
+    % Set the values in the file path list in the gui.
+    set(handles.file_list,'String',file_names_temp,'Value',1);
+
+    % Keep track of the new list so we don't have to calculate it twice
+    handles.list_file_paths = file_names_temp;
+
+    % Keep track of the image_file_offset.
+    handles.image_files_offset = handles.image_files_offset + 1;
+
+    % Remember to save the changes.
+    guidata(hObject, handles);
+
+
+% --- Executes on button press in add_ssh.
+function add_ssh_Callback(hObject, eventdata, handles)
+% hObject    handle to add_ssh (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+    % We create the ssh_struct.
+    s.server = handles.config.ssh_server;
+    s.username = handles.config.ssh_username;
+    s.dir = handles.config.ssh_dir;
+    handles.ssh_struct = s;
+    if isempty(s.server) || isempty(s.username) || isempty(s.dir)
+        % We cant do anything without this info.
+        msgboxText{1} = ['Please check your configuration and make sure',...
+            ' you have server, username and dir specified for ssh.'];
+        msgbox(msgboxText,'Configuration error', 'error');
+        return;
+    end
+    
+    
+    % Get the file list.
+
+    [filename, pathname] = ssh_getlist(handles.ssh_struct);
+
+    ifo = handles.image_files_offset;
+
+    handles.image_files(ifo).image_files = filename;
+    handles.image_files(ifo).directory = pathname;
+    handles.image_files(ifo).full_paths = strcat(pathname,filename);
+    %handles.image_files_current_dir = char(pathname);
 
     % Now I have to add those files to the list in file_list
     % create a temp var with all the names we have up until now

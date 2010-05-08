@@ -7,7 +7,7 @@ function ret_val = ssh_exists(ssh_struct, file_name)
 
     % We list the whole content of the directory and create the file list.
     % we use -l so the list is vertical.
-    command = ['ssh ', ssh_struct.user, '@', ssh_struct.server,...
+    command = ['ssh ', ssh_struct.username, '@', ssh_struct.server,...
             ' ls ', ssh_struct.dir, '/', file_name];
     [s, w] = unix(command);
 

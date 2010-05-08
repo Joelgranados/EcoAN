@@ -9,7 +9,7 @@ function ret_val = ssh_upload(ssh_struct, local_file)
 
     % We list the whole content of the directory and create the file list.
     % we use -l so the list is vertical.
-    command = ['scp ', local_file, ' ', ssh_struct.user, '@', ssh_struct.server,...
+    command = ['scp ', local_file, ' ', ssh_struct.username, '@', ssh_struct.server,...
             ':', ssh_struct.dir];
     [s, w] = unix(command);
 

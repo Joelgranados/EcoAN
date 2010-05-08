@@ -7,7 +7,7 @@ function ret_val = ssh_download(ssh_struct, file_name, local_dir)
 
     % We list the whole content of the directory and create the file list.
     % we use -l so the list is vertical.
-    command = ['scp ', ssh_struct.user, '@', ssh_struct.server,...
+    command = ['scp ', ssh_struct.username, '@', ssh_struct.server,...
             ':', ssh_struct.dir, '/', file_name, ' ', local_dir];
     [s, w] = unix(command);
 
