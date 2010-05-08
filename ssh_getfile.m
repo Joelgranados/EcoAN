@@ -39,13 +39,28 @@ function [ret_file_path, ret_ann_path] = ssh_getfile(ssh_struct, file_name, cach
 
     % DOWNLOAD THE ANNOTATION
     file_name_ann = strcat(file_name,'.ann');
-    if ~ssh_download(ssh_struct, file_name_ann, cache_dir)
-        return;
+    ann_exists = ssh_exists(ssh_struct, file_name_ann);
+    if ann_exists
+        if ~ssh_download(ssh_struct, file_name_ann, cache_dir)
+            return;
+        end
+
+    else
+        % we create the annotation localy just in case.
+        local_file_name_ann = [cache_dir, '/', file_name_ann];
+        [fd,syserrmsg]=fopen(local_file_name_ann,'wt');
+        if (fd==-1),
+            msgboxText{1} =  strcat('Error downloading annotation file: ', ...
+                local_file_name_ann, '.  Try again at a latter time.');
+            msgbox(msgboxText,'SSH download failed', 'error');
+            ret_success = 0;
+            return;
+        end;
+        fclose(fd);
     end
 
     % HURRAY, WE HAVE DOWNLOADED A FILE!!!!
     ret_ann_path = strcat(cache_dir, '/', file_name_ann);
     ret_file_path = strcat(cache_dir, '/', file_name);
-
 
 end
