@@ -39,7 +39,7 @@ function [file_path, success, ret_handles] =...
         success = 1;
         return
 
-    elseif exists(temp_file) == 2 %is a file
+    elseif exist(temp_file) == 2 %is a file
         file_path = temp_file;
 
         % Change the state

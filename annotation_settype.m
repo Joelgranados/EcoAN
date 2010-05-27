@@ -7,7 +7,7 @@ function ret_ann = annotation_settype(file_name, ann)
     elseif length(temp_file) > 6 && strcmp(temp_file(1:6), 'ssh://') == 1
         ann.ftp = 0;
         ann.ssh = 1;
-    elseif exists(temp_file) == 2 %is a file
+    elseif exist(temp_file) == 2 %is a file
         ann.ftp = 0;
         ann.ssh = 0;
     end
