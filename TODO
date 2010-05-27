@@ -10,3 +10,6 @@
     picture xml file.
 
 *   Bigger font: Have bigger font for the annotation.
+
+*   Reviewd feature: Add a feature to identify the files that have already
+    been reviewd.  Include Persons name and date of review.
