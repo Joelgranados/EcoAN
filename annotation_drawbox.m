@@ -7,8 +7,8 @@ set(l, 'ButtonDownFcn', callback);
 % put the label on top of the box.
 % 15 pix (when we can) so the message can be seen.
 if pts(2) > 15
-    t = text(pts(1), pts(2)-15, char(lbl), 'Color', color);
+    t = text(pts(1), pts(2)-15, char(lbl), 'Color', color, 'FontSize', 16);
 else
-    t = text(pts(1), pts(2), char(lbl), 'Color', color);
+    t = text(pts(1), pts(2), char(lbl), 'Color', color, 'FontSize', 16);
 end
 
