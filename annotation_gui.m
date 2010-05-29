@@ -691,3 +691,58 @@ function add_ssh_Callback(hObject, eventdata, handles)
 
     % Remember to save the changes.
     guidata(hObject, handles);
+
+
+% --- Executes on button press in review_checkbox.
+function review_checkbox_Callback(hObject, eventdata, handles)
+% hObject    handle to review_checkbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of review_checkbox
+
+
+
+function date_text_Callback(hObject, eventdata, handles)
+% hObject    handle to date_text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of date_text as text
+%        str2double(get(hObject,'String')) returns contents of date_text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function date_text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to date_text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function reviewer_text_Callback(hObject, eventdata, handles)
+% hObject    handle to reviewer_text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of reviewer_text as text
+%        str2double(get(hObject,'String')) returns contents of reviewer_text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function reviewer_text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to reviewer_text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
