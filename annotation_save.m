@@ -19,6 +19,9 @@ function annotation_save(handles, annotation)
     fprintf(fd,'Image filename : "%s"\n',char(file_name));
     fprintf(fd,'\n');
     fprintf(fd,'# Top left pixel co-ordinates : (1, 1)\n');
+    fprintf(fd,'\n');
+    fprintf(fd,'Review %s %s', char(annotation.review.date),...
+        char(annotation.review.reviewer));
 
     % The last region is always empty.
     size_regions = size(annotation.regions, 2);

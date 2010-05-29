@@ -9,6 +9,8 @@ function annotation=annotation_read(file_name)
     annotation.file_name = file_name;
     annotation.reg_offset = 0;
     annotation.regions(1) = annotation_init;
+    annotation.review.reviewer = 'No_Reviewer';
+    annotation.review.date = 'No_Review_Date';
 
     % If there is no file we return an empty annotation without saving
     % The user can save with the save button and we will probably save
@@ -82,6 +84,11 @@ function annotation=annotation_read(file_name)
                     % I don't know what original label is.
                     %record.objects(obj).label=char(lbl);
                     %record.objects(obj).orglabel=char(orglbl);
+
+                case 8, [date, reviewer]=strread(line,matchstrs(matchnum).str);
+                    annotation.review.reviewer = char(reviewer);
+                    annotation.review.date = char(date);
+
                 otherwise, %fprintf('Skipping: %s\n',line);
             end;
         end;
@@ -124,5 +131,8 @@ function s=initstrings
 
     s(7).matchlen=8;
     s(7).str='Original label for object %d %q : %q';
+    
+    s(8).matchlen=6;
+    s(8).str='Review %s %s';
 
 return

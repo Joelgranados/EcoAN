@@ -530,6 +530,9 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
     handles.curr_ann.image = size(img);
     handles.curr_ann = annotation_settype(selected_file, handles.curr_ann);
 
+    % modify the review items.
+    handles = update_review_items(handles);
+
     % FIXME : HACK!!!
     %For some reason Matlab does not keep the handles with the guidata call
     % this is a workaround.
@@ -695,54 +698,57 @@ function add_ssh_Callback(hObject, eventdata, handles)
 
 % --- Executes on button press in review_checkbox.
 function review_checkbox_Callback(hObject, eventdata, handles)
-% hObject    handle to review_checkbox (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+    state = get(handles.review_checkbox, 'Value');
+    if state == 1
+        % This means the user wants to review.  let him modify the reviewer
+        % text and put todays date in the date text.
+        rev_date = datestr(now, 'dd-mm-yyyy');
+        rev_rev = 'Default_Reviewer';
+        set(handles.date_text, 'String', rev_date);
+        set(handles.reviewer_text, 'Enable', 'on');
+        set(handles.reviewer_text, 'String', rev_rev);
+        handles.curr_ann.review.date = rev_date;
+        handles.curr_ann.review.reviewer = rev_rev;
+    elseif state == 0
+        % turn off reviewes.
+        % FIXME: there could be an issue with the text left in date and
+        % reviewer text boxes.
+        set(handles.reviewer_text, 'Enable', 'off');
+    end
 
-% Hint: get(hObject,'Value') returns toggle state of review_checkbox
-
-
+    % Remember to save the changes.
+    guidata(hObject, handles);
 
 function date_text_Callback(hObject, eventdata, handles)
-% hObject    handle to date_text (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of date_text as text
-%        str2double(get(hObject,'String')) returns contents of date_text as a double
-
-
+    
 % --- Executes during object creation, after setting all properties.
 function date_text_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to date_text (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
 
-
-
 function reviewer_text_Callback(hObject, eventdata, handles)
-% hObject    handle to reviewer_text (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of reviewer_text as text
-%        str2double(get(hObject,'String')) returns contents of reviewer_text as a double
-
+    handles.curr_ann.review.reviewer =...
+        get(handles.reviewer_text, 'String');
+    % Remember to save the changes.
+    guidata(hObject, handles);
 
 % --- Executes during object creation, after setting all properties.
 function reviewer_text_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to reviewer_text (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+function ret_handles = update_review_items(handles)
+    review_checkbox_state = get(handles.review_checkbox, 'Value');
+    if review_checkbox_state == 1
+        % They are reviewing, dont change the contents.
+        handles.curr_ann.review.date = get(handles.date_text, 'String');
+        handles.curr_ann.review.reviewer = get(handles.reviewer_text, 'String');
+    elseif review_checkbox_state == 0
+        % They are not reviewing and we should show the file info.  We
+        % don't change curr_ann because it already has the file info.
+        set(handles.reviewer_text, 'String', handles.curr_ann.review.reviewer);
+        set(handles.date_text, 'String', handles.curr_ann.review.date);
+    end
+    ret_handles = handles;
