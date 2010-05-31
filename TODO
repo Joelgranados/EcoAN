@@ -8,6 +8,3 @@
 
 *   Incorporate picture metadata:  We should have a list of metadata from the
     picture xml file.
-
-*   Reviewd feature: Add a feature to identify the files that have already
-    been reviewd.  Include Persons name and date of review.
