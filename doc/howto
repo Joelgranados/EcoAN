@@ -87,3 +87,14 @@ This is a quick How-to about the annotation application used for the phenology p
     2. The cache. All the images and the annotation will be in the cache directory.
        The cache directory is defined in the annotation.conf file.
 
+
+10. Doing reviews:
+    1. How do I make a review?
+       You need to toggle the review state.  When the review state is on, the
+       review box on the bottom right activates.  By default the it has the
+       current date and a default reviewer name.  The user mush change the name
+       to specify the person doing the reviews.
+    2. How do I change the reviewer name?
+       You only need to type your name on the reviewer text area.
+    3. How do I turn the review state off?
+       Just press the review checkbox to toggle the review state on and off.
