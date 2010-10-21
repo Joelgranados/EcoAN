@@ -538,6 +538,13 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
     % modify the review items.
     handles = update_review_items(handles);
 
+    % make sure we reinitialize the relevant correction vars.
+    % Offset of region to correct.  This is only valid when correcting.  It
+    % should be -1 otherwise.
+    handles.correction.offset = -1;
+    handles.correction.box.l = -1;
+    handles.correction.box.t = -1;
+
     % FIXME : HACK!!!
     %For some reason Matlab does not keep the handles with the guidata call
     % this is a workaround.
