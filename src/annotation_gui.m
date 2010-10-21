@@ -154,6 +154,21 @@ function exit_Callback(hObject, eventdata, handles)
 function labels_Callback(hObject, eventdata, handles)
     handles.label_selected_label = get(hObject, 'Value');
 
+    if handles.correction.active == 1 && handles.correction.offset ~= -1
+        % handles.label_selected_label is just the offset.
+        l_strings = get(handles.labels, 'String');
+        l_offset = handles.label_selected_label;
+
+        bbl = handles.correction.box;
+        set(bbl.t, 'String', l_strings(l_offset));
+
+        selected_offset = handles.correction.offset;
+        set(handles.curr_ann.regions(selected_offset).bboxline.t, ...
+            'String', l_strings(l_offset));
+        handles.curr_ann.regions(selected_offset).label = ...
+            l_strings(l_offset);
+    end
+
     % Remember to save the changes.
     guidata(hObject, handles);
 
