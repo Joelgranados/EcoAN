@@ -140,19 +140,6 @@ function file_list_CreateFcn(hObject, eventdata, handles)
         set(hObject,'BackgroundColor','white');
     end
 
-% --- Executes on button press in clear_annotation.
-function clear_annotation_Callback(hObject, eventdata, handles)
-    % We need to reset the reg_offset and make sure that regions(1) is -1.
-    for i = 1:handles.curr_ann.reg_offset
-        handles.curr_ann.regions(i).active = 0;
-        bbl = handles.curr_ann.regions(i).bboxline;
-        set(bbl.l, 'Visible', 'off');
-        set(bbl.t, 'Visible', 'off');
-    end
-
-    % Remember to save the changes.
-    guidata(hObject, handles);
-
 % --- Executes on button press in exit.
 function exit_Callback(hObject, eventdata, handles)
     % We save before doing anything.  This will allow the lock to be
