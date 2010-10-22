@@ -1,36 +1,150 @@
-Some hints on how to make this work:
+This software is designed to annotate images with boxes.  It keeps the
+annotations in text files with the same image file name and a ".ann" extension.
 
+Characteristics:
+* It's all coded in matlab.  I tested with matlab 2009, not really sure what the
+  requirements are with other matlab releases.  If you have a problem, just drop
+  me a mail <joel.granados@gmail.com >
+
+* All the development and testing has been done in linux (fedora 13). I have
+  used some linux specific commands to implement the ssh connection feature.
+  To my knowledge these calls only work in a linux machine and will probably
+  explode if you tried it on a windows box.  The rest of the features should
+  work fine in a windows machine.
+
+List of features:
+1. Zoom: The zoom button turns on/off the zoom state.  Once in zoom state you
+   can zoom-in and zoom-out of the image that is located in the main window.  To
+   zoom in you can double-click the image; this will zoom into the part you
+   clicked.  When in the zoom state you can also specify a zoom zone with a
+   square.  The application will make the selected square of the size of the
+   main window.  Finally if you have a mouse with a middle wheel, this will zoom
+   in/out.
+
+2. Grab: When you are zoomed in an image you might want to move around to see
+   adjacent sections.  This is made possible by the grab functionality.  When
+   you push the grab button you enter the Grab state.  When in Grab state you
+   can grab the image and move it to other adjacent sections.  Note that the
+   grab is only relevant when you are zoomed in the image.
+
+3. Correct: Annotation can be wrong.  The correct button is designed to enter a
+   Correction state.  In this state the user can correct the existing
+   annotations.  In the Correction state you can select existing annotations by
+   clicking on their boarders.  When selected you can change the label or you
+   can erase it altogether by pressing "d".
+
+4. Review: The review panel goes hand in hand with the Correction state.  It is
+   used to keep track of the person doing the corrections.  To activate the
+   review feature you must press the checkbox named Review Mode.  You must also
+   place you name in the Reviewer text area.  The date is placed automatically.
+   The reviewer information will be kept together with the rest of annotation
+   info.
+
+5. Add Files: This button allows you to search for the pictures.  You should use
+   this button to search for pictures in the local machine.
+
+6. Add SSH: This button allows you to search for the pictures in a remote
+   server.  Please refer to the section called "Setting up the ssh connectivity"
+   to learn how to make this feature work.
+
+7. File List: This is a list of all the files that you selected to be annotated.
+   When you click on a file in the list, the previous file annotation will be
+   saved and the new image will be displayed.  Note that this is the way to save
+   the annotations.  There is no annotation button.
+
+8. Exit: Button to exit.
+
+Suggested workflows:
+1. Starting the application:
+    To start you need to initialize matlab.  After you are in the matlab
+    console, you must look for the directory where you have placed the
+    annotation files.  Search for the file named annotation_gui.m and "run" the
+    file.  To run the file you can right-click and select "run".
+    For those of you that realize that this is a bit too much work, you can use
+    the -r matlab argument to make an icon or an alias.  Let's assume that my
+    annotation files are located at "/tmp/annotation" directory.  I can execute
+    the following command to go directly to the application: `matlab -r "cd
+    /tmp/annotation ; annotation_gui"`.  You can also use that line to create an
+    alias or an icon.
+
+2 Creating an annotation:
+    a. Be sure that you are not in Zoom, Grab or Correct mode.
+    b. Make sure that the label contains the string that you will use for the
+       annotation. (You can change the contents of the label by clicking the
+       arrow at the far right).
+    c. Place the cursor where you want to start the annotation square.
+    d. Click and hold the click while you drag the square to the end position.
+    e. When you are satisfied with the result let go of the click and a square
+       should appear with the selected label.
+    f. If you want to modify the annotation square or the annotation label you
+       should use the left-click.  When you left-click and hold  in the
+       vicinity of the newly created square you can resize it as you please.
+       Notice that changes in the label will also be visible when you left-click
+       near the newly created square.
+
+3. Finding something interesting: When your target objects are small you must
+   use the zoom/grab feature
+    a. Look at the picture from afar and zoom into points of interest.  Points
+       where you suspect that you might find something interesting.
+    b. You can change from the zoom state to the grab state and move around the
+       place of interest.
+    c. After you are convinced that you have thoroughly searched a specific
+       zone, zoom out and repeat a and b.
+
+4. Correcting
+    a. Before you start correcting remember to activate the Review Mode and put
+       your name on the text area.  Try to be consistent with the way you type
+       in your name.
+    b. Try to go through the images in the order they appear in the File List.
+    c. If you see that the square is correct and you need only to change the
+       label, select the square (it should turn green) and then change the label
+       in the label list.
+    d. If you see that the whole annotation is incorrect, you can delete the
+       selected square (It should be green), by pressing "d".  Afterwards, you
+       will have to create a new annotation all together.
+
+Possible Problems:
+* Ghost Squares: When you delete an annotation the application doesn't actually
+    delete the square.  It makes the square invisible.  This could be a problem
+    when "erased" squares are very close to visible squares.  You might
+    inadvertently select a ghost square.
+    The solution to this is to try to select the target annotation from another
+    side.
+
+Setting up the ssh connectivity:
 1. Everything is done using ssh passwordless connection.  You have to set this
    up before doing anything.  Follow any tutorial on setting up the ssh key
-   between two boxes.  You can start on http://www.debian-administration.org/articles/152
-   You know that you have configured this correctly when you can do a `ssh user@server ls`
-   without any password.
+   between two boxes.  You can start on http://www.debian-administration.org/\
+   articles/152 You know that you have configured this correctly when you can
+   do a `ssh user@server ls` without any password.
 
-2. Watch out for errors with the ssh command.  I had to change my hosts file because
-   the server I was connecting too had its reverse DNS busted.
+2. Watch out for errors with the ssh command.  I had to change my hosts file
+   because the server I was connecting too had its reverse DNS busted.
 
-3. The connection might take some time, specially if you have a slow connection.
-   Good thing is that in the worst case scenario you will have to download the
-   images only once.
+3. The connection might take some time, specially if you have a slow
+   connection. Good thing is that in the worst case scenario you will have to
+   download the images only once (There is a cache).
 
-4. This is not tested on windows.  I'm guessing that the commands just need translating
-   from unix to windows.  Some work for the future.
+4. This is not tested on windows.  I'm guessing that the commands just need
+   translating from unix to windows.  Some work for the future.
 
-5. Make sure you place the exact path to the directory were the png files are located
-   in the server.  place this under ssh_dir in the config file.
+5. Make sure you place the exact path to the directory were the png files are
+   located in the server.  place this under ssh_dir in the config file.
 
-6. Make sure to place the user that should be used for the ssh connection.  This is
-   the user that for which you configured the ssh passwordless connection.
+6. Make sure to place the user that should be used for the ssh connection.
+   This is the user that for which you configured the ssh passwordless
+   connection.
 
-7. Make sure you specify the cache directory.  It defaults to cache in the current
-   dir.
+7. Make sure you specify the cache directory.  It defaults to cache in the
+   current dir.
 
-8. On the "local machine" edit the ~/.ssh/config file so that you are sure that
-   your newly created credentials are used.  This is very related to 1.
+8. On the "local machine" edit the ~/.ssh/config file so that you are sure
+   that your newly created credentials are used.  This is very related to 1.
    <snip>
    Host example.com
    User username
    IdentityFile ~/PATH/TO/RSA
    <snap>
 
-9. It only works with png files (for the moment).  It would be easy to extend it.
+9. It only works with png files (for the moment).  It would be easy to extend
+   it.
