@@ -475,7 +475,7 @@ function on_key_press_callback(hObject, eventdata)
 
     elseif (strcmp(eventdata.Character, 'd') == 1 ||...
             strcmp(eventdata.Character, 'D') == 1) &&...
-            handles.correction.active == 1
+           handles.correction.active == 1 && handles.correction.offset >= 0
         % we need to deactivate the region that is marked by
         % handles.correction.offset. remove the green and red squares.
         % fist deactivate the region
