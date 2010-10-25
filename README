@@ -111,6 +111,17 @@ Possible Problems:
     The solution to this is to try to select the target annotation from another
     side.
 
+* Ghost Squares II: In some images I can see that there are some labels that
+    have no square.  I don't yet know what is causing this.  Note that there is
+    no easy way of getting rid of these false annotations.  In the ann file this
+    appears like a square that starts and ends in the same spot.
+
+* "d" scrolls the label list instead of deleting:  When I selected a square for
+    correction, changed the label with the mouse and finally tried to delete it
+    by pressing "d"; this would cause the label list to advance.  To get out of
+    this situation just select the square of interest with the mouse once more.
+
+
 Setting up the ssh connectivity:
 1. Everything is done using ssh passwordless connection.  You have to set this
    up before doing anything.  Follow any tutorial on setting up the ssh key
