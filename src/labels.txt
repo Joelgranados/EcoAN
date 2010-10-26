@@ -4,6 +4,7 @@ CassiopeTetragona-senescent
 SalixArtica-bud
 SalixArtica-male-flower
 SalixArtica-female-flower
+SalixArtica-flower-sex_unknown
 SalixArtica-hair
 Dryas-bud
 Dryas-flower
