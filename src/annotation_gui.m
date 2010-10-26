@@ -357,6 +357,15 @@ function button_pressed_on_image(hObject, eventdata)
         ymin=min(p(:,2));
         ymax=max(p(:,2));
 
+
+	% HACK, HACK, HACK!!! We don't want to create boxes that are size 0
+	%   don't really know what will happen if we have a restreached of
+	%   size zero.
+	if xmin == xmax || ymin == ymax
+		guidata(hObject, handles);
+		return;
+	end
+
         % Incremeant the offset.
         reg_offset = handles.curr_ann.reg_offset + 1;
         handles.curr_ann.reg_offset = reg_offset;
