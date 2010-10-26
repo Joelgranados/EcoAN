@@ -109,12 +109,17 @@ Possible Problems:
     when "erased" squares are very close to visible squares.  You might
     inadvertently select a ghost square.
     The solution to this is to try to select the target annotation from another
-    side.
+    side. 
+    UPDATE: I have patched the app so this does not occur.  I just checked the
+    object.active flag before selecting.
 
 * Ghost Squares II: In some images I can see that there are some labels that
     have no square.  I don't yet know what is causing this.  Note that there is
     no easy way of getting rid of these false annotations.  In the ann file this
     appears like a square that starts and ends in the same spot.
+    UPDATE: I have patched the app so these don't get created anymore.  What
+    was happening was that a single un-held click in the picture created a box
+    with size zero.
 
 * "d" scrolls the label list instead of deleting:  When I selected a square for
     correction, changed the label with the mouse and finally tried to delete it
