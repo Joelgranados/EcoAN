@@ -45,9 +45,11 @@ function annotation_save(handles, annotation)
     size_regions = size(annotation.regions, 2);
     for i=1:size_regions,
         % We only save the active regions.
-        if annotation.regions(i).active == 1
+        % We only save the regions with size > 0, bbox [xmin ymin xmax ymax]
+        bbox = annotation.regions(i).bbox;
+        if annotation.regions(i).active == 1 ...
+                && (bbox(1) < bbox(3) && bbox(2) < bbox(4))
             lbl = char(annotation.regions(i).label);
-            bbox = annotation.regions(i).bbox;
             fprintf(fd,'\n# Details for object %d ("%s")\n',i,lbl);
             fprintf(fd,'Bounding box for object %d "%s" (Xmin, Ymin) - (Xmax, Ymax) : (%d, %d) - (%d, %d)\n',i,lbl,bbox);
 
