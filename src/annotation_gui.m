@@ -51,8 +51,6 @@ function annotation_gui_OpeningFcn(hObject, eventdata, handles, varargin)
     handles.image_files(1).directory = '';
     handles.image_files(1).full_paths = [];
     handles.image_files_offset = 1;
-    handles.image_files_regex_string =...
-        '*.gif;*.jpg;*.png;*.jpeg,*.GIF;*.JPG;*.PNG;*.JPEG';
     handles.image_files_current_dir = pwd;
 
     % Current selected label in label pop up.  This is an offset.  Not a
@@ -188,10 +186,11 @@ function labels_CreateFcn(hObject, eventdata, handles)
 function add_files_Callback(hObject, eventdata, handles)
     % This is where I find the files that we are to annotate.
     % We change dir so the user sees the previous place he searched.
+    imagetypes = '*.gif;*.jpg;*.png;*.jpeg,*.GIF;*.JPG;*.PNG;*.JPEG';
+
     ifo = handles.image_files_offset;
     [filename, pathname, filterindex] =...
-        uigetfile(handles.image_files_regex_string,...
-        'Pick an image file', 'MultiSelect', 'on',...
+        uigetfile(imagetypes, 'Pick an image file', 'MultiSelect', 'on',...
         handles.image_files_current_dir);
 
     % Handle the cancel option
