@@ -79,12 +79,6 @@ function annotation_gui_OpeningFcn(hObject, eventdata, handles, varargin)
     handles.correction.box.t = -1;
     handles.correction.active = 0;
 
-    % The ftp stuff.
-    handles.ftp_struct = -1;
-
-    % The ssh stuff
-    handles.ssh_struct = -1;
-
     % The configuration stuff.  FIXME: we should have a function that reads
     % everything into the variable.
     handles.config = annotation_conf('annotation.conf', 0, 'r');
@@ -118,8 +112,7 @@ function file_list_Callback(hObject, eventdata, handles)
         return;
     end
 
-    % We save before doing anything.  This will allow the lock to be
-    % released in the server.
+    % We save before doing anything
     if handles.list_selected_file ~= -1
         annotation_save(handles, handles.curr_ann);
     end
@@ -558,7 +551,6 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
     handles.curr_ann = annotation_put_in_axis (handles.curr_ann,...
         @button_press_on_line);
     handles.curr_ann.image = size(img);
-    handles.curr_ann = annotation_settype(selected_file, handles.curr_ann);
 
     % modify the review items.
     handles = update_review_items(handles);
@@ -632,102 +624,6 @@ function correct_toggle_Callback(hObject, eventdata, handles)
         % purposes.
         handles.correction.active = 1;
     end
-
-    % Remember to save the changes.
-    guidata(hObject, handles);
-
-
-% --- Executes on button press in add_ftp.
-function add_ftp_Callback(hObject, eventdata, handles)
-    % deactivate it for now
-    return;
-    [filename, pathname, handles.ftp_struct] = ...
-        ftp_getlist(handles.ftp_struct);
-
-    % Do nothing if we did not get a ftp connection.  Mainly for when the
-    % user hits cancel.  The try catch thing is because Matlab is dumb.
-    try
-        if filename == 0
-            return;
-        end
-    catch exception
-        %nothing...
-    end
-
-    ifo = handles.image_files_offset;
-
-    handles.image_files(ifo).image_files = filename;
-    handles.image_files(ifo).directory = pathname;
-    handles.image_files(ifo).full_paths = strcat(pathname,filename);
-    %handles.image_files_current_dir = char(pathname);
-
-    % Now I have to add those files to the list in file_list
-    % create a temp var with all the names we have up until now
-    file_names_temp = [];
-    for i = 1:ifo
-        file_names_temp = cat(2,file_names_temp,...
-            cellstr(handles.image_files(i).full_paths));
-    end
-    % I don't want repeated values in the list.
-    file_names_temp = unique(file_names_temp);
-
-    % Set the values in the file path list in the gui.
-    set(handles.file_list,'String',file_names_temp,'Value',1);
-
-    % Keep track of the new list so we don't have to calculate it twice
-    handles.list_file_paths = file_names_temp;
-
-    % Keep track of the image_file_offset.
-    handles.image_files_offset = handles.image_files_offset + 1;
-
-    % Remember to save the changes.
-    guidata(hObject, handles);
-
-
-% --- Executes on button press in add_ssh.
-function add_ssh_Callback(hObject, eventdata, handles)
-    % We create the ssh_struct.
-    s.server = handles.config.ssh_server;
-    s.username = handles.config.ssh_username;
-    s.dir = handles.config.ssh_dir;
-    handles.ssh_struct = s;
-    if isempty(s.server) || isempty(s.username) || isempty(s.dir)
-        % We cant do anything without this info.
-        msgboxText{1} = ['Please check your configuration and make sure',...
-            ' you have server, username and dir specified for ssh.'];
-        msgbox(msgboxText,'Configuration error', 'error');
-        return;
-    end
-
-    % Get the file list.
-    [filename, pathname] = ssh_getlist(handles.ssh_struct);
-    if ~ischar(filename(1)) && ~iscellstr(filename(1)); return; end;
-
-    ifo = handles.image_files_offset;
-
-    handles.image_files(ifo).image_files = filename;
-    handles.image_files(ifo).directory = pathname;
-    handles.image_files(ifo).full_paths = strcat(pathname,filename);
-    %handles.image_files_current_dir = char(pathname);
-
-    % Now I have to add those files to the list in file_list
-    % create a temp var with all the names we have up until now
-    file_names_temp = [];
-    for i = 1:ifo
-        file_names_temp = cat(2,file_names_temp,...
-            cellstr(handles.image_files(i).full_paths));
-    end
-    % I don't want repeated values in the list.
-    file_names_temp = unique(file_names_temp);
-
-    % Set the values in the file path list in the gui.
-    set(handles.file_list,'String',file_names_temp,'Value',1);
-
-    % Keep track of the new list so we don't have to calculate it twice
-    handles.list_file_paths = file_names_temp;
-
-    % Keep track of the image_file_offset.
-    handles.image_files_offset = handles.image_files_offset + 1;
 
     % Remember to save the changes.
     guidata(hObject, handles);
