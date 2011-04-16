@@ -44,23 +44,14 @@ function annotation_gui_OpeningFcn(hObject, eventdata, handles, varargin)
     handles.output = hObject;
 
     % This is where we will initialize the gui specific data structures.
-    % image_files is a list of image data structs.
-    % image_files(n).image_files = [file1, file1...]
-    % image_files(n).directory = dir
-    handles.image_files(1).image_files = [];
-    handles.image_files(1).directory = '';
-    handles.image_files(1).full_paths = [];
-    handles.image_files_offset = 1;
-    handles.image_files_current_dir = pwd;
+    handles.paths = [];
+    handles.current_dir = pwd;
 
-    % Current selected label in label pop up.  This is an offset.  Not a
-    % string.
+    % Offset of current selected label
     handles.label_selected_label = -1;
 
-    % Current selected file in file list.  Notice that this is an offset.
-    % Not a string.
+    % Offset of current selected file
     handles.list_selected_file = -1;
-    handles.list_file_paths = [];
 
     % The variable that will temporarily hold the annotation activity per
     % image. curr_ann(current annotation)
@@ -106,7 +97,7 @@ function varargout = annotation_gui_OutputFcn(hObject, eventdata, handles)
 % --- Executes on selection change in file_list.
 function file_list_Callback(hObject, eventdata, handles)
     % We ingore the users interaction if there is nothing in the list.
-    if size (handles.list_file_paths,2) == 0
+    if size (handles.paths,2) == 0
         return;
     end
 
@@ -187,11 +178,9 @@ function add_files_Callback(hObject, eventdata, handles)
     % This is where I find the files that we are to annotate.
     % We change dir so the user sees the previous place he searched.
     imagetypes = '*.gif;*.jpg;*.png;*.jpeg,*.GIF;*.JPG;*.PNG;*.JPEG';
-
-    ifo = handles.image_files_offset;
     [filename, pathname, filterindex] =...
         uigetfile(imagetypes, 'Pick an image file', 'MultiSelect', 'on',...
-        handles.image_files_current_dir);
+        handles.current_dir);
 
     % Handle the cancel option
     if ~iscellstr(filename) && ~ischar(filename) ...
@@ -206,29 +195,13 @@ function add_files_Callback(hObject, eventdata, handles)
         pathname = cellstr(pathname);
     end
 
-    handles.image_files(ifo).image_files = filename;
-    handles.image_files(ifo).directory = pathname;
-    handles.image_files(ifo).full_paths = strcat(pathname,filename);
-    handles.image_files_current_dir = char(pathname);
-
-    % Now I have to add those files to the list in file_list
-    % create a temp var with all the names we have up until now
-    file_names_temp = [];
-    for i = 1:ifo
-        file_names_temp = cat(2,file_names_temp,...
-            cellstr(handles.image_files(i).full_paths));
-    end
-    % I don't want repeated values in the list.
-    file_names_temp = unique(file_names_temp);
+    handles.paths = unique([handles.paths, strcat(pathname,filename)]);
 
     % Set the values in the file path list.
-    set(handles.file_list,'String',file_names_temp,'Value',1);
-
-    % Keep track of the new list so we don't have to calculate it twice
-    handles.list_file_paths = file_names_temp;
-
-    % Keep track of the image_file_offset.
-    handles.image_files_offset = handles.image_files_offset + 1;
+    set(handles.file_list,'String',handles.paths,'Value',1);
+    
+    % Keep track of the path that the user is on.
+    handles.current_dir = pathname;
 
     % For the users convinience select the first file in the list.
     % if unsuccessfull it wont make much of a difference as we have a well
@@ -510,7 +483,7 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
     success = 1;
 
     % We ignore if there is nothing in the list.
-    if size (handles.list_file_paths,2) == 0
+    if size (handles.paths,2) == 0
         return;
     end
 
@@ -521,12 +494,12 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
 
     % we use > and < to make sure we put the counter back to the first image
     % if we encounter some inconsistent values.
-    if offset >= size(handles.list_file_paths,2) + 1 || offset < 1;
+    if offset >= size(handles.paths,2) + 1 || offset < 1;
         offset = 1;
     end
 
     % We get the selected file name.
-    selected_file = handles.list_file_paths(offset);
+    selected_file = handles.paths(offset);
 
     % We make sure that the file is in the local filesystem
     [local_file, success, handles] =...

@@ -57,21 +57,4 @@ function annotation_save(handles, annotation)
     end;
 
     fclose(fd);
-    
-%     % WE SEE IF WE HAVE TO SAVE TO SERVER.
-%     [path, file_name, extension] = fileparts(handles.curr_ann.file_name);
-%     file_name = strcat(file_name, extension);
-%     if annotation.ftp == 1
-%         % then we save to ftp. :)
-%         [ret_ftp, error_m] = ftp_savefile(handles.ftp_struct, ...
-%             file_name, handles.config.cache_dir);
-% 
-%         % FIXME : Handle the possible error.  It has already given a 
-%         % message.
-% 
-%     elseif annotation.ssh == 1
-%         % then save using ssh. :)
-%         ret_val = ssh_savefile(handles.ssh_struct, file_name,...
-%             handles.config.cache_dir);
-%     end
 end
