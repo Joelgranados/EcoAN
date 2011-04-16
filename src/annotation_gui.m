@@ -75,9 +75,6 @@ function annotation_gui_OpeningFcn(hObject, eventdata, handles, varargin)
         handles.config.cache_dir = 'cache';
     end
 
-    % Initialize handle responsible for zoom
-    % handles.zoom_handle = zoom;
-
     % Initialize the figure1 callback definitions.
     set(handles.figure1, 'KeyPressFcn', @on_key_press_callback);
 
@@ -212,16 +209,15 @@ function add_files_Callback(hObject, eventdata, handles)
     guidata(hObject, handles);
 
 % --- Called when an image needs to be uploaded to an axis.
+% input_image   is the string that references the image
+% axis_handler  the handler use as parent of the image
 function retimg = put_image_in_axis (input_image, axis_handler, handles)
-    % input_image   is the string that references the image
-    % axis_handler  the handler use as parent of the image
     if exist (char(input_image)) > 0
         img = imread(char(input_image));
         imagesc(img, 'Parent', axis_handler, 'ButtonDownFcn',...
             @button_pressed_on_image);
         set(gca,'Units','pixels');
         retimg = img;
-
     else
         msgboxText{1} =  strcat('File not found: ', input_image);
         msgbox(msgboxText,'File Not Found', 'error');
@@ -236,8 +232,8 @@ function button_pressed_on_image(hObject, eventdata)
     % What button did the user click?
     % normal -> left click
     % alt -> right click
-    % extended -> middle button. (might be different for mice with more
-    % that dont have a middle button.
+    % extended -> middle button. (might be different for mice
+    % that dont have a middle button).
     mouseid = get(gcf,'SelectionType');
 
     if ((strcmp(mouseid, 'normal') == 1 || strcmp(mouseid, 'alt') == 1)) &&...
@@ -259,39 +255,18 @@ function button_pressed_on_image(hObject, eventdata)
 
         elseif strcmp(mouseid, 'alt') == 1 &&...
                 ~isempty(handles.curr_ann.regions(reg_offset).bbox_figure)
-            % this means modify the previous region.
+            % modify the previous region.
+
+            bbt = handles.curr_ann.regions(reg_offset).bbox;
+            % Remember bbox_figure[ x y width height] in cartesian coor.
+            % Remember bbt(1)=xmin bbt(2)=ymin bbt(3)=xmax bbt(4)=ymax
+            bbox_figure = handles.curr_ann.regions(reg_offset).bbox_figure;
+
             % We find out which part of the last region will be stretched by
             % analysing the relation between the last annotation's center
             % and the current possition.
-            bbt = handles.curr_ann.regions(reg_offset).bbox;
-            % xdiff is center_x - current_x
-            xdiff = (bbt(1)+(abs(bbt(3)-bbt(1))/2)) - (p1(1,1));
-            % ydiff is center_y - current_y
-            ydiff = (bbt(2)+(abs(bbt(4)-bbt(2)))/2) - (p1(1,2));
-
-            % Remember that bbox_figure[ x y width height] in cartesian coor.
-            % Remember bbt(1)=xmin bbt(2)=ymin bbt(3)=xmax bbt(4)=ymax
-            bbox_figure = handles.curr_ann.regions(reg_offset).bbox_figure;
-            if xdiff < 0 && ydiff > 0
-                %fixed in lower left
-                fixed_figure = [ bbox_figure(1), bbox_figure(2) ];
-                fixed_axis = [ bbt(1), bbt(4) ];
-            elseif xdiff >= 0 && ydiff >= 0
-                %fixed in lower right
-                fixed_figure = [ bbox_figure(1)+bbox_figure(3),...
-                    bbox_figure(2) ];
-                fixed_axis = [ bbt(3), bbt(4) ];
-            elseif xdiff > 0 && ydiff < 0
-                %fixed in upper right
-                fixed_figure = [ bbox_figure(1)+bbox_figure(3),...
-                    bbox_figure(2)+bbox_figure(4) ];
-                fixed_axis = [bbt(3), bbt(2) ];
-            elseif xdiff <= 0 && ydiff <= 0
-                %fixed in upper left
-                fixed_figure = [ bbox_figure(1),...
-                    bbox_figure(2)+bbox_figure(4) ];
-                fixed_axis = [ bbt(1), bbt(2) ];
-            end
+            [fixed_figure, fixed_axis] =...
+                annotation_util_calcsquares(bbt,bbox_figure,p1);
 
             % The end possition is p2 (whereever the user lets go of the mouse,
             % but p1 is not where the user first clicked, its where fixed is.
@@ -364,8 +339,8 @@ function button_press_on_line(hObject, eventdata)
     % What button did the user click?
     % normal -> left click
     % alt -> right click
-    % extended -> middle button. (might be different for mice with more
-    % that dont have a middle button.
+    % extended -> middle button. (might be different for mice
+    % that dont have a middle button).
     mouseid = get(gcf,'SelectionType');
 
     if strcmp(mouseid, 'normal') == 1 && handles.correction.active == 1
