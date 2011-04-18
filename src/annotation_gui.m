@@ -198,7 +198,7 @@ function add_files_Callback(hObject, eventdata, handles)
     set(handles.file_list,'String',handles.paths,'Value',1);
     
     % Keep track of the path that the user is on.
-    handles.current_dir = pathname;
+    handles.current_dir = char(pathname);
 
     % For the users convinience select the first file in the list.
     % if unsuccessfull it wont make much of a difference as we have a well
