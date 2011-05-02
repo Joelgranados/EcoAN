@@ -185,6 +185,9 @@ function add_files_Callback(hObject, eventdata, handles)
         return
     end
 
+    % Add the labels specified in the pathname
+    set(handles.labels, 'String', labels_addLabels(handles, pathname));
+
     if ischar(filename) && ischar(pathname)
         % User only chose one file.  change to cellstr
         filename = cellstr(filename);
@@ -203,9 +206,6 @@ function add_files_Callback(hObject, eventdata, handles)
     % if unsuccessfull it wont make much of a difference as we have a well
     % constructed handles by now.
     [success, handles] = select_offset_from_list(1, handles, hObject);
-
-    % Add the labels specified in the pathname
-    set(handles.labels, 'String', labels_addLabels(handles, pathname));
 
     % Remember to save the changes.
     guidata(hObject, handles);
