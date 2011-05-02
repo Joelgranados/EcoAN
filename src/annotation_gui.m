@@ -297,6 +297,15 @@ function button_pressed_on_image(hObject, eventdata)
         ymin=min(p(:,2));
         ymax=max(p(:,2));
 
+        % Check for negative and overflow values
+        if (xmin < 0) xmin = 0; end
+        if (ymin < 0) ymin = 0; end
+        if (xmax > handles.curr_ann.image(2))
+            xmax = handles.curr_ann.image(2);
+        end
+        if (ymax > handles.curr_ann.image(1))
+            ymax = handles.curr_ann.image(1);
+        end
 
         % Don't create size 0 boxes.
         if xmin == xmax || ymin == ymax
