@@ -158,17 +158,16 @@ function labels_CreateFcn(hObject, eventdata, handles)
             get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
+    set (hObject, 'String', 'Default');
 
+function labels = labels_addLabels(handles, pathname)
+    labels = get (handles.labels, 'String');
     try
-        labels = textread('labels.txt', '%s\n');
-        set(hObject, 'String', labels);
+        dirlabels = textread( strcat(pathname, 'labels.txt'), '%s\n' );
     catch
-        % The file is not where we expect.... error out with a message.
-        msgboxText{1} =  strcat('I cant find the file where the labels',...
-            ' are stored.  Please create this file, name it labels.txt',...
-            ' and put it in:', pwd);
-        msgbox(msgboxText,'File Not Found', 'error');
+        dirlabels = '';
     end
+     labels = cat (1, dirlabels, labels);
 
 % --- Executes on button press in add_files.
 function add_files_Callback(hObject, eventdata, handles)
@@ -204,6 +203,9 @@ function add_files_Callback(hObject, eventdata, handles)
     % if unsuccessfull it wont make much of a difference as we have a well
     % constructed handles by now.
     [success, handles] = select_offset_from_list(1, handles, hObject);
+
+    % Add the labels specified in the pathname
+    set(handles.labels, 'String', labels_addLabels(handles, pathname));
 
     % Remember to save the changes.
     guidata(hObject, handles);
