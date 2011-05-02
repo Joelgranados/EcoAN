@@ -196,7 +196,7 @@ function add_files_Callback(hObject, eventdata, handles)
 
     % Set the values in the file path list.
     set(handles.file_list,'String',handles.paths,'Value',1);
-    
+
     % Keep track of the path that the user is on.
     handles.current_dir = char(pathname);
 
@@ -298,13 +298,11 @@ function button_pressed_on_image(hObject, eventdata)
         ymax=max(p(:,2));
 
 
-	% HACK, HACK, HACK!!! We don't want to create boxes that are size 0
-	%   don't really know what will happen if we have a restreached of
-	%   size zero.
-	if xmin == xmax || ymin == ymax
-		guidata(hObject, handles);
-		return;
-	end
+        % Don't create size 0 boxes.
+        if xmin == xmax || ymin == ymax
+            guidata(hObject, handles);
+            return;
+        end
 
         % Incremeant the offset.
         reg_offset = handles.curr_ann.reg_offset + 1;
@@ -481,7 +479,7 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
         annotation_getfile(handles, selected_file);
     if ~success
         ret_handles = handles;
-        return; 
+        return;
     end% we have already shown an error.
 
     % We 'officialize' the selection
@@ -600,7 +598,7 @@ function review_checkbox_Callback(hObject, eventdata, handles)
     guidata(hObject, handles);
 
 function date_text_Callback(hObject, eventdata, handles)
-    
+
 % --- Executes during object creation, after setting all properties.
 function date_text_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))

@@ -149,7 +149,7 @@ function s=initstrings
 
     s(7).matchlen=8;
     s(7).str='Original label for object %d %q : %q';
-    
+
     s(8).matchlen=6;
     s(8).str='Review %s %s';
 
