@@ -210,6 +210,19 @@ function add_files_Callback(hObject, eventdata, handles)
     % Remember to save the changes.
     guidata(hObject, handles);
 
+% --- Executes on button press in clear_files.
+function clear_files_Callback(hObject, eventdata, handles)
+% hObject    handle to clear_files (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    % Set the label list back to its default.
+    labels_CreateFcn(handles.labels, '', handles);
+    handles.paths = [];
+    set(handles.file_list, 'String', '', 'Value', 0);
+    cla(handles.image_axis, 'reset');
+    guidata(hObject, handles);
+
+
 % --- Called when an image needs to be uploaded to an axis.
 % input_image   is the string that references the image
 % axis_handler  the handler use as parent of the image
