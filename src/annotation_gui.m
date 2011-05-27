@@ -229,8 +229,13 @@ function clear_files_Callback(hObject, eventdata, handles)
 function retimg = put_image_in_axis (input_image, axis_handler, handles)
     if exist (char(input_image)) > 0
         img = imread(char(input_image));
-        imagesc(img, 'Parent', axis_handler, 'ButtonDownFcn',...
-            @button_pressed_on_image);
+        if get(handles.hsv, 'Value') == 1
+            img = rgb2hsv(img);
+        elseif get(handles.ycbcr, 'Value') == 1
+            img = rgb2ycbcr(img);
+        end
+        image(img, 'Parent', axis_handler,...
+            'ButtonDownFcn', @button_pressed_on_image);
         set(gca,'Units','pixels');
         retimg = img;
     else
@@ -654,3 +659,19 @@ function ret_handles = update_review_items(handles)
         set(handles.date_text, 'String', handles.curr_ann.review.date);
     end
     ret_handles = handles;
+
+% --- Executes when selected object is changed in vispanel.
+function vispanel_SelectionChangeFcn(hObject, eventdata, handles)
+% hObject    handle to the selected object in vispanel
+% eventdata  structure with the following fields (see UIBUTTONGROUP)
+%	EventName: string 'SelectionChanged' (read only)
+%	OldValue: handle of the previously selected object or empty if none was selected
+%	NewValue: handle of the currently selected object
+% handles    structure with handles and user data (see GUIDATA)
+    [success, handles] = ...
+            select_offset_from_list(handles.list_selected_file,...
+                handles, hObject);
+
+    % Remember to save the changes.
+    guidata(hObject, handles);
+
