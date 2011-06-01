@@ -6,11 +6,7 @@ Characteristics:
   requirements are with other matlab releases.  If you have a problem, just drop
   me a mail <joel.granados@gmail.com >
 
-* All the development and testing has been done in linux (fedora 13). I have
-  used some linux specific commands to implement the ssh connection feature.
-  To my knowledge these calls only work in a linux machine and will probably
-  explode if you tried it on a windows box.  The rest of the features should
-  work fine in a windows machine.
+* All the development and testing has been done in linux (fedora 13).
 
 List of features:
 1. Zoom: The zoom button turns on/off the zoom state.  Once in zoom state you
@@ -45,7 +41,7 @@ List of features:
 
 6. Add SSH: This button allows you to search for the pictures in a remote
    server.  Please refer to the section called "Setting up the ssh connectivity"
-   to learn how to make this feature work.
+   to learn how to make this feature work.  This no longer exists.
 
 7. File List: This is a list of all the files that you selected to be annotated.
    When you click on a file in the list, the previous file annotation will be
@@ -66,6 +62,10 @@ Suggested workflows:
     the following command to go directly to the application: `matlab -r "cd
     /tmp/annotation ; annotation_gui"`.  You can also use that line to create an
     alias or an icon.
+    To see useful labels, you must create a labels.txt file in the directory
+    where the images are located.  This file will contain a label per line.  You
+    should leave this file in the image directory so it is read every time the
+    images are accessed.
 
 2 Creating an annotation:
     a. Be sure that you are not in Zoom, Grab or Correct mode.
@@ -104,63 +104,7 @@ Suggested workflows:
        will have to create a new annotation all together.
 
 Possible Problems:
-* Ghost Squares: When you delete an annotation the application doesn't actually
-    delete the square.  It makes the square invisible.  This could be a problem
-    when "erased" squares are very close to visible squares.  You might
-    inadvertently select a ghost square.
-    The solution to this is to try to select the target annotation from another
-    side. 
-    UPDATE: I have patched the app so this does not occur.  I just checked the
-    object.active flag before selecting.
-
-* Ghost Squares II: In some images I can see that there are some labels that
-    have no square.  I don't yet know what is causing this.  Note that there is
-    no easy way of getting rid of these false annotations.  In the ann file this
-    appears like a square that starts and ends in the same spot.
-    UPDATE: I have patched the app so these don't get created anymore.  What
-    was happening was that a single un-held click in the picture created a box
-    with size zero.
-
 * "d" scrolls the label list instead of deleting:  When I selected a square for
     correction, changed the label with the mouse and finally tried to delete it
     by pressing "d"; this would cause the label list to advance.  To get out of
     this situation just select the square of interest with the mouse once more.
-
-
-Setting up the ssh connectivity:
-1. Everything is done using ssh passwordless connection.  You have to set this
-   up before doing anything.  Follow any tutorial on setting up the ssh key
-   between two boxes.  You can start on http://www.debian-administration.org/\
-   articles/152 You know that you have configured this correctly when you can
-   do a `ssh user@server ls` without any password.
-
-2. Watch out for errors with the ssh command.  I had to change my hosts file
-   because the server I was connecting too had its reverse DNS busted.
-
-3. The connection might take some time, specially if you have a slow
-   connection. Good thing is that in the worst case scenario you will have to
-   download the images only once (There is a cache).
-
-4. This is not tested on windows.  I'm guessing that the commands just need
-   translating from unix to windows.  Some work for the future.
-
-5. Make sure you place the exact path to the directory were the png files are
-   located in the server.  place this under ssh_dir in the config file.
-
-6. Make sure to place the user that should be used for the ssh connection.
-   This is the user that for which you configured the ssh passwordless
-   connection.
-
-7. Make sure you specify the cache directory.  It defaults to cache in the
-   current dir.
-
-8. On the "local machine" edit the ~/.ssh/config file so that you are sure
-   that your newly created credentials are used.  This is very related to 1.
-   <snip>
-   Host example.com
-   User username
-   IdentityFile ~/PATH/TO/RSA
-   <snap>
-
-9. It only works with png files (for the moment).  It would be easy to extend
-   it.

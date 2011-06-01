@@ -1,10 +1,2 @@
-*   Remove list feature:  Create a work flow to remove all the files that are
-    currently on the file list.
-
-*   Incorporate labels in correction state:  Instead of having to erase the
-    annotation to correct it, one might want to just change the label.  This
-    is very logical because the error in annotation should be in the label
-    and not in the box.
-
 *   Incorporate picture metadata:  We should have a list of metadata from the
     picture xml file.
