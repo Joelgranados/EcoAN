@@ -236,6 +236,9 @@ function retimg = put_image_in_axis (input_image, axis_handler, handles)
         elseif get(handles.gray, 'Value') == 1
             img = rgb2gray(img);
             colormap(axis_handler, gray(256));
+        elseif get(handles.canny, 'Value') == 1
+            img = edge(rgb2gray(img), 'canny');
+            colormap(axis_handler, gray(2));
         end
         image(img, 'Parent', axis_handler,...
             'ButtonDownFcn', @button_pressed_on_image);
