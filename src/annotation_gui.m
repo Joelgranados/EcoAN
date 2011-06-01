@@ -233,6 +233,9 @@ function retimg = put_image_in_axis (input_image, axis_handler, handles)
             img = rgb2hsv(img);
         elseif get(handles.ycbcr, 'Value') == 1
             img = rgb2ycbcr(img);
+        elseif get(handles.gray, 'Value') == 1
+            img = rgb2gray(img);
+            colormap(axis_handler, gray(256));
         end
         image(img, 'Parent', axis_handler,...
             'ButtonDownFcn', @button_pressed_on_image);
@@ -674,4 +677,3 @@ function vispanel_SelectionChangeFcn(hObject, eventdata, handles)
 
     % Remember to save the changes.
     guidata(hObject, handles);
-
