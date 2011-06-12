@@ -39,16 +39,17 @@ List of features:
 5. Add Files: This button allows you to search for the pictures.  You should use
    this button to search for pictures in the local machine.
 
-6. Add SSH: This button allows you to search for the pictures in a remote
-   server.  Please refer to the section called "Setting up the ssh connectivity"
-   to learn how to make this feature work.  This no longer exists.
-
-7. File List: This is a list of all the files that you selected to be annotated.
+6. File List: This is a list of all the files that you selected to be annotated.
    When you click on a file in the list, the previous file annotation will be
    saved and the new image will be displayed.  Note that this is the way to save
    the annotations.  There is no annotation button.
 
-8. Exit: Button to exit.
+7. Exit: Button to exit.
+
+8. Color spaces: There is a paner on the lower right side of the window that
+   contains some known color spaces and other transformations.  Just click on
+   the radio button of your choice and see the image transformed.  If the image
+   is "big" it might take a bit to do the transformation.
 
 Suggested workflows:
 1. Starting the application:
