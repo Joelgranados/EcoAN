@@ -68,21 +68,11 @@ function annotation_gui_OpeningFcn(hObject, eventdata, handles, varargin)
     handles.correction.box.t = -1;
     handles.correction.active = 0;
 
-    % The configuration stuff.  FIXME: we should have a function that reads
-    % everything into the variable.
-    handles.config = annotation_conf('annotation.conf', 0, 'r');
-    if isempty(handles.config.cache_dir)
-        handles.config.cache_dir = 'cache';
-    end
-
     % Initialize the figure1 callback definitions.
     set(handles.figure1, 'KeyPressFcn', @on_key_press_callback);
 
     % Update handles structure
     guidata(hObject, handles);
-
-    % UIWAIT makes annotation_gui wait for user response (see UIRESUME)
-    % uiwait(handles.figure1);
 
 
 % --- Outputs from this function are returned to the command line.
