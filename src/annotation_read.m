@@ -72,11 +72,7 @@ function annotation=annotation_read(file_name)
                     %  This has not been implemented yet.
                     % record.imgsize=[x y c];
 
-                case 3, [database]=strread(line,matchstrs(matchnum).str);
-                    % This has not been implemented yet.
-                    % record.database=char(database);
-
-                case 4, [obj,lbl,xmin,ymin,xmax,ymax]...
+                case 3, [obj,lbl,xmin,ymin,xmax,ymax]...
                         =strread(line,matchstrs(matchnum).str);
                     reg_offset = annotation.reg_offset + 1;
                     annotation.regions(reg_offset) = annotation_init;
@@ -87,23 +83,7 @@ function annotation=annotation_read(file_name)
                     % prepare the next element for the next iteration.
                     annotation.reg_offset = reg_offset;
 
-                case 5, tmp=findstr(line,' : ');
-                    % The polygon stuff has not been implemented.
-                    % [obj,lbl]=strread(line(1:tmp),matchstrs(matchnum).str);
-                    % record.objects(obj).label=char(lbl);
-                    % record.objects(obj).polygon=sscanf(line(tmp+3:end),'(%d, %d) ')';
-
-                case 6, [obj,lbl,mask]=strread(line,matchstrs(matchnum).str);
-                    % I don't know what pixel mask is....
-                    % record.objects(obj).label=char(lbl);
-                    % record.objects(obj).mask=char(mask);
-
-                case 7, [obj,lbl,orglbl]=strread(line,matchstrs(matchnum).str);
-                    % I don't know what original label is.
-                    %record.objects(obj).label=char(lbl);
-                    %record.objects(obj).orglabel=char(orglbl);
-
-                case 8, [date, reviewer]=strread(line,matchstrs(matchnum).str);
+                case 4, [date, reviewer]=strread(line,matchstrs(matchnum).str);
                     annotation.review.reviewer = char(reviewer);
                     annotation.review.date = char(date);
 
@@ -136,21 +116,9 @@ function s=initstrings
     s(2).str='Image size (X x Y x C) : %d x %d x %d';
 
     s(3).matchlen=8;
-    s(3).str='Database : %q';
+    s(3).str='Bounding box for object %d %q (Xmin, Ymin) - (Xmax, Ymax) : (%d, %d) - (%d, %d)';
 
-    s(4).matchlen=8;
-    s(4).str='Bounding box for object %d %q (Xmin, Ymin) - (Xmax, Ymax) : (%d, %d) - (%d, %d)';
-
-    s(5).matchlen=7;
-    s(5).str='Polygon for object %d %q (X, Y)';
-
-    s(6).matchlen=5;
-    s(6).str='Pixel mask for object %d %q : %q';
-
-    s(7).matchlen=8;
-    s(7).str='Original label for object %d %q : %q';
-
-    s(8).matchlen=6;
-    s(8).str='Review %s %s';
+    s(4).matchlen=6;
+    s(4).str='Review %s %s';
 
 return
