@@ -645,8 +645,6 @@ function review_checkbox_Callback(hObject, eventdata, handles)
     % Remember to save the changes.
     guidata(hObject, handles);
 
-function date_text_Callback(hObject, eventdata, handles)
-
 % --- Executes during object creation, after setting all properties.
 function date_text_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
