@@ -265,105 +265,99 @@ function button_pressed_on_image(hObject, eventdata)
     % that dont have a middle button).
     mouseid = get(gcf,'SelectionType');
 
-    if ((strcmp(mouseid, 'normal') == 1 || strcmp(mouseid, 'alt') == 1)) &&...
-            handles.correction.active == 0
-        % We get the first possition of the square.
-        p1=get(gca,'CurrentPoint');
-
-        % What region was the last one to be created?
-        reg_offset = handles.curr_ann.reg_offset;
-
-        % When user left clicks.
-        % When there is no regions at all.
-        % When user right clicks but there is no previous info in the
-        %      bbox_figure
-        if strcmp(mouseid, 'normal') == 1 || reg_offset <= 0 || ...
-                (strcmp(mouseid, 'alt') == 1 &&...
-                 isempty(handles.curr_ann.regions(reg_offset).bbox_figure))
-            bbox_figure = rbbox; % the rubber box thingy :)
-
-        elseif strcmp(mouseid, 'alt') == 1 &&...
-                ~isempty(handles.curr_ann.regions(reg_offset).bbox_figure)
-            % modify the previous region.
-
-            bbt = handles.curr_ann.regions(reg_offset).bbox;
-            % Remember bbox_figure[ x y width height] in cartesian coor.
-            % Remember bbt(1)=xmin bbt(2)=ymin bbt(3)=xmax bbt(4)=ymax
-            bbox_figure = handles.curr_ann.regions(reg_offset).bbox_figure;
-
-            % We find out which part of the last region will be stretched by
-            % analysing the relation between the last annotation's center
-            % and the current possition.
-            [fixed_figure, fixed_axis] =...
-                annotation_util_calcsquares(bbt,bbox_figure,p1);
-
-            % The end possition is p2 (whereever the user lets go of the mouse,
-            % but p1 is not where the user first clicked, its where fixed is.
-            p1 = [fixed_axis(1), fixed_axis(2), 1;...
-                  fixed_axis(1), fixed_axis(2), 0];
-
-            % The code that comes after will create a new region in the
-            % region list using the reg_offset.  Lets make it think that
-            % nothing has happened
-            handles.curr_ann.reg_offset = handles.curr_ann.reg_offset - 1;
-
-            % erase the previous one from the axis and from the internal
-            % structure.
-            bbl = handles.curr_ann.regions(reg_offset).bboxline;
-            set(bbl.l, 'Visible', 'off');
-            set(bbl.t, 'Visible', 'off');
-
-            bbox_figure = rbbox( bbox_figure,...
-                [fixed_figure(1) fixed_figure(2)]);
-        end
-
-        p2=get(gca,'CurrentPoint');
-        p=round([p1;p2]);
-
-        % We define the coordinates.
-        xmin=min(p(:,1));
-        xmax=max(p(:,1));
-        ymin=min(p(:,2));
-        ymax=max(p(:,2));
-
-        % Check for negative and overflow values
-        if (xmin < 0) xmin = 0; end
-        if (ymin < 0) ymin = 0; end
-        if (xmax > handles.curr_ann.image(2))
-            xmax = handles.curr_ann.image(2);
-        end
-        if (ymax > handles.curr_ann.image(1))
-            ymax = handles.curr_ann.image(1);
-        end
-
-        % Don't create size 0 boxes.
-        if xmin == xmax || ymin == ymax
-            guidata(hObject, handles);
-            return;
-        end
-
-        % Incremeant the offset.
-        reg_offset = handles.curr_ann.reg_offset + 1;
-        handles.curr_ann.reg_offset = reg_offset;
-
-        % Create a new region in the next offset
-        handles.curr_ann.regions(reg_offset) = annotation_init;
-        handles.curr_ann.regions(reg_offset).bbox = [xmin ymin xmax ymax];
-
-        % We will use the label that is currently selected.
-        l_offset = get(handles.labels, 'Value');
-        l_strings = get(handles.labels, 'String');
-        handles.curr_ann.regions(reg_offset).label = l_strings(l_offset);
-
-        % Draw the box in red and save in regions.
-        pts = handles.curr_ann.regions(reg_offset).bbox;
-        lbl = handles.curr_ann.regions(reg_offset).label;
-        [l, t] = annotation_drawbox(pts, lbl, [1 0 0], @button_press_on_line);
-        handles.curr_ann.regions(reg_offset).bboxline.l = l;
-        handles.curr_ann.regions(reg_offset).bboxline.t = t;
-        handles.curr_ann.regions(reg_offset).bbox_figure = bbox_figure;
-        handles.curr_ann.regions(reg_offset).active = 1;
+    if ((strcmp(mouseid, 'normal') ~= 1 && strcmp(mouseid, 'alt') ~= 1)) ||...
+            handles.correction.active ~= 0
+        return;
     end
+
+    % We get the first possition of the square.
+    p1=get(gca,'CurrentPoint');
+
+    % What region was the last one to be created?
+    reg_offset = handles.curr_ann.reg_offset;
+
+    % When user left clicks.
+    % When there is no regions at all.
+    % When user right clicks but there is no previous info in the
+    %      bbox_figure
+    if strcmp(mouseid, 'normal') == 1 || reg_offset <= 0 || ...
+            (strcmp(mouseid, 'alt') == 1 &&...
+             isempty(handles.curr_ann.regions(reg_offset).bbox_figure))
+        bbox_figure = rbbox; % the rubber box thingy :)
+
+        % increment offset for new box.
+        handles.curr_ann.reg_offset = handles.curr_ann.reg_offset + 1;
+
+    elseif strcmp(mouseid, 'alt') == 1 &&...
+            ~isempty(handles.curr_ann.regions(reg_offset).bbox_figure)
+        % modify the previous region.
+
+        bbt = handles.curr_ann.regions(reg_offset).bbox;
+        % Remember bbox_figure[ x y width height] in cartesian coor.
+        % Remember bbt(1)=xmin bbt(2)=ymin bbt(3)=xmax bbt(4)=ymax
+        bbox_figure = handles.curr_ann.regions(reg_offset).bbox_figure;
+
+        % We find out which part of the last region will be stretched by
+        % analysing the relation between the last annotation's center
+        % and the current possition.
+        [fixed_figure, fixed_axis] =...
+            annotation_util_calcsquares(bbt,bbox_figure,p1);
+
+        % The end possition is p2 (whereever the user lets go of the mouse,
+        % but p1 is not where the user first clicked, its where fixed is.
+        p1 = [fixed_axis(1), fixed_axis(2), 1;...
+              fixed_axis(1), fixed_axis(2), 0];
+
+        % erase the previous one from the axis and from the internal
+        % structure.
+        bbl = handles.curr_ann.regions(reg_offset).bboxline;
+        set(bbl.l, 'Visible', 'off');
+        set(bbl.t, 'Visible', 'off');
+
+        bbox_figure = rbbox( bbox_figure,...
+            [fixed_figure(1) fixed_figure(2)]);
+    end
+
+    p2=get(gca,'CurrentPoint');
+    p=round([p1;p2]);
+
+    % We define the coordinates.
+    xmin=min(p(:,1));
+    xmax=max(p(:,1));
+    ymin=min(p(:,2));
+    ymax=max(p(:,2));
+
+    % Check for negative and overflow values
+    if (xmin < 0) xmin = 0; end
+    if (ymin < 0) ymin = 0; end
+    if (xmax > handles.curr_ann.image(2))
+        xmax = handles.curr_ann.image(2);
+    end
+    if (ymax > handles.curr_ann.image(1))
+        ymax = handles.curr_ann.image(1);
+    end
+
+    % Don't create size 0 boxes. return without saving.
+    if (xmin == xmax || ymin == ymax) return; end
+
+    % Create a new region in the next offset
+    reg_offset = handles.curr_ann.reg_offset;
+    handles.curr_ann.regions(reg_offset) = annotation_init;
+    handles.curr_ann.regions(reg_offset).bbox = [xmin ymin xmax ymax];
+
+    % We will use the label that is currently selected.
+    l_offset = get(handles.labels, 'Value');
+    l_strings = get(handles.labels, 'String');
+    handles.curr_ann.regions(reg_offset).label = l_strings(l_offset);
+
+    % Draw the box in red and save in regions.
+    pts = handles.curr_ann.regions(reg_offset).bbox;
+    lbl = handles.curr_ann.regions(reg_offset).label;
+    [l, t] = annotation_drawbox(pts, lbl, [1 0 0], @button_press_on_line);
+    handles.curr_ann.regions(reg_offset).bboxline.l = l;
+    handles.curr_ann.regions(reg_offset).bboxline.t = t;
+    handles.curr_ann.regions(reg_offset).bbox_figure = bbox_figure;
+    handles.curr_ann.regions(reg_offset).active = 1;
 
     % Remember to save the changes.
     guidata(hObject, handles);
