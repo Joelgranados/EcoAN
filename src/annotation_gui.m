@@ -250,6 +250,9 @@ function button_pressed_on_image(hObject, eventdata)
 
     hrect = imrect(handles.image_axis);
 
+    % handle when user presses ESC
+    if (size(hrect,1) == 0) return; end;
+
     % increment offset for new box.
     handles.curr_ann.reg_offset = handles.curr_ann.reg_offset + 1;
     reg_offset = handles.curr_ann.reg_offset;
