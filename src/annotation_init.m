@@ -19,7 +19,7 @@
 % --- Returns an empty annotation.  Initialized annotation.
 % --- This is a helper function.
 function object=annotation_init
-  object.roi = NaN; % an imrect
+  object.roi = NaN; % a imroi
   object.label = NaN; % should be handled as text.
 
   % 0 (inactive) don't save, 1 (active) save.

@@ -270,7 +270,7 @@ function button_pressed_on_image(hObject, eventdata)
                           hrect_pos(1), hrect_pos(2));
 
     addNewPositionCallback(hrect,...
-        @(pos)on_move_imrect(pos,...
+        @(pos)on_move_roi(pos,...
                              hrect,...
                              handles.curr_ann.regions(reg_offset).label));
 
@@ -293,7 +293,7 @@ function button_pressed_on_text_label(text_handle)
     l_strings = get(handles.labels, 'String');
     set(text_handle, 'String', l_strings(l_offset));
 
-function on_move_imrect(pos, hrect, text_handle)
+function on_move_roi(pos, hrect, text_handle)
     %called whenever a rect is moved.
     % FIXME (HACK) we could receive a move from a deleted object.
     if (size(gco,1) == 0) return; end;
@@ -302,7 +302,7 @@ function on_move_imrect(pos, hrect, text_handle)
     if handles.remove_active == 0
         set(text_handle, 'Position', [pos(1), pos(2)]);
     elseif handles.remove_active == 1
-        % delete the imrect_handle, make the text invisible and active=0.
+        % delete the roi_handle, make the text invisible and active=0.
         for i = 1:size(handles.curr_ann.regions,2)
             if handles.curr_ann.regions(i).active == 1 &&...
                     handles.curr_ann.regions(i).roi == hrect
@@ -406,10 +406,10 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
         if ret_handles.curr_ann.regions(i).active == 1
             curr_reg = ret_handles.curr_ann.regions(i);
 
-            % Work with imrect handles not arrays.
-            imrect_pos = [ curr_reg.roi(1), curr_reg.roi(2),...
+            % Work with roi handles not arrays.
+            roi_pos = [ curr_reg.roi(1), curr_reg.roi(2),...
                            curr_reg.roi(3), curr_reg.roi(4) ];
-            curr_reg.roi = imrect(ret_handles.image_axis, imrect_pos);
+            curr_reg.roi = imrect(ret_handles.image_axis, roi_pos);
             fcn = makeConstrainToRectFcn('imrect',...
                 get(handles.image_axis, 'XLim'),...
                 get(handles.image_axis, 'YLim'));
@@ -417,12 +417,12 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
 
             % Work with text ret_handles not strings.
             curr_reg.label = create_text_label(char(curr_reg.label),...
-                                               imrect_pos(1),...
-                                               imrect_pos(2));
+                                               roi_pos(1),...
+                                               roi_pos(2));
 
             % func handle that will pass pos and the related text.
             addNewPositionCallback( curr_reg.roi,...
-            	@(pos)on_move_imrect(pos,curr_reg.roi, curr_reg.label) );
+            	@(pos)on_move_roi(pos,curr_reg.roi, curr_reg.label) );
             %FIXME: HACK: matlab insists in creating a new object...
             ret_handles.curr_ann.regions(i) = curr_reg;
         end
