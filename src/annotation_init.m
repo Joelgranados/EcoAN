@@ -19,14 +19,8 @@
 % --- Returns an empty annotation.  Initialized annotation.
 % --- This is a helper function.
 function object=annotation_init
-  %object.label='';
-  object.bbox=[];       % The line coordinates [x, y, width, height]
-
   object.roi = NaN; % an imrect
   object.label = NaN; % should be handled as text.
-
-  % Coordinates in the figure (as opposed to the axis) of the box.
-  object.bbox_figure =[];
 
   % 0 (inactive) don't save, 1 (active) save.
   object.active = 0;
