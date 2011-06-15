@@ -60,13 +60,7 @@ function annotation_gui_OpeningFcn(hObject, eventdata, handles, varargin)
     handles.curr_ann.reg_offset = 0;
     handles.curr_ann.regions(1) = annotation_init;
 
-    % Offset of region to correct.  This is only valid when correcting.  It
-    % should be -1 otherwise.
-    handles.correction.offset = -1;
-    % Will have the line information.
-    handles.correction.box.l = -1;
-    handles.correction.box.t = -1;
-    handles.correction.active = 0;
+    handles.remove_active = 0;
 
     % Initialize the figure1 callback definitions.
     set(handles.figure1, 'KeyPressFcn', @on_key_press_callback);
@@ -122,22 +116,6 @@ function exit_Callback(hObject, eventdata, handles)
 % --- Executes on selection change in labels.
 function labels_Callback(hObject, eventdata, handles)
     handles.label_selected_label = get(hObject, 'Value');
-
-    if handles.correction.active == 1 && handles.correction.offset ~= -1
-        % handles.label_selected_label is just the offset.
-        l_strings = get(handles.labels, 'String');
-        l_offset = handles.label_selected_label;
-
-        bbl = handles.correction.box;
-        set(bbl.t, 'String', l_strings(l_offset));
-
-        selected_offset = handles.correction.offset;
-        set(handles.curr_ann.regions(selected_offset).bboxline.t, ...
-            'String', l_strings(l_offset));
-        handles.curr_ann.regions(selected_offset).label = ...
-            l_strings(l_offset);
-    end
-
     % Remember to save the changes.
     guidata(hObject, handles);
 
@@ -148,7 +126,7 @@ function labels_CreateFcn(hObject, eventdata, handles)
             get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
-    set (hObject, 'String', 'Default');
+    set (hObject, 'String', {'---','Default'});
 
 function labels = labels_addLabels(handles, pathname)
     labels = get (handles.labels, 'String');
@@ -233,7 +211,7 @@ function retimg = put_image_in_axis (input_image, axis_handler, handles)
 
         image(img, 'Parent', axis_handler,...
             'ButtonDownFcn', @button_pressed_on_image);
-        set(gca,'Units','pixels');        
+        set(gca,'Units','pixels');
 
         if get(handles.gradient, 'Value') == 1
             step = 10;
@@ -266,166 +244,79 @@ function button_pressed_on_image(hObject, eventdata)
     mouseid = get(gcf,'SelectionType');
 
     if ((strcmp(mouseid, 'normal') ~= 1 && strcmp(mouseid, 'alt') ~= 1)) ||...
-            handles.correction.active ~= 0
+            handles.remove_active ~= 0
         return;
     end
 
-    % We get the first possition of the square.
-    p1=get(gca,'CurrentPoint');
+    hrect = imrect(handles.image_axis);
 
-    % What region was the last one to be created?
+    % increment offset for new box.
+    handles.curr_ann.reg_offset = handles.curr_ann.reg_offset + 1;
     reg_offset = handles.curr_ann.reg_offset;
-
-    % When user left clicks.
-    % When there is no regions at all.
-    % When user right clicks but there is no previous info in the
-    %      bbox_figure
-    if strcmp(mouseid, 'normal') == 1 || reg_offset <= 0 || ...
-            (strcmp(mouseid, 'alt') == 1 &&...
-             isempty(handles.curr_ann.regions(reg_offset).bbox_figure))
-        bbox_figure = rbbox; % the rubber box thingy :)
-
-        % increment offset for new box.
-        handles.curr_ann.reg_offset = handles.curr_ann.reg_offset + 1;
-
-    elseif strcmp(mouseid, 'alt') == 1 &&...
-            ~isempty(handles.curr_ann.regions(reg_offset).bbox_figure)
-        % modify the previous region.
-
-        bbt = handles.curr_ann.regions(reg_offset).bbox;
-        % Remember bbox_figure[ x y width height] in cartesian coor.
-        % Remember bbt(1)=xmin bbt(2)=ymin bbt(3)=xmax bbt(4)=ymax
-        bbox_figure = handles.curr_ann.regions(reg_offset).bbox_figure;
-
-        % We find out which part of the last region will be stretched by
-        % analysing the relation between the last annotation's center
-        % and the current possition.
-        [fixed_figure, fixed_axis] =...
-            annotation_util_calcsquares(bbt,bbox_figure,p1);
-
-        % The end possition is p2 (whereever the user lets go of the mouse,
-        % but p1 is not where the user first clicked, its where fixed is.
-        p1 = [fixed_axis(1), fixed_axis(2), 1;...
-              fixed_axis(1), fixed_axis(2), 0];
-
-        % erase the previous one from the axis and from the internal
-        % structure.
-        bbl = handles.curr_ann.regions(reg_offset).bboxline;
-        set(bbl.l, 'Visible', 'off');
-        set(bbl.t, 'Visible', 'off');
-
-        bbox_figure = rbbox( bbox_figure,...
-            [fixed_figure(1) fixed_figure(2)]);
-    end
-
-    p2=get(gca,'CurrentPoint');
-    p=round([p1;p2]);
-
-    % We define the coordinates.
-    xmin=min(p(:,1));
-    xmax=max(p(:,1));
-    ymin=min(p(:,2));
-    ymax=max(p(:,2));
-
-    % Check for negative and overflow values
-    if (xmin < 0) xmin = 0; end
-    if (ymin < 0) ymin = 0; end
-    if (xmax > handles.curr_ann.image(2))
-        xmax = handles.curr_ann.image(2);
-    end
-    if (ymax > handles.curr_ann.image(1))
-        ymax = handles.curr_ann.image(1);
-    end
-
-    % Don't create size 0 boxes. return without saving.
-    if (xmin == xmax || ymin == ymax) return; end
 
     % Create a new region in the next offset
-    reg_offset = handles.curr_ann.reg_offset;
     handles.curr_ann.regions(reg_offset) = annotation_init;
-    handles.curr_ann.regions(reg_offset).bbox = [xmin ymin xmax ymax];
+    handles.curr_ann.regions(reg_offset).roi = hrect;
+    handles.curr_ann.regions(reg_offset).bbox =...
+        round(getPosition(hrect));
 
     % We will use the label that is currently selected.
     l_offset = get(handles.labels, 'Value');
     l_strings = get(handles.labels, 'String');
-    handles.curr_ann.regions(reg_offset).label = l_strings(l_offset);
+    hrect_pos = round(getPosition(hrect));
+    handles.curr_ann.regions(reg_offset).label =...
+        create_text_label(l_strings(l_offset),...
+                          hrect_pos(1), hrect_pos(2));
 
-    % Draw the box in red and save in regions.
-    pts = handles.curr_ann.regions(reg_offset).bbox;
-    lbl = handles.curr_ann.regions(reg_offset).label;
-    [l, t] = annotation_drawbox(pts, lbl, [1 0 0], @button_press_on_line);
-    handles.curr_ann.regions(reg_offset).bboxline.l = l;
-    handles.curr_ann.regions(reg_offset).bboxline.t = t;
-    handles.curr_ann.regions(reg_offset).bbox_figure = bbox_figure;
+    addNewPositionCallback(hrect,...
+        @(pos)on_move_imrect(pos,...
+                             hrect,...
+                             handles.curr_ann.regions(reg_offset).label));
+
+    % new annotation is active
     handles.curr_ann.regions(reg_offset).active = 1;
 
     % Remember to save the changes.
     guidata(hObject, handles);
 
-function button_press_on_line(hObject, eventdata)
-    %initialize handles.
-    handles = guidata(hObject);
+function text_handle = create_text_label(str, X, Y)
+    text_handle = text(X, Y, str,...
+        'Color', [1 0 0], 'FontSize', 16,...
+        'Clipping', 'on',...
+        'ButtonDownFcn',...
+        @(text_handle,~)button_pressed_on_text_label(text_handle));
 
-    % What button did the user click?
-    % normal -> left click
-    % alt -> right click
-    % extended -> middle button. (might be different for mice
-    % that dont have a middle button).
-    mouseid = get(gcf,'SelectionType');
+function button_pressed_on_text_label(text_handle)
+    handles = guidata(gco);
+    l_offset = get(handles.labels, 'Value');
+    l_strings = get(handles.labels, 'String');
+    set(text_handle, 'String', l_strings(l_offset));
 
-    if strcmp(mouseid, 'normal') == 1 && handles.correction.active == 1
-        % Get the current position of the click.
-        p1=get(gca,'CurrentPoint');
-        p = [p1(1,1), p1(1,2)];
-        m_d = 10; % consider clicks withing m_d pixels as good
+function on_move_imrect(pos, hrect, text_handle)
+    %called whenever a rect is moved.
+    % FIXME (HACK) we could receive a move from a deleted object.
+    if (size(gco,1) == 0) return; end;
 
-        % do a search in the current regions (the active ones) for the one
-        % that contains p in it's perimeter.
-        x = p(1);
-        y = p(2);
-        selected_offset = -1;
-        for i = 1:handles.curr_ann.reg_offset
-            bboxt = handles.curr_ann.regions(i).bbox;
-            xmin = bboxt(1);
-            ymin = bboxt(2);
-            xmax = bboxt(3);
-            ymax = bboxt(4);
-            if  (( (abs(x-xmin)<m_d || abs(x-xmax)<m_d)...
-                   && (y>=ymin && y<=ymax) ) ...
-                 || ( (abs(y-ymin)<m_d || abs(y-ymax)<m_d)...
-                      && (x>=xmin && x<=xmax) ))...
-                && handles.curr_ann.regions(i).active ~= 0
-                % We have a winner.  The user clicked on a border pixel.
-                selected_offset = i;
-                break;
+    handles = guidata(gco);
+    if handles.remove_active == 0
+        set(text_handle, 'Position', [pos(1), pos(2)]);
+    elseif handles.remove_active == 1
+        % delete the imrect_handle, make the text invisible and active=0.
+        for i = 1:size(handles.curr_ann.regions,2)
+            if handles.curr_ann.regions(i).active == 1 &&...
+                    handles.curr_ann.regions(i).roi == hrect
+                delete(handles.curr_ann.regions(i).roi);
+                handles.curr_ann.regions(i).roi = NaN;
+                set(handles.curr_ann.regions(i).label, 'Visible', 'off');
+                delete(handles.curr_ann.regions(i).label);
+                handles.curr_ann.regions(i).label = NaN;
+                handles.curr_ann.regions(i).active = 0;
             end
-        end
-
-        % If we did not find any regions, just continue
-        if selected_offset ~= -1
-            % If we find a box:
-            % Unpaint the previous green box if there is one.
-            % Update the global handles.correction var
-            % paint the new box.
-            if handles.correction.offset ~= -1
-                % We must undraw the green box
-                bbl = handles.correction.box;
-                set(bbl.l, 'Visible', 'off');
-                set(bbl.t, 'Visible', 'off');
-            end
-
-            handles.correction.offset = selected_offset;
-            pts = handles.curr_ann.regions(selected_offset).bbox;
-            lbl = handles.curr_ann.regions(selected_offset).label;
-            [l, t] = annotation_drawbox(pts, lbl, [0 1 0], ...
-                @button_press_on_line);
-            handles.correction.box.l = l;
-            handles.correction.box.t = t;
         end
     end
 
     % Remember to save the changes.
-    guidata(hObject, handles);
+    guidata(gcf, handles);
 
 function on_key_press_callback(hObject, eventdata)
     %initialize handles
@@ -452,28 +343,6 @@ function on_key_press_callback(hObject, eventdata)
         end
         % call the zoom callback..
         zoom_toggle_Callback(handles.zoom_toggle, '', handles)
-
-    elseif (strcmp(eventdata.Character, 'd') == 1 ||...
-            strcmp(eventdata.Character, 'D') == 1) &&...
-           handles.correction.active == 1 && handles.correction.offset >= 0
-        % we need to deactivate the region that is marked by
-        % handles.correction.offset. remove the green and red squares.
-        % fist deactivate the region
-        handles.curr_ann.regions(handles.correction.offset).active = 0;
-
-        % remove the green box
-        bbl = handles.correction.box;
-        set(bbl.l, 'Visible', 'off');
-        set(bbl.t, 'Visible', 'off');
-
-        % remove the red box
-        bbl = handles.curr_ann.regions(handles.correction.offset).bboxline;
-        set(bbl.l, 'Visible', 'off');
-        set(bbl.t, 'Visible', 'off');
-
-        handles.correction.offset = -1;
-        handles.correction.box.l = -1;
-        handles.correction.box.t = -1;
     end
 
     % Remember to save the changes.
@@ -484,68 +353,84 @@ function on_key_press_callback(hObject, eventdata)
 % it was code that was being repeated.  If the return value  is not successfull one
 % can always reuse the previous handles var.
 function [success, ret_handles] = select_offset_from_list(offset, handles, hObject)
+    % FIXME : HACK!!!
+    %For some reason Matlab does not keep the handles with the guidata call
+    % this is a workaround.
+    ret_handles = handles;
+
     % We dafault to a successfull return :(
     success = 1;
 
     % We ignore if there is nothing in the list.
-    if size (handles.paths,2) == 0
+    if size (ret_handles.paths,2) == 0
         return;
     end
 
     % We search for the next image in the list.  If we have gotten to the end
     % of the list, we go to element 1.
     % Update the var that holds the current status of the list.
-    axis_handler = handles.image_axis;
+    axis_handler = ret_handles.image_axis;
 
     % we use > and < to make sure we put the counter back to the first image
     % if we encounter some inconsistent values.
-    if offset >= size(handles.paths,2) + 1 || offset < 1;
+    if offset >= size(ret_handles.paths,2) + 1 || offset < 1;
         offset = 1;
     end
 
     % We get the selected file name.
-    selected_file = handles.paths(offset);
+    selected_file = ret_handles.paths(offset);
 
     % We make sure that the file is in the local filesystem
-    [local_file, success, handles] =...
-        annotation_getfile(handles, selected_file);
+    [local_file, success, ret_handles] =...
+        annotation_getfile(ret_handles, selected_file);
     if ~success
-        ret_handles = handles;
         return;
     end% we have already shown an error.
 
     % We 'officialize' the selection
-    handles.list_selected_file = offset;
+    ret_handles.list_selected_file = offset;
 
     % We select the corresponding file in the list of files.
-    set(handles.file_list, 'Value', handles.list_selected_file);
+    set(ret_handles.file_list, 'Value', ret_handles.list_selected_file);
 
     % We put the image in the axis.
-    img = put_image_in_axis (local_file, axis_handler, handles);
+    img = put_image_in_axis (local_file, axis_handler, ret_handles);
 
-    % Modify handles.ann_curr to reflect the change
-    handles.curr_ann = annotation_read(local_file);
-    handles.curr_ann = annotation_put_in_axis (handles.curr_ann,...
-        @button_press_on_line);
-    handles.curr_ann.image = size(img);
+    % Modify ret_handles.ann_curr to reflect the change
+    ret_handles.curr_ann = annotation_read(local_file);
+
+    % Paint annotations. Remember that the last region is empty.
+    for i = 1:size(ret_handles.curr_ann.regions, 2)
+        % we paint only the active ones.
+        if ret_handles.curr_ann.regions(i).active == 1
+            imrect_pos = [ ret_handles.curr_ann.regions(i).bbox(1),...
+                           ret_handles.curr_ann.regions(i).bbox(2),...
+                           ret_handles.curr_ann.regions(i).bbox(3),...
+                           ret_handles.curr_ann.regions(i).bbox(4) ];
+            ret_handles.curr_ann.regions(i).roi = imrect(ret_handles.image_axis,...
+                                                     imrect_pos);
+            % Work with text ret_handles not strings.
+            ret_handles.curr_ann.regions(i).label =...
+                create_text_label(char(ret_handles.curr_ann.regions(i).label),...
+                                  imrect_pos(1), imrect_pos(2));
+
+            % func handle that will pass pos and the related text.
+            addNewPositionCallback(...
+                ret_handles.curr_ann.regions(i).roi,...
+            	@(pos)on_move_imrect(pos,...
+                                     ret_handles.curr_ann.regions(i).roi,...
+                                     ret_handles.curr_ann.regions(i).label) );
+
+        end
+    end
+    iptPointerManager(gcf);
+    ret_handles.curr_ann.image = size(img);
 
     % modify the review items.
-    handles = update_review_items(handles);
-
-    % make sure we reinitialize the relevant correction vars.
-    % Offset of region to correct.  This is only valid when correcting.  It
-    % should be -1 otherwise.
-    handles.correction.offset = -1;
-    handles.correction.box.l = -1;
-    handles.correction.box.t = -1;
-
-    % FIXME : HACK!!!
-    %For some reason Matlab does not keep the handles with the guidata call
-    % this is a workaround.
-    ret_handles = handles;
+    ret_handles = update_review_items(ret_handles);
 
     % Remember to save the changes.
-    guidata(hObject, handles);
+    guidata(hObject, ret_handles);
 
 
 % --- Executes on button press in zoom_toggle.
@@ -584,27 +469,6 @@ function grab_toggle_Callback(hObject, eventdata, handles)
     else
         % this should not be reached.
     end
-
-
-% --- Executes on button press in correct_toggle.
-% this function basically changes the onclick callback function.
-function correct_toggle_Callback(hObject, eventdata, handles)
-    state = get(hObject, 'Value');
-
-    if state == 0
-        % change to the button_pressed_on_image callback,  I should change
-        % the name... :)
-        handles.correction.active = 0;
-
-    elseif state == 1
-        % change to the special call back function for the correction
-        % purposes.
-        handles.correction.active = 1;
-    end
-
-    % Remember to save the changes.
-    guidata(hObject, handles);
-
 
 % --- Executes on button press in review_checkbox.
 function review_checkbox_Callback(hObject, eventdata, handles)
@@ -672,6 +536,28 @@ function vispanel_SelectionChangeFcn(hObject, eventdata, handles)
     [success, handles] = ...
             select_offset_from_list(handles.list_selected_file,...
                 handles, hObject);
+
+    % Remember to save the changes.
+    guidata(hObject, handles);
+
+
+% --- Executes on button press in remove.
+function remove_Callback(hObject, eventdata, handles)
+% hObject    handle to remove (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    state = get(hObject, 'Value');
+
+    if state == 0
+        % change to the button_pressed_on_image callback,  I should change
+        % the name... :)
+        handles.remove_active = 0;
+
+    elseif state == 1
+        % change to the special call back function for the correction
+        % purposes.
+        handles.remove_active = 1;
+    end
 
     % Remember to save the changes.
     guidata(hObject, handles);

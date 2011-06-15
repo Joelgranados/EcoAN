@@ -77,7 +77,8 @@ function annotation=annotation_read(file_name)
                     reg_offset = annotation.reg_offset + 1;
                     annotation.regions(reg_offset) = annotation_init;
                     annotation.regions(reg_offset).label = char(lbl);
-                    annotation.regions(reg_offset).bbox = [xmin,ymin,xmax,ymax];
+                    annotation.regions(reg_offset).bbox =...
+                        [xmin,ymin,xmax-xmin,ymax-ymin];
                     annotation.regions(reg_offset).active = 1;
 
                     % prepare the next element for the next iteration.
