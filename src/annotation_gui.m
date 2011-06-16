@@ -64,6 +64,9 @@ function annotation_gui_OpeningFcn(hObject, eventdata, handles, varargin)
 
     % Initialize the figure1 callback definitions.
     set(handles.figure1, 'KeyPressFcn', @on_key_press_callback);
+    
+    % Can be imrect, impoly or imfreehand.
+    handles.roicreate = @impoly;
 
     % Update handles structure
     guidata(hObject, handles);
@@ -248,10 +251,10 @@ function button_pressed_on_image(hObject, eventdata)
         return;
     end
 
-    hrect = imrect(handles.image_axis);
+    hroi = handles.roicreate(handles.image_axis);
 
     % handle when user presses ESC
-    if (size(hrect,1) == 0) return; end;
+    if (size(hroi,1) == 0) return; end;
 
     % increment offset for new box.
     handles.curr_ann.reg_offset = handles.curr_ann.reg_offset + 1;
@@ -259,19 +262,23 @@ function button_pressed_on_image(hObject, eventdata)
 
     % Create a new region in the next offset
     handles.curr_ann.regions(reg_offset) = annotation_init;
-    handles.curr_ann.regions(reg_offset).roi = hrect;
+    handles.curr_ann.regions(reg_offset).roi = hroi;
 
     % We will use the label that is currently selected.
     l_offset = get(handles.labels, 'Value');
     l_strings = get(handles.labels, 'String');
-    hrect_pos = round(getPosition(hrect));
+    % calculate pos based on object.
+    hroi_pos = round(getPosition(hroi));
+    if isa(hroi, 'impoly') || isa(hroi, 'imfreehand')
+        hroi_pos = [min(hroi_pos(:,1)),min(hroi_pos(:,2))]
+    end
     handles.curr_ann.regions(reg_offset).label =...
         create_text_label(l_strings(l_offset),...
-                          hrect_pos(1), hrect_pos(2));
+                          hroi_pos(1), hroi_pos(2));
 
-    addNewPositionCallback(hrect,...
+    addNewPositionCallback(hroi,...
         @(pos)on_move_roi(pos,...
-                             hrect,...
+                             hroi,...
                              handles.curr_ann.regions(reg_offset).label));
 
     % new annotation is active
@@ -289,23 +296,15 @@ function text_handle = create_text_label(str, X, Y)
 
 function button_pressed_on_text_label(text_handle)
     handles = guidata(gco);
-    l_offset = get(handles.labels, 'Value');
-    l_strings = get(handles.labels, 'String');
-    set(text_handle, 'String', l_strings(l_offset));
-
-function on_move_roi(pos, hrect, text_handle)
-    %called whenever a rect is moved.
-    % FIXME (HACK) we could receive a move from a deleted object.
-    if (size(gco,1) == 0) return; end;
-
-    handles = guidata(gco);
     if handles.remove_active == 0
-        set(text_handle, 'Position', [pos(1), pos(2)]);
+        l_offset = get(handles.labels, 'Value');
+        l_strings = get(handles.labels, 'String');
+        set(text_handle, 'String', l_strings(l_offset));
     elseif handles.remove_active == 1
         % delete the roi_handle, make the text invisible and active=0.
         for i = 1:size(handles.curr_ann.regions,2)
             if handles.curr_ann.regions(i).active == 1 &&...
-                    handles.curr_ann.regions(i).roi == hrect
+                    handles.curr_ann.regions(i).label == text_handle
                 delete(handles.curr_ann.regions(i).roi);
                 handles.curr_ann.regions(i).roi = NaN;
                 set(handles.curr_ann.regions(i).label, 'Visible', 'off');
@@ -314,6 +313,21 @@ function on_move_roi(pos, hrect, text_handle)
                 handles.curr_ann.regions(i).active = 0;
             end
         end
+    end
+    
+    % Remember to save the changes.
+    guidata(gcf, handles);
+
+function on_move_roi(pos, roi, text_handle)
+    %called whenever a rect is moved.
+    % FIXME (HACK) we could receive a move from a deleted object.
+    if (size(gco,1) == 0) return; end;
+
+    handles = guidata(gco);
+    if isa(roi, 'imrect')
+        set(text_handle, 'Position', [pos(1), pos(2)]);
+    elseif isa(roi, 'impoly') || isa(roi, 'imfreehand')
+        set(text_handle, 'Position', [min(pos(:,1)),min(pos(:,2))]);
     end
 
     % Remember to save the changes.
@@ -407,18 +421,18 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
             curr_reg = ret_handles.curr_ann.regions(i);
 
             % Work with roi handles not arrays.
-            roi_pos = [ curr_reg.roi(1), curr_reg.roi(2),...
-                           curr_reg.roi(3), curr_reg.roi(4) ];
-            curr_reg.roi = imrect(ret_handles.image_axis, roi_pos);
-            fcn = makeConstrainToRectFcn('imrect',...
+            %roi_pos = [ curr_reg.roi(1), curr_reg.roi(2),...
+            %               curr_reg.roi(3), curr_reg.roi(4) ];
+            curr_reg.roi = impoly(ret_handles.image_axis, curr_reg.roi);
+            fcn = makeConstrainToRectFcn('impoly',...
                 get(handles.image_axis, 'XLim'),...
                 get(handles.image_axis, 'YLim'));
             setPositionConstraintFcn(curr_reg.roi,fcn);
 
             % Work with text ret_handles not strings.
             curr_reg.label = create_text_label(char(curr_reg.label),...
-                                               roi_pos(1),...
-                                               roi_pos(2));
+                                               curr_reg.rect(1),...
+                                               curr_reg.rect(2));
 
             % func handle that will pass pos and the related text.
             addNewPositionCallback( curr_reg.roi,...
@@ -544,7 +558,6 @@ function vispanel_SelectionChangeFcn(hObject, eventdata, handles)
     % Remember to save the changes.
     guidata(hObject, handles);
 
-
 % --- Executes on button press in remove.
 function remove_Callback(hObject, eventdata, handles)
 % hObject    handle to remove (see GCBO)
@@ -565,3 +578,27 @@ function remove_Callback(hObject, eventdata, handles)
 
     % Remember to save the changes.
     guidata(hObject, handles);
+
+function annpanel_CreateFcn(hObject, eventdata, handles)
+% --- Executes when selected object is changed in annpanel.
+function annpanel_SelectionChangeFcn(hObject, eventdata, handles)
+% hObject    handle to the selected object in annpanel 
+% eventdata  structure with the following fields (see UIBUTTONGROUP)
+%	EventName: string 'SelectionChanged' (read only)
+%	OldValue: handle of the previously selected object or empty if none was selected
+%	NewValue: handle of the currently selected object
+% handles    structure with handles and user data (see GUIDATA)
+    if get(handles.radio_rect, 'Value') == 1
+        handles.roicreate = @imrect;
+    elseif get(handles.radio_freehand, 'Value') == 1
+        handles.roicreate = @imfreehand;
+    elseif get(handles.radio_poly, 'Value') == 1
+        handles.roicreate = @impoly;
+    else
+        handles.roicreate = @imrect;
+    end
+
+    % Remember to save the changes.
+    guidata(hObject, handles);
+
+

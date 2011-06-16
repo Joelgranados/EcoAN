@@ -18,6 +18,62 @@
 
 % --- Reads or creats an annotation.  WILL NOT CHANGE the filesystem.
 function annotation=annotation_read(file_name)
+    annotation = annotation_readVer20(file_name);
+
+function annotation = annotation_readVer20(file_name)
+    %FIXME create logic to fall back to .ann annotations.
+    csv_file_name = char(strcat(file_name, '.csv'));
+
+    % Initialize the annotation
+    annotation.file_name = file_name;
+    annotation.reg_offset = 0;
+    annotation.regions(1) = annotation_init;
+    annotation.review.reviewer = 'No_Reviewer';
+    annotation.review.date = 'No_Review_Date';
+
+    % No file case.
+    if exist (csv_file_name) == 0, return; end
+
+    % We try to read the file.
+    [fd,syserrmsg]=fopen(csv_file_name,'rt');
+    if (fd==-1),
+        msgboxText{1} =  strcat('Error reading file: ', cvs_file_name);
+        msgbox(msgboxText,'Please try to save again.');
+    end;
+
+    % lines{16} will have the vertices.
+    lines = textscan(fd,'%s%s%s%s%s%s%s%s%s%s%s%d%d%d%d%[0123456789,]',...
+        'Delimiter', ',', 'CommentStyle', '#');
+    fclose(fd);
+
+    if (isempty(lines{1})), return; end;
+    for i=1:size(lines{1},1),
+        reg_offset = annotation.reg_offset + 1;
+        annotation.regions(reg_offset) = annotation_init;
+        annotation.regions(reg_offset).label = char(lines{3}(i));
+        annotation.regions(reg_offset).rect =...
+            [double(lines{12}(i)), double(lines{13}(i)),...
+             double(lines{14}(i)), double(lines{15}(i))];
+        annotation.regions(reg_offset).active = 1;
+        
+        %Create the vertieces
+        vertices = [];
+        remain = lines{16}(i);
+        while strcmp(remain,'') ~= 1,
+            [X,remain] = strtok(remain, ',');
+            [Y,remain] = strtok(remain, ',');
+            X = round(str2double(X)); Y = round(str2double(Y));
+            vertices = [vertices; [X Y]];
+        end       
+
+        annotation.regions(reg_offset).roi = vertices;
+        annotation.reg_offset = reg_offset;
+    end
+    %FIXME: little HACK.
+    annotation.review.reviewer = char(lines{4}(1));
+    annotation.review.date = char(lines{5}(1));
+    
+function annotation = annotation_readVer10(file_name)
     % file_name   is the name from the original image.  We will look for the
     % text file of that image.
     ann_file_name = char(strcat(file_name, '.ann'));
@@ -43,7 +99,15 @@ function annotation=annotation_read(file_name)
     end;
 
     % parse the file.
-    matchstrs=initstrings;
+    matchstrs(1).matchlen=14;
+    matchstrs(1).str='Image filename : %q';
+    matchstrs(2).matchlen=10;
+    matchstrs(2).str='Image size (X x Y x C) : %d x %d x %d';
+    matchstrs(3).matchlen=8;
+    matchstrs(3).str='Bounding box for object %d %q (Xmin, Ymin) - (Xmax, Ymax) : (%d, %d) - (%d, %d)';
+    matchstrs(4).matchlen=6;
+    matchstrs(4).str='Review %s %s';
+
     %record=PASemptyrecord;
     EOF = 0;
     while (~EOF),
@@ -107,19 +171,4 @@ function matchnum=match(line,matchstrs)
         msgboxText{1} = 'Multiple matches while parsing.';
         msgbox(msgboxText);
     end;
-return
-
-function s=initstrings
-    s(1).matchlen=14;
-    s(1).str='Image filename : %q';
-
-    s(2).matchlen=10;
-    s(2).str='Image size (X x Y x C) : %d x %d x %d';
-
-    s(3).matchlen=8;
-    s(3).str='Bounding box for object %d %q (Xmin, Ymin) - (Xmax, Ymax) : (%d, %d) - (%d, %d)';
-
-    s(4).matchlen=6;
-    s(4).str='Review %s %s';
-
 return

@@ -17,7 +17,76 @@
 
 
 function annotation_save(handles, annotation)
+    annotation_save_VER20(handles, annotation);
+end
 
+function annotation_save_VER20(handles, annotation)
+    verstr = strcat(int2str(2),'.',int2str(0));
+    ann_file_name = char(strcat(annotation.file_name, '.csv'));
+
+    [fd,syserrmsg]=fopen(ann_file_name,'wt');
+    if (fd==-1),
+        msgboxText{1} =  strcat('Error saving to file: ', ann_file_name);
+        msgbox(msgboxText,'Please try to save again.');
+        return;
+    end;
+
+    [p,f,e] = fileparts(char(annotation.file_name));
+    file_name = strcat(f,e);
+
+    fprintf(fd, '#PHENOLOGY ITU Annotation Version %s\n', verstr);
+    fprintf(fd, '#CVS format (1,2,3,4,5,6 are reserved for future use):\n');
+    fprintf(fd, '#Xmin,Ymin,Width,Height describe the containing square\n');
+    fprintf(fd, '#fileName,FormatVersion,LabelName,lastReviewer,');
+    fprintf(fd, 'reviewData,Xmin,Ymin,Width,Height,1,2,3,4,5,6,');
+    fprintf(fd, 'X1,Y1,X2,Y2...,XN,YN\n');
+
+    % The last region is always empty.
+    size_regions = size(annotation.regions, 2);
+    for i=1:size_regions,
+        % We only save the active regions.
+        if annotation.regions(i).active == 1
+            lbl = char(get(annotation.regions(i).label, 'string'));
+            
+            % Create [Xmin, Ymin, Width, Heigth] and [X1,Y1....XN,YN]
+            if isa(annotation.regions(i).roi, 'imrect')
+                square = round(getPosition(annotation.regions(i).roi));
+                vertices = [square(1) square(2);...
+                    square(1) square(2)+square(4);...
+                    square(1)+square(3) square(2)+square(4);...
+                    square(1)+square(3) square(2)];
+
+            elseif isa(annotation.regions(i).roi, 'impoly') ||...
+                    isa(annotation.regions(i).roi, 'imfreehand')
+                vertices = round(getPosition(annotation.regions(i).roi));
+                xmin = min(vertices(:,1));
+                ymin = min(vertices(:,2));
+                xmax = max(vertices(:,1));
+                ymax = max(vertices(:,2));
+                square = [xmin, ymin, xmax-xmin, ymax-ymin];
+
+            else
+                % ERROR!!!
+                msgboxText{1} = strcat('Error: Unkown roi type to save');
+                msgbox(msgboxText,'Please try to save again.');
+                return;
+            end;
+
+            fprintf(fd, '%s,%s,%s,%s,%s,,,,,,',...
+                char(file_name),verstr,lbl,...
+                char(annotation.review.reviewer),...
+                char(annotation.review.date) );
+            fprintf(fd, ',%d,%d,%d,%d', square);
+            for j=1:size(vertices,1),
+                fprintf(fd, ',%d,%d', vertices(j,1), vertices(j,2));
+            end
+            fprintf(fd, '\n');
+        end
+    end
+    fclose(fd);
+end
+
+function annotation_save_VER10(handles, annotation)
     % WE SAVE ANNOTATION LOCALY
     VERSION=1.0;
     ann_file_name = char(strcat(annotation.file_name, '.ann'));

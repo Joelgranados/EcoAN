@@ -21,6 +21,7 @@
 function object=annotation_init
   object.roi = NaN; % a imroi
   object.label = NaN; % should be handled as text.
+  object.rect = NaN; % surrounding rectangle.
 
   % 0 (inactive) don't save, 1 (active) save.
   object.active = 0;
