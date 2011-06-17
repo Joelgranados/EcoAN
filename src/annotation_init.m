@@ -22,6 +22,8 @@ function object=annotation_init
   object.roi = NaN; % a imroi
   object.label = NaN; % should be handled as text.
   object.rect = NaN; % surrounding rectangle.
+  object.vertices = NaN; % vertices array.
+  object.line_handle = NaN; % handle to the drawn line.
 
   % 0 (inactive) don't save, 1 (active) save.
   object.active = 0;

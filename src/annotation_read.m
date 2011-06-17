@@ -70,6 +70,7 @@ function annotation = annotation_readVer20(file_name)
         end
 
         annotation.regions(reg_offset).roi = vertices;
+        annotation.regions(reg_offset).vertices = vertices;
         annotation.reg_offset = reg_offset;
     end
     %FIXME: little HACK.
@@ -90,6 +91,7 @@ function annotation = Ver10toVer20(annotation)
              curr_reg.roi(1) curr_reg.roi(2)+curr_reg.roi(4);...
              curr_reg.roi(1)+curr_reg.roi(3) curr_reg.roi(2)+curr_reg.roi(4);...
              curr_reg.roi(1)+curr_reg.roi(3) curr_reg.roi(2)];
+         curr_reg.vertices = curr_reg.roi;
          annotation.regions(i) = curr_reg;
     end
 

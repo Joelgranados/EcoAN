@@ -41,41 +41,19 @@ function annotation_save_VER20(handles, annotation)
     fprintf(fd, 'reviewData,Xmin,Ymin,Width,Height,1,2,3,4,5,6,');
     fprintf(fd, 'X1,Y1,X2,Y2...,XN,YN\n');
 
-    % The last region is always empty.
     for i=1:annotation.reg_offset,
         % We only save the active regions.
         if annotation.regions(i).active == 1
             lbl = char(get(annotation.regions(i).label, 'string'));
 
             % Create [Xmin, Ymin, Width, Heigth] and [X1,Y1....XN,YN]
-            if isa(annotation.regions(i).roi, 'imrect')
-                square = round(getPosition(annotation.regions(i).roi));
-                vertices = [square(1) square(2);...
-                    square(1) square(2)+square(4);...
-                    square(1)+square(3) square(2)+square(4);...
-                    square(1)+square(3) square(2)];
-
-            elseif isa(annotation.regions(i).roi, 'impoly') ||...
-                    isa(annotation.regions(i).roi, 'imfreehand')
-                vertices = round(getPosition(annotation.regions(i).roi));
-                xmin = min(vertices(:,1));
-                ymin = min(vertices(:,2));
-                xmax = max(vertices(:,1));
-                ymax = max(vertices(:,2));
-                square = [xmin, ymin, xmax-xmin, ymax-ymin];
-
-            else
-                % ERROR!!!
-                msgboxText{1} = strcat('Error: Unkown roi type to save');
-                msgbox(msgboxText,'Please try to save again.');
-                return;
-            end;
+            vertices = annotation.regions(i).vertices;
 
             fprintf(fd, '%s,%s,%s,%s,%s,,,,,,',...
                 char(file_name),verstr,lbl,...
                 char(annotation.review.reviewer),...
                 char(annotation.review.date) );
-            fprintf(fd, ',%d,%d,%d,%d', square);
+            fprintf(fd, ',%d,%d,%d,%d', annotation.regions(i).rect);
             for j=1:size(vertices,1),
                 fprintf(fd, ',%d,%d', vertices(j,1), vertices(j,2));
             end
