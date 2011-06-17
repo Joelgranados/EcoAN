@@ -186,6 +186,9 @@ function clear_files_Callback(hObject, eventdata, handles)
 % hObject    handle to clear_files (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+    if handles.list_selected_file ~= -1
+        annotation_save(handles, handles.curr_ann);
+    end
     % Set the label list back to its default.
     labels_CreateFcn(handles.labels, '', handles);
     handles.paths = [];
