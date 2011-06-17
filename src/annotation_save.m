@@ -42,12 +42,11 @@ function annotation_save_VER20(handles, annotation)
     fprintf(fd, 'X1,Y1,X2,Y2...,XN,YN\n');
 
     % The last region is always empty.
-    size_regions = size(annotation.regions, 2);
-    for i=1:size_regions,
+    for i=1:annotation.reg_offset,
         % We only save the active regions.
         if annotation.regions(i).active == 1
             lbl = char(get(annotation.regions(i).label, 'string'));
-            
+
             % Create [Xmin, Ymin, Width, Heigth] and [X1,Y1....XN,YN]
             if isa(annotation.regions(i).roi, 'imrect')
                 square = round(getPosition(annotation.regions(i).roi));

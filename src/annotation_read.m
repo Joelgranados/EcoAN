@@ -24,15 +24,11 @@ function annotation = annotation_readVer20(file_name)
     %FIXME create logic to fall back to .ann annotations.
     csv_file_name = char(strcat(file_name, '.csv'));
 
-    % Initialize the annotation
-    annotation.file_name = file_name;
-    annotation.reg_offset = 0;
-    annotation.regions(1) = annotation_init;
-    annotation.review.reviewer = 'No_Reviewer';
-    annotation.review.date = 'No_Review_Date';
-
     % No file case.
-    if exist (csv_file_name) == 0, return; end
+    if exist (csv_file_name) == 0,
+        annotation = Ver10toVer20(annotation_readVer10(file_name));
+        return;
+    end
 
     % We try to read the file.
     [fd,syserrmsg]=fopen(csv_file_name,'rt');
@@ -46,7 +42,14 @@ function annotation = annotation_readVer20(file_name)
         'Delimiter', ',', 'CommentStyle', '#');
     fclose(fd);
 
-    if (isempty(lines{1})), return; end;
+    % Initialize the annotation
+    annotation.file_name = file_name;
+    annotation.reg_offset = 0;
+    annotation.review.reviewer = 'No_Reviewer';
+    annotation.review.date = 'No_Review_Date';
+
+    if (isempty(lines{1})),return;end;
+
     for i=1:size(lines{1},1),
         reg_offset = annotation.reg_offset + 1;
         annotation.regions(reg_offset) = annotation_init;
@@ -55,7 +58,7 @@ function annotation = annotation_readVer20(file_name)
             [double(lines{12}(i)), double(lines{13}(i)),...
              double(lines{14}(i)), double(lines{15}(i))];
         annotation.regions(reg_offset).active = 1;
-        
+
         %Create the vertieces
         vertices = [];
         remain = lines{16}(i);
@@ -64,7 +67,7 @@ function annotation = annotation_readVer20(file_name)
             [Y,remain] = strtok(remain, ',');
             X = round(str2double(X)); Y = round(str2double(Y));
             vertices = [vertices; [X Y]];
-        end       
+        end
 
         annotation.regions(reg_offset).roi = vertices;
         annotation.reg_offset = reg_offset;
@@ -72,7 +75,24 @@ function annotation = annotation_readVer20(file_name)
     %FIXME: little HACK.
     annotation.review.reviewer = char(lines{4}(1));
     annotation.review.date = char(lines{5}(1));
-    
+
+function annotation = Ver10toVer20(annotation)
+    if size(annotation.regions,2) == 1 && annotation.regions(1).active == 0
+        annotation.reg_offset = 0;
+        return;
+    end
+
+    for i=1:size(annotation.regions,2)
+        curr_reg = annotation.regions(i);
+        curr_reg.rect = curr_reg.roi;
+        curr_reg.roi =...
+            [curr_reg.roi(1) curr_reg.roi(2);...
+             curr_reg.roi(1) curr_reg.roi(2)+curr_reg.roi(4);...
+             curr_reg.roi(1)+curr_reg.roi(3) curr_reg.roi(2)+curr_reg.roi(4);...
+             curr_reg.roi(1)+curr_reg.roi(3) curr_reg.roi(2)];
+         annotation.regions(i) = curr_reg;
+    end
+
 function annotation = annotation_readVer10(file_name)
     % file_name   is the name from the original image.  We will look for the
     % text file of that image.

@@ -64,7 +64,7 @@ function annotation_gui_OpeningFcn(hObject, eventdata, handles, varargin)
 
     % Initialize the figure1 callback definitions.
     set(handles.figure1, 'KeyPressFcn', @on_key_press_callback);
-    
+
     % Can be imrect, impoly or imfreehand.
     handles.roicreate = @impoly;
 
@@ -270,7 +270,7 @@ function button_pressed_on_image(hObject, eventdata)
     % calculate pos based on object.
     hroi_pos = round(getPosition(hroi));
     if isa(hroi, 'impoly') || isa(hroi, 'imfreehand')
-        hroi_pos = [min(hroi_pos(:,1)),min(hroi_pos(:,2))]
+        hroi_pos = [min(hroi_pos(:,1)),min(hroi_pos(:,2))];
     end
     handles.curr_ann.regions(reg_offset).label =...
         create_text_label(l_strings(l_offset),...
@@ -302,7 +302,7 @@ function button_pressed_on_text_label(text_handle)
         set(text_handle, 'String', l_strings(l_offset));
     elseif handles.remove_active == 1
         % delete the roi_handle, make the text invisible and active=0.
-        for i = 1:size(handles.curr_ann.regions,2)
+        for i = 1:handles.curr_ann.reg_offset
             if handles.curr_ann.regions(i).active == 1 &&...
                     handles.curr_ann.regions(i).label == text_handle
                 delete(handles.curr_ann.regions(i).roi);
@@ -314,7 +314,7 @@ function button_pressed_on_text_label(text_handle)
             end
         end
     end
-    
+
     % Remember to save the changes.
     guidata(gcf, handles);
 
@@ -415,7 +415,7 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
     ret_handles.curr_ann = annotation_read(local_file);
 
     % Paint annotations. Remember that the last region is empty.
-    for i = 1:size(ret_handles.curr_ann.regions, 2)
+    for i = 1:ret_handles.curr_ann.reg_offset
         % we paint only the active ones.
         if ret_handles.curr_ann.regions(i).active == 1
             curr_reg = ret_handles.curr_ann.regions(i);
@@ -582,7 +582,7 @@ function remove_Callback(hObject, eventdata, handles)
 function annpanel_CreateFcn(hObject, eventdata, handles)
 % --- Executes when selected object is changed in annpanel.
 function annpanel_SelectionChangeFcn(hObject, eventdata, handles)
-% hObject    handle to the selected object in annpanel 
+% hObject    handle to the selected object in annpanel
 % eventdata  structure with the following fields (see UIBUTTONGROUP)
 %	EventName: string 'SelectionChanged' (read only)
 %	OldValue: handle of the previously selected object or empty if none was selected
