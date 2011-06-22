@@ -84,7 +84,7 @@ function file_list_Callback(hObject, eventdata, handles)
     if size (handles.paths,2) == 0
         return;
     end
-    
+
     % We can't do anything if the user is modifying.
     if handles.isModifying == 1,
         msgboxText{1} =  strcat('Interaction error.:',...
@@ -302,7 +302,7 @@ function button_pressed_on_image(hObject, eventdata)
         'ButtonDownFcn',...
         @(src,event)button_press_on_line(src,event,...
         handles.curr_ann.regions(reg_offset).line_handle));
-    
+
     xmin = min(handles.curr_ann.regions(reg_offset).vertices(:,1));
     ymin = min(handles.curr_ann.regions(reg_offset).vertices(:,2));
     xmax = max(handles.curr_ann.regions(reg_offset).vertices(:,1));
@@ -343,7 +343,7 @@ function button_press_on_line(hObject, ~, line_handle)
         get(handles.image_axis, 'YLim'));
     setPositionConstraintFcn(imroi_handle,fcn);
     waitResult = wait(imroi_handle);
-    
+
     if size(waitResult,1) == 0.
         % means that user wants to erase region.
         set(curr_reg.label, 'Visible', 'off');
