@@ -603,14 +603,11 @@ function ret_handles = update_review_items(handles)
     end
     ret_handles = handles;
 
-% --- Executes when selected object is changed in vispanel.
+% --- Executes when changing color space
 function vispanel_SelectionChangeFcn(hObject, eventdata, handles)
-% hObject    handle to the selected object in vispanel
-% eventdata  structure with the following fields (see UIBUTTONGROUP)
-%	EventName: string 'SelectionChanged' (read only)
-%	OldValue: handle of the previously selected object or empty if none was selected
-%	NewValue: handle of the currently selected object
-% handles    structure with handles and user data (see GUIDATA)
+    if handles.list_selected_file ~= -1
+        annotation_save(handles, handles.curr_ann);
+    end
     [success, handles] = ...
             select_offset_from_list(handles.list_selected_file,...
                 handles, hObject);
@@ -619,12 +616,6 @@ function vispanel_SelectionChangeFcn(hObject, eventdata, handles)
     guidata(hObject, handles);
 
 function annpanel_SelectionChangeFcn(hObject, eventdata, handles)
-% hObject    handle to the selected object in annpanel
-% eventdata  structure with the following fields (see UIBUTTONGROUP)
-%	EventName: string 'SelectionChanged' (read only)
-%	OldValue: handle of the previously selected object or empty if none was selected
-%	NewValue: handle of the currently selected object
-% handles    structure with handles and user data (see GUIDATA)
     if get(handles.radio_rect, 'Value') == 1
         handles.roicreate = @imrect;
     elseif get(handles.radio_freehand, 'Value') == 1
