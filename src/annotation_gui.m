@@ -227,17 +227,6 @@ function retimg = put_image_in_axis (input_image, axis_handler, handles)
             'ButtonDownFcn', @button_pressed_on_image);
         set(gca,'Units','pixels');
 
-        if get(handles.gradient, 'Value') == 1
-            step = 10;
-            [U, V] = gradient(double(rgb2gray(img)));
-            [X,Y] = meshgrid(1:size(img,2),1:size(img,1));
-            U = U(1:step:size(U,1), 1:step:size(U,2));
-            V = V(1:step:size(V,1), 1:step:size(V,2));
-            X = X(1:step:size(X,1), 1:step:size(X,2));
-            Y = Y(1:step:size(Y,1), 1:step:size(Y,2));
-            hold on;quiver(axis_handler, X, Y, U, V);hold off;
-        end
-
         retimg = img;
     else
         msgboxText{1} =  strcat('File not found: ', input_image);
