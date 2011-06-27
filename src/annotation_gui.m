@@ -123,6 +123,7 @@ function exit_Callback(hObject, eventdata, handles)
     end
 
     close(handles.figure1);
+    exit;
 
 % --- Executes on selection change in labels.
 function labels_Callback(hObject, eventdata, handles)
