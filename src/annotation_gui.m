@@ -224,9 +224,19 @@ function retimg = put_image_in_axis (input_image, axis_handler, handles)
             colormap(axis_handler, gray(2));
         end
 
+        % We maintain the zoom level if size allows.
+        XLim = get(axis_handler, 'XLim');
+        YLim = get(axis_handler, 'YLim');
+
         image(img, 'Parent', axis_handler,...
             'ButtonDownFcn', @button_pressed_on_image);
         set(gca,'Units','pixels');
+
+        if XLim(2) < size(img,2) && XLim(2) > 1 &&...
+                YLim(2) < size(img,1) && YLim(2) > 1,
+            xlim('manual');xlim(axis_handler, XLim);
+            ylim('manual');ylim(axis_handler, YLim);
+        end
 
         retimg = img;
     else
