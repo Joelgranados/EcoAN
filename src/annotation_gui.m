@@ -618,8 +618,6 @@ function vispanel_SelectionChangeFcn(hObject, eventdata, handles)
     % Remember to save the changes.
     guidata(hObject, handles);
 
-function annpanel_CreateFcn(hObject, eventdata, handles)
-% --- Executes when selected object is changed in annpanel.
 function annpanel_SelectionChangeFcn(hObject, eventdata, handles)
 % hObject    handle to the selected object in annpanel
 % eventdata  structure with the following fields (see UIBUTTONGROUP)
@@ -636,6 +634,34 @@ function annpanel_SelectionChangeFcn(hObject, eventdata, handles)
     else
         handles.roicreate = @imrect;
     end
+
+    % Remember to save the changes.
+    guidata(hObject, handles);
+
+
+% --- Executes when figure1 is resized.
+function figure1_ResizeFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+    % get new resized position
+    globalPos = get(handles.figure1, 'Position');
+
+    cporp = get(handles.rightpanel, 'Position'); % right panel.
+    cpolp = get(handles.image_axis, 'Position'); % image axis.
+
+    sfrp = cporp(3) + cpolp(1) + 2;%space for right panel.
+    cporp(1) = globalPos(3) - sfrp;% calc the x.
+
+    %get current pos of image_axis.
+    
+    cpolp(3) = abs(globalPos(3) - sfrp - cpolp(1) - 5);
+    cpolp(4) = cpolp(3); %its a square.
+
+    %make the changes.
+    set(handles.image_axis, 'Position', cpolp);
+    set(handles.rightpanel, 'Position', cporp);
 
     % Remember to save the changes.
     guidata(hObject, handles);
