@@ -656,7 +656,7 @@ function figure1_ResizeFcn(hObject, eventdata, handles)
     cporp(1) = globalPos(3) - sfrp;% calc the x.
 
     %get current pos of image_axis.
-    
+
     cpolp(3) = abs(globalPos(3) - sfrp - cpolp(1) - 5);
     cpolp(4) = cpolp(3); %its a square.
 
