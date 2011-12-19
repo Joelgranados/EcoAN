@@ -27,7 +27,7 @@ static PyObject*
 annexif_getVersion ( PyObject *self, PyObject *args )
 {
     PyObject *ver_mes;
-    ver_mes = PyString_FromFormat (
+    ver_mes = PyBytes_FromFormat (
             "%s, Version: %d.%d.",
             ANNEXIF_NAME, ANNEXIF_VER_MAJOR, ANNEXIF_VER_MINOR );
     return ver_mes;
@@ -59,10 +59,18 @@ static struct PyMethodDef annexif_methods [] =
   {NULL, NULL, 0, NULL}
 };
 
+static struct PyModuleDef annexif = {
+  PyModuleDef_HEAD_INIT,
+  "annexif",
+  NULL, /* Documentation */
+  -1, /* Keep track in global variables */
+  annexif_methods
+};
+
 PyMODINIT_FUNC
-init_annexif (void)
+PyInit_annexif (void)
 {
-  (void) Py_InitModule ( "annexif", annexif_methods );
+  (void) PyModule_Create ( &annexif );
 }
 
 

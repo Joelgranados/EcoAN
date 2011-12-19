@@ -19,11 +19,16 @@ cmake_minimum_required (VERSION 2.8)
 
 project (Annotation)
 
-find_package (PythonLibs REQUIRED)
-include (FindPkgConfig)
-pkg_search_module (EXIV2 exiv2 REQUIRED)
+if(UNIX)
+    include (FindPkgConfig)
+    pkg_search_module (EXIV2 exiv2 REQUIRED)
+    pkg_search_module (PYTHON3 python3 REQURED)
 
-include_directories ( ${PYTHON_INCLUDE_PATH} )
+    include_directories ( ${PYTHON3_INCLUDE_DIRS} )
+else(UNIX)
+    message (FATAL_ERROR
+        "FIXME: Need to find python3 and exiv2 on other plotforms." )
+endif(UNIX)
 
 add_library ( annexif SHARED src/pyann/annexif.cpp )
 set_target_properties ( annexif PROPERTIES PREFIX "" )
