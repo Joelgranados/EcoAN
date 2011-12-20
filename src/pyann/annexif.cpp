@@ -18,10 +18,19 @@
  */
 
 #include <Python.h>
+#include <exiv2/exiv2.hpp>
 
 #define ANNEXIF_NAME "Annotation Exif Library"
 #define ANNEXIF_VER_MAJOR 0
 #define ANNEXIF_VER_MINOR 1
+
+using namespace std;
+
+#define ANNEXIF_RETERR( message ) \
+  { \
+    PyErr_SetString ( PyExc_Exception, message ); \
+    return NULL; \
+  }
 
 static PyObject*
 annexif_getVersion ( PyObject *self, PyObject *args )
@@ -33,16 +42,107 @@ annexif_getVersion ( PyObject *self, PyObject *args )
     return ver_mes;
 }
 
+static string
+annexif_getElem ( const char* img_file,
+                  const bool isPlotID,
+                  const bool isNormDate )
+{
+  string sample;
+  int size, from, to;
+
+  if ( isPlotID == isNormDate)
+    return "";
+  else if ( isPlotID )
+  {
+    sample = "plotid=";
+    size = 6;
+  }
+  else if ( isNormDate )
+  {
+    sample = "normalized=";
+    size = 11;
+  }
+
+  vector<string> elements;
+  Exiv2::Image::AutoPtr img = Exiv2::ImageFactory::open ( img_file );
+  Exiv2::ExifData &exifData = img->exifData();
+  Exiv2::ExifData::iterator edi =
+    exifData.findKey ( Exiv2::ExifKey ( "Exif.Photo.UserComment" ) );
+  string comment = (*edi).toString();
+
+  /* It needs to have something */
+  if ( comment.length() <= 0 )
+    throw;
+
+  from = comment.find ( sample );
+  if ( from == string::npos )
+    throw;
+
+  from = from + size;
+
+  to = comment.find ( ",\n\r", from );
+  if ( to == string::npos || from+1 == to )
+    throw;
+
+  return comment.substr(from, to).data();
+}
+
 static PyObject*
 annexif_getPlotID ( PyObject *self, PyObject *args )
 {
+  char *img_file;
+  PyObject *pyPlot_id;
+  long plot_id = -1;
 
+  if ( !PyArg_ParseTuple ( args, "s", &img_file ) )
+    ANNEXIF_RETERR ( "Invalid parameters for getPlotID." );
+
+  try {
+    string plotidstr = annexif_getElem ( img_file, 1, 0 );
+
+    plot_id = (long) atol ( plotidstr.data() );
+
+    if ( plot_id == -1 )
+      ANNEXIF_RETERR( "Plot ID not found in exif data." )
+
+  } catch ( Exiv2::AnyError& ae ) {
+      ANNEXIF_RETERR( "Unable to access image file to read EXIF data" );
+  }
+
+  pyPlot_id = Py_BuildValue ( "l", plot_id );
+  if ( pyPlot_id == NULL )
+    ANNEXIF_RETERR ( "Plot ID not found in exif data." );
+
+  return pyPlot_id;
 }
+
+
 
 static PyObject*
 annexif_getNormDate ( PyObject *self, PyObject *args )
 {
+  char *img_file;
+  string datestr;
+  PyObject *pyDatestr;
 
+  if ( !PyArg_ParseTuple ( args, "s", &img_file ) )
+    ANNEXIF_RETERR ( "Invalid parameters for getPlotID." );
+
+  try {
+    datestr = annexif_getElem ( img_file, 1, 0 );
+
+    if ( datestr.compare("") == 0 )
+      ANNEXIF_RETERR( "Plot ID not found in exif data." )
+
+  } catch ( Exiv2::AnyError& ae ) {
+      ANNEXIF_RETERR( "Unable to access image file to read EXIF data" );
+  }
+
+  pyDatestr = Py_BuildValue ( "s", datestr.data() );
+  if ( pyDatestr == NULL )
+    ANNEXIF_RETERR ( "Plot ID not found in exif data." );
+
+  return pyDatestr;
 }
 
 static struct PyMethodDef annexif_methods [] =
@@ -72,5 +172,3 @@ PyInit_annexif (void)
 {
   (void) PyModule_Create ( &annexif );
 }
-
-
