@@ -22,6 +22,7 @@ import os.path
 import hashlib
 import mimetypes
 import shutil
+import annexif
 
 #{{{ Annhandler
 class AnnHandler:
@@ -302,7 +303,7 @@ class ImgHandler:
 
     @classmethod
     def calcHash ( cls, imgFile ):
-        if ( not cls.isImg(imgFile) ):
+       if ( not cls.isImg(imgFile) ):
             raise Exception ( "Incorrect image extension: %s" % imgFile )
 
         md5 = hashlib.md5()
@@ -318,8 +319,7 @@ class ImgHandler:
 
     @classmethod
     def getPlotIDFromExif (cls, imgFile ):
-        #FIXME: implement
-        return "123"
+      return annexif.getPlotID(imgFile)
 
     def addImg ( self, img ):
         if ( img.__class__.__name__ not 'str' ):
