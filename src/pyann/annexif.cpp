@@ -116,8 +116,6 @@ annexif_getPlotID ( PyObject *self, PyObject *args )
   return pyPlot_id;
 }
 
-
-
 static PyObject*
 annexif_getNormDate ( PyObject *self, PyObject *args )
 {
@@ -145,6 +143,61 @@ annexif_getNormDate ( PyObject *self, PyObject *args )
   return pyDatestr;
 }
 
+static bool
+annexif_writeexif ( string &norm_date,
+                    string &plot_id ,
+                    const char *img_file )
+{
+  std::stringstream userComment;
+  userComment << "charset=Ascii normalized="
+              << norm_date
+              << ",plotid="
+              << plot_id;
+
+  Exiv2::Image::AutoPtr img = Exiv2::ImageFactory::open(img_file);
+  img->readMetadata ();
+  Exiv2::ExifData &srcExifData = img->exifData();
+  srcExifData ["Exif.Photo.UserComment"] = userComment.str();
+  img->setExifData ( srcExifData );
+  img->writeMetadata ();
+  return true;
+}
+
+static PyObject*
+annexif_setPlotID ( PyObject *self, PyObject *args )
+{
+  char *py_plot_id, *img_file;
+
+  if ( !PyArg_ParseTuple ( args, "ss", &py_plot_id, &img_file ) )
+    ANNEXIF_RETERR ( "Invalid parameters for setPlotID." );
+
+  string norm_date = annexif_getElem ( img_file, false, true );
+  string plot_id(py_plot_id);
+
+  if ( annexif_writeexif ( norm_date, plot_id, img_file ) )
+    Py_RETURN_TRUE;
+  else
+    Py_RETURN_FALSE;
+}
+
+static PyObject*
+annexif_setNormDate ( PyObject *self, PyObject *args )
+{
+  char *py_norm_date, *img_file;
+
+  if ( !PyArg_ParseTuple ( args, "ss", &py_norm_date, &img_file ) )
+    ANNEXIF_RETERR ( "Invalid parameters for getNormDate." );
+
+  string plot_id = annexif_getElem ( img_file, true, false );
+  string norm_date(py_norm_date);
+
+  if ( annexif_writeexif ( norm_date, plot_id, img_file ) )
+    Py_RETURN_TRUE;
+  else
+    Py_RETURN_FALSE;
+
+}
+
 static struct PyMethodDef annexif_methods [] =
 {
   { "version", (PyCFunction)annexif_getVersion, METH_NOARGS,
@@ -155,6 +208,12 @@ static struct PyMethodDef annexif_methods [] =
 
   { "getNormalizationDate",  (PyCFunction)annexif_getNormDate, METH_VARARGS,
     "Returns the date when the normalization was performed" },
+
+  { "setPlotID", (PyCFunction)annexif_setPlotID, METH_VARARGS,
+    "Sets the plot id in the exif data" },
+
+  { "setNormDate", (PyCFunction)annexif_setNormDate, METH_VARARGS,
+    "Sets the normalization date in the exif data" },
 
   {NULL, NULL, 0, NULL}
 };
