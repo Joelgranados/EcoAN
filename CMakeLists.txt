@@ -38,3 +38,17 @@ set_target_properties ( annexif PROPERTIES
 target_link_libraries ( annexif ${EXIV2_LIBRARIES} )
 
 file (COPY "${PROJECT_SOURCE_DIR}/src/pyann" DESTINATION "${PROJECT_BINARY_DIR}")
+
+# Create the test target.
+file(COPY "${PROJECT_SOURCE_DIR}/tests" DESTINATION "${PROJECT_BINARY_DIR}")
+add_custom_target ( test
+    COMMAND ${CMAKE_COMMAND} -E echo "====== STARTING TEST SUITE ======"
+    COMMAND ${CMAKE_COMMAND} -E
+            copy "${CMAKE_CURRENT_BINARY_DIR}/pyann/annexif.so"
+                 "${CMAKE_CURRENT_BINARY_DIR}/tests"
+    COMMAND ${CMAKE_COMMAND} -E
+            copy "${CMAKE_CURRENT_BINARY_DIR}/pyann/annData.py"
+                 "${CMAKE_CURRENT_BINARY_DIR}/tests"
+    COMMAND ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_BINARY_DIR}/tests" ./test
+    COMMAND ${CMAKE_COMMAND} -E echo "====== ENDING TEST SUITE ======" )
+add_dependencies(test annexif)
