@@ -32,7 +32,7 @@ class AnnHandler:
         self.dbFile = os.path.join ( self.rootDir, "ann.db" )
 
     def dbExists ( self ):
-        return os.isfile ( self.dbFile )
+        return os.path.isfile ( self.dbFile )
 
     def initDB ( self ):
         conn = sqlite3.connect(self.dbFile)
@@ -166,7 +166,7 @@ class AnnHandler:
         # when it's not an id make sure its there
         if ( not isplotid ):
             plotRowID = self.isPlotInDB (plot)
-            if ( plotRowID == -1 )
+            if ( plotRowID == -1 ):
                 plotRowID = self.addPlot(plot)
         else:
             plotRowID = plot
@@ -277,13 +277,13 @@ class AnnHandler:
 
 #{{{ImgHandler
 class ImgHandler:
+    # For the hash calculation
+    step = 128 # 128 bytes
+    numSteps = 70 # 8960 bytes equiv.
+
     def __init__ ( self, rootDir = '.' ):
         self.rootDir = rootDir
         self.annDir = os.path.join(self.rootDir, ".ann")
-
-        # For the hash calculation
-        self.hstep = 128 # 128 bytes
-        self.numSteps = 70 # 8960 bytes equiv.
 
         # Might exist or not depending on OS.
         self.ihLink = None
@@ -303,26 +303,27 @@ class ImgHandler:
 
     @classmethod
     def calcHash ( cls, imgFile ):
-       if ( not cls.isImg(imgFile) ):
+        if ( not cls.isImg(imgFile) ):
             raise Exception ( "Incorrect image extension: %s" % imgFile )
 
         md5 = hashlib.md5()
-        f = os.fopen (imgFile, "r")
+        f = os.open (imgFile, os.O_RDONLY)
 
-        for i in range (self.numSteps):
-            data = f.read(self.step)
+        for i in range (cls.numSteps):
+            data = os.read(f, cls.step)
             if not data:
                 break
             md5.update(data)
+        os.close(f)
 
         return md5.hexdigest()
 
     @classmethod
     def getPlotIDFromExif (cls, imgFile ):
-      return annexif.getPlotID(imgFile)
+        return annexif.getPlotID(imgFile)
 
     def addImg ( self, img ):
-        if ( img.__class__.__name__ not 'str' ):
+        if ( img.__class__.__name__ is not 'str' ):
             raise Exception ("Did not expect a non string")
 
         if ( not os.path.exists(img) ):
@@ -352,13 +353,16 @@ class ImgHandler:
 class DataHandler:
     def __init__(self, rootDir = "." ):
         self.rootDir = rootDir
-        self.ih = ImageHander(rootDir=rootDir)
+        self.ih = ImgHandler(rootDir=rootDir)
         self.ah = AnnHandler(rootDir=rootDir)
 
     # Create a database if on does not exist.
     def checkDB ( self ):
-        if ( not self.ah.dbExists() )
-            self.ah.initDB()
+        if ( not self.ah.dbExists() ):
+            self.initDB()
+
+    def initDB ( self ):
+        self.ah.initDB ()
 
     def _addImage (self, imgPath ):
         #FIXME: both addPictrePlot and addImg throw exceptions.!!!!!
@@ -369,7 +373,7 @@ class DataHandler:
         self.ah.addPicturePlot ( imgHash, imgbn, imgPlotID, False )
         self.ih.addImg (imgPath)
 
-    def addImages ( self, fsElems )
+    def addImages ( self, fsElems ):
         if ( fsElems.__class__.__name__ is 'str' ):
             fsElems = [fsElems]
 
@@ -377,11 +381,11 @@ class DataHandler:
         self.checkDB ()
 
         # Add images to FS and DB
-        for fselem in fsElems
+        for fselem in fsElems:
             if ( os.path.exists (fselem) ):
                 self._addImage (fselem)
             elif ( os.path.isdir (fselem) ):
-                for subelem in listdir(fselem):
+                for subelem in os.listdir(fselem):
                     # We ignore the sub-directories.
                     tmpPath = os.path.join(fselem, subelem)
                     if ( os.path.exists(tmpPath) ):
