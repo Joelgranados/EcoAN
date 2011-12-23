@@ -28,7 +28,11 @@ import annexif
 class AnnHandler:
 
     def __init__ ( self, rootDir = '.' ):
+        if not os.path.exists(rootDir):
+            raise Exception("Root dir does not exist")
+
         self.rootDir = rootDir
+        self.annDir = os.path.join (self.rootDir, ".ann")
         self.dbFile = os.path.join ( self.rootDir, "ann.db" )
 
     def dbExists ( self ):
@@ -282,6 +286,9 @@ class ImgHandler:
     numSteps = 70 # 8960 bytes equiv.
 
     def __init__ ( self, rootDir = '.' ):
+        if not os.path.exists(rootDir):
+            raise Exception("Root dir does not exist")
+
         self.rootDir = rootDir
         self.annDir = os.path.join(self.rootDir, ".ann")
 
@@ -340,21 +347,28 @@ class ImgHandler:
         # Add to root dir
         rootdst = os.path.join(self.rootDir, imgbn)
         if ( not os.path.exists(rootdst) ):
-            self.ihLink(img, rootdst)
+            self.ihLink(os.path.abspath(img), rootdst)
 
         # Add to .ann dir
         anndst = os.path.join(self.annDir, imgbn)
         if ( not os.path.exists(anndst) ):
-            self.ihLink(img, anndst)
+            self.ihLink(os.path.abspath(img), anndst)
 
 #}}}ImgHandler
 
 #{{{DataHandler
 class DataHandler:
     def __init__(self, rootDir = "." ):
+        if not os.path.exists(rootDir):
+            raise Exception("Root dir %s does not exist"%rootDir)
+
         self.rootDir = rootDir
-        self.ih = ImgHandler(rootDir=rootDir)
-        self.ah = AnnHandler(rootDir=rootDir)
+        self.annDir = os.path.join(self.rootDir, ".ann")
+        if not os.path.exists(self.annDir):
+            os.mkdir(self.annDir)
+
+        self.ih = ImgHandler(rootDir=self.rootDir)
+        self.ah = AnnHandler(rootDir=self.rootDir)
 
     # Create a database if on does not exist.
     def checkDB ( self ):
