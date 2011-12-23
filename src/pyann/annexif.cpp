@@ -201,7 +201,7 @@ static struct PyMethodDef annexif_methods [] =
   { "getPlotID", (PyCFunction)annexif_getPlotID, METH_VARARGS,
     "Returns PlotID from image exif data"},
 
-  { "getNormalizationDate",  (PyCFunction)annexif_getNormDate, METH_VARARGS,
+  { "getNormDate",  (PyCFunction)annexif_getNormDate, METH_VARARGS,
     "Returns the date when the normalization was performed" },
 
   { "setPlotID", (PyCFunction)annexif_setPlotID, METH_VARARGS,
