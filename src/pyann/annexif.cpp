@@ -55,16 +55,17 @@ annexif_getElem ( const char* img_file,
   else if ( isPlotID )
   {
     sample = "plotid=";
-    size = 6;
+    size = 7;
   }
   else if ( isNormDate )
   {
     sample = "normalized=";
-    size = 11;
+    size = 12;
   }
 
   vector<string> elements;
   Exiv2::Image::AutoPtr img = Exiv2::ImageFactory::open ( img_file );
+  img->readMetadata ();
   Exiv2::ExifData &exifData = img->exifData();
   Exiv2::ExifData::iterator edi =
     exifData.findKey ( Exiv2::ExifKey ( "Exif.Photo.UserComment" ) );
@@ -72,44 +73,38 @@ annexif_getElem ( const char* img_file,
 
   /* It needs to have something */
   if ( comment.length() <= 0 )
-    throw;
+    throw exception();
 
   from = comment.find ( sample );
   if ( from == string::npos )
-    throw;
+    throw exception();
 
   from = from + size;
 
-  to = comment.find ( ",\n\r", from );
-  if ( to == string::npos || from+1 == to )
-    throw;
+  //FIXME: do we need to search for other chars?
+  to = comment.find ( ",", from );
+  if ( to == string::npos || to - from == 1 )
+    throw exception();
 
-  return comment.substr(from, to).data();
+  return comment.substr(from, to-from);
 }
 
 static PyObject*
 annexif_getPlotID ( PyObject *self, PyObject *args )
 {
-  char *img_file;
+  char *img_file, *plotidstr;
   PyObject *pyPlot_id;
-  long plot_id = -1;
 
   if ( !PyArg_ParseTuple ( args, "s", &img_file ) )
     ANNEXIF_RETERR ( "Invalid parameters for getPlotID." );
 
   try {
-    string plotidstr = annexif_getElem ( img_file, 1, 0 );
-
-    plot_id = (long) atol ( plotidstr.data() );
-
-    if ( plot_id == -1 )
-      ANNEXIF_RETERR( "Plot ID not found in exif data." )
-
+    plotidstr = (char*)annexif_getElem ( img_file, 1, 0 ).data();
   } catch ( Exiv2::AnyError& ae ) {
       ANNEXIF_RETERR( "Unable to access image file to read EXIF data" );
   }
 
-  pyPlot_id = Py_BuildValue ( "l", plot_id );
+  pyPlot_id = Py_BuildValue ( "s", plotidstr );
   if ( pyPlot_id == NULL )
     ANNEXIF_RETERR ( "Plot ID not found in exif data." );
 
