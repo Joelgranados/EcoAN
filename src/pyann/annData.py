@@ -177,7 +177,7 @@ class AnnHandler:
 
             c.execute ( "INSERT INTO ANNpicture " \
                         "(phash, pfile, trackplot, pdate) values " \
-                        "(?,?,?,datetime())" % phash, pfile, plotRowID )
+                        "(?,?,?,datetime())", (phash, pfile, plotRowID) )
             rowid = c.lastrowid
         except sqlite3.IntegrityError as ie:
             if ( str(ie) is "column phash is not unique" ):
@@ -255,7 +255,7 @@ class AnnHandler:
         rowid = -1
         conn = sqlite3.connect(self.dbFile)
         c = conn.cursor()
-        c.execute ( "SELECT pid FROM ANNpicture WHERE phash=?", hexstr )
+        c.execute ( "SELECT pid FROM ANNpicture WHERE phash=?", (hexstr,) )
         qres = c.fetchall()
         if ( len(qres) >= 1 ):
             rowid = qres[0][0]
@@ -266,7 +266,7 @@ class AnnHandler:
         rowid = -1
         conn = sqlite3.connect(self.dbFile)
         c = conn.cursor()
-        c.execute ( "SELECT plid FROM ANNplot where plotID=?",plotid )
+        c.execute ( "SELECT plid FROM ANNplot where plotID=?", (plotid,) )
         qres = c.fetchall()
         if ( len(qres) >= 1 ):
             rowid = qres[0][0]
@@ -323,7 +323,7 @@ class ImgHandler:
         return annexif.getPlotID(imgFile)
 
     def addImg ( self, img ):
-        if ( img.__class__.__name__ is not 'str' ):
+        if ( img.__class__.__name__ != 'str' ):
             raise Exception ("Did not expect a non string")
 
         if ( not os.path.exists(img) ):
