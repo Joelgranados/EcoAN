@@ -37,6 +37,10 @@ class DB_Creation (unittest.TestCase):
         self.dh.addImages( images )
         self.assertNotEqual ( self.dh.ah.isPlotInDB("1234567890"), -1 )
 
+        for i in range(2):
+            imgHash = annData.ImgHandler.calcHash(images[i])
+            self.assertNotEqual(self.dh.ah.isFileInDB(imgHash), -1)
+
     def tearDown (self):
         pass
         # Remove everything from the Root Dir
