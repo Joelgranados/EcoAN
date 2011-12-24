@@ -23,8 +23,19 @@ class Exif_Handling (unittest.TestCase):
     def setUp(self):
         self.imgdir = "images"
 
-    def test_normGetter (self):
+    def test_normGetter1 (self):
         import annexif
         pid = annexif.getPlotID(os.path.join(self.imgdir, "exif1.jpg"))
         self.assertEqual(pid, "1234567890")
+
+    def test_normGetter2 (self):
+        import annexif
+        pid = annexif.getPlotID(os.path.join(self.imgdir, "exif2.jpg"))
+        self.assertEqual(pid, "1234567890")
+
+    def test_dateGetter1 (self):
+        import annexif
+        date = annexif.getNormDate(os.path.join(self.imgdir, "exif1.jpg"))
+        self.assertEqual(date, "Fri Dec 23 11:46:33 2011")
+
 
