@@ -60,7 +60,7 @@ annexif_getElem ( const char* img_file,
   else if ( isNormDate )
   {
     sample = "normalized=";
-    size = 12;
+    size = 11;
   }
 
   vector<string> elements;
@@ -114,24 +114,19 @@ annexif_getPlotID ( PyObject *self, PyObject *args )
 static PyObject*
 annexif_getNormDate ( PyObject *self, PyObject *args )
 {
-  char *img_file;
-  string datestr;
+  char *img_file, *datestr;
   PyObject *pyDatestr;
 
   if ( !PyArg_ParseTuple ( args, "s", &img_file ) )
-    ANNEXIF_RETERR ( "Invalid parameters for getPlotID." );
+    ANNEXIF_RETERR ( "Invalid parameters for getNormDate." );
 
   try {
-    datestr = annexif_getElem ( img_file, 1, 0 );
-
-    if ( datestr.compare("") == 0 )
-      ANNEXIF_RETERR( "Plot ID not found in exif data." )
-
+    datestr = (char*)annexif_getElem ( img_file, 0, 1 ).data();
   } catch ( Exiv2::AnyError& ae ) {
       ANNEXIF_RETERR( "Unable to access image file to read EXIF data" );
   }
 
-  pyDatestr = Py_BuildValue ( "s", datestr.data() );
+  pyDatestr = Py_BuildValue ( "s", datestr );
   if ( pyDatestr == NULL )
     ANNEXIF_RETERR ( "Plot ID not found in exif data." );
 
