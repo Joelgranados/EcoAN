@@ -371,9 +371,8 @@ class DataHandler:
         self.ah = AnnHandler(rootDir=self.rootDir)
 
     # Create a database if on does not exist.
-    def checkDB ( self ):
-        if ( not self.ah.dbExists() ):
-            self.initDB()
+    def dbExists ( self ):
+        return self.ah.dbExists()
 
     def initDB ( self ):
         self.ah.initDB ()
@@ -392,7 +391,8 @@ class DataHandler:
             fsElems = [fsElems]
 
         # Create all the links.
-        self.checkDB ()
+        if ( not self.dbExists() ):
+            self.initDB ()
 
         # Add images to FS and DB
         for fselem in fsElems:
