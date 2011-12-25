@@ -56,6 +56,11 @@ class DB_Creation (unittest.TestCase):
         dbfile = os.path.join ( self.anndir, "ann.db" )
         self.assertTrue ( os.path.exists(dbfile) )
 
+    def test_reviewer (self):
+        self.dh.initDB()
+        self.dh.addReviewer("testRev")
+        self.assertNotEqual ( self.dh.ah.isRevInDB ("testRev" ), -1 )
+
     def tearDown (self):
         pass
         # Remove everything from the Root Dir

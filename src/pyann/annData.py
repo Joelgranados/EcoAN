@@ -272,9 +272,24 @@ class AnnHandler:
         c = conn.cursor()
         c.execute ( "SELECT plid FROM ANNplot where plotID=?", (plotid,) )
         qres = c.fetchall()
+        c.close()
+
         if ( len(qres) >= 1 ):
             rowid = qres[0][0]
+        return rowid
+
+    def isRevInDB (self, reviewer ):
+        rowid = -1
+        conn = sqlite3.connect(self.dbFile)
+        c = conn.cursor()
+        c.execute ("SELECT rid FROM ANNreviewer WHERE reviewername=?",
+                (reviewer,) )
+        qres = c.fetchall ()
         c.close()
+
+        if ( len(qres) >= 1 ):
+            rowid = qres[0][0]
+
         return rowid
 
 #}}} AnnHandler
@@ -404,3 +419,11 @@ class DataHandler:
                     tmpPath = os.path.join(fselem, subelem)
                     if ( os.path.exists(tmpPath) ):
                         self._addImage (tmpPath)
+
+    def addReviewer ( self, name ):
+        if ( not self.dbExists() ):
+            raise Exception ("No database detected")
+
+        # return rowid.
+        return self.ah.addReviewer(name)
+
