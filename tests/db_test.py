@@ -66,6 +66,17 @@ class DB_Creation (unittest.TestCase):
         self.assertEqual (revList[0][1], "DEFAULT")
         self.assertEqual (revList[1][1], "testRev" )
 
+    def test_label (self):
+        self.dh.initDB()
+        self.dh.addLabel("testLabel")
+
+        self.assertNotEqual ( self.dh.ah.isLabelInDB ("testLabel"), -1 )
+
+        labList = self.dh.ah.getLabelList()
+        self.assertEqual ( len(labList), 2 )
+        self.assertEqual ( labList[0][1], "DEFAULT" )
+        self.assertEqual ( labList[1][1], "testLabel" )
+
     def tearDown (self):
         pass
         # Remove everything from the Root Dir

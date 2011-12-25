@@ -265,6 +265,15 @@ class AnnHandler:
         c.close()
         return retVal
 
+    def getLabelList ( self ):
+        retVal = []
+        conn = sqlite3.connect(self.dbFile)
+        c = conn.cursor()
+
+        c.execute ( "SELECT * FROM ANNlabel" )
+        retVal = c.fetchall()
+        c.close()
+        return retVal
 
     def isFileInDB ( self, hexstr ):
         rowid = -1
@@ -296,6 +305,19 @@ class AnnHandler:
         c.execute ("SELECT rid FROM ANNreviewer WHERE reviewername=?",
                 (reviewer,) )
         qres = c.fetchall ()
+        c.close()
+
+        if ( len(qres) >= 1 ):
+            rowid = qres[0][0]
+
+        return rowid
+
+    def isLabelInDB ( self, label ):
+        rowid = 1
+        conn = sqlite3.connect(self.dbFile)
+        c = conn.cursor()
+        c.execute ( "SELECT lid FROM ANNlabel WHERE labelname=?", (label,) )
+        qres = c.fetchall()
         c.close()
 
         if ( len(qres) >= 1 ):
@@ -438,3 +460,10 @@ class DataHandler:
         # return rowid.
         return self.ah.addReviewer(name)
 
+
+    def addLabel ( self, label ):
+        if ( not self.dbExists() ):
+            raise Exception ("No database detected")
+
+        # return rowid.
+        return self.ah.addLabel(label)
