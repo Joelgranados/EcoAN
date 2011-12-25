@@ -61,6 +61,11 @@ class DB_Creation (unittest.TestCase):
         self.dh.addReviewer("testRev")
         self.assertNotEqual ( self.dh.ah.isRevInDB ("testRev" ), -1 )
 
+        revList = self.dh.ah.getRevList()
+        self.assertEqual ( len(revList), 2 )
+        self.assertEqual (revList[0][1], "DEFAULT")
+        self.assertEqual (revList[1][1], "testRev" )
+
     def tearDown (self):
         pass
         # Remove everything from the Root Dir

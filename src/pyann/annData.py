@@ -255,6 +255,17 @@ class AnnHandler:
 
         return qres[0][0]
 
+    def getRevList ( self ):
+        retVal = []
+        conn = sqlite3.connect(self.dbFile)
+        c = conn.cursor()
+
+        c.execute ( "SELECT * FROM ANNreviewer" )
+        retVal = c.fetchall()
+        c.close()
+        return retVal
+
+
     def isFileInDB ( self, hexstr ):
         rowid = -1
         conn = sqlite3.connect(self.dbFile)
