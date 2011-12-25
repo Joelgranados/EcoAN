@@ -8,3 +8,4 @@
     AWESOME!!!!
 *   Another great feature would be to be able to go from the normalized image to
     the original image.  This back and forth process might ease the detection.
+*   Don't connect to the db on every call to the annHandler class.
