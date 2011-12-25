@@ -26,6 +26,7 @@ class DB_Creation (unittest.TestCase):
     def setUp (self):
         # Create the Root Dir
         self.rootdir = os.path.abspath("TMPROOTDIRECTORY")
+        self.anndir = os.path.abspath( os.path.join(self.rootdir,".ann") )
         self.imagedir = "images"
         os.mkdir (self.rootdir)
 
@@ -35,11 +36,25 @@ class DB_Creation (unittest.TestCase):
         images = [os.path.join(self.imagedir,"exif1.jpg"),
                   os.path.join(self.imagedir,"exif2.jpg")]
         self.dh.addImages( images )
-        self.assertNotEqual ( self.dh.ah.isPlotInDB("1234567890"), -1 )
 
+        # The images should be in the db 
         for i in range(2):
             imgHash = annData.ImgHandler.calcHash(images[i])
             self.assertNotEqual(self.dh.ah.isFileInDB(imgHash), -1)
+
+        # The plots should be in the db.
+        self.assertNotEqual ( self.dh.ah.isPlotInDB("1234567890"), -1 )
+
+        # The images should be in rootDir and anndir
+        for i in range(2):
+            rootimg = os.path.join ( self.rootdir, os.path.basename(images[i]) )
+            annimg = os.path.join ( self.anndir, os.path.basename(images[i]) )
+            self.assertTrue ( os.path.exists (rootimg) )
+            self.assertTrue ( os.path.exists (rootimg) )
+
+        # The database file should be there.
+        dbfile = os.path.join ( self.anndir, "ann.db" )
+        self.assertTrue ( os.path.exists(dbfile) )
 
     def tearDown (self):
         pass

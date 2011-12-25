@@ -33,7 +33,7 @@ class AnnHandler:
 
         self.rootDir = rootDir
         self.annDir = os.path.join (self.rootDir, ".ann")
-        self.dbFile = os.path.join ( self.rootDir, "ann.db" )
+        self.dbFile = os.path.join ( self.annDir, "ann.db" )
 
     def dbExists ( self ):
         return os.path.isfile ( self.dbFile )
