@@ -77,6 +77,23 @@ class DB_Creation (unittest.TestCase):
         self.assertEqual ( labList[0][1], "DEFAULT" )
         self.assertEqual ( labList[1][1], "testLabel" )
 
+    def test_annotation (self):
+        images = [os.path.join(self.imagedir,"exif1.jpg"),
+                  os.path.join(self.imagedir,"exif2.jpg")]
+
+        imgids = self.dh.addImages( images )
+        revid = self.dh.addReviewer("testRev")
+        labid = self.dh.addLabel("testLabel")
+
+        annid = self.dh.ah.addAnnotation ( "exif1.jpg", False,
+                "testLabel", False, "testRev", False,
+                "12,12,3,5,5,653,46,345,45,6,32" )
+        self.assertEqual ( annid, 1 )
+
+        annid = self.dh.ah.addAnnotation (imgids[0], True,
+                labid, True, revid, True, "12,45,6,23,2,43,32,2,231,1" )
+        self.assertEqual ( annid, 2 )
+
     def tearDown (self):
         pass
         # Remove everything from the Root Dir

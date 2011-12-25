@@ -431,8 +431,9 @@ class DataHandler:
         imgPlotID = ImgHandler.getPlotIDFromExif (imgPath)
 
         imgbn = os.path.basename(imgPath) # image base name
-        self.ah.addPicturePlot ( imgHash, imgbn, imgPlotID, False )
+        picid = self.ah.addPicturePlot ( imgHash, imgbn, imgPlotID, False )
         self.ih.addImg (imgPath)
+        return picid
 
     def addImages ( self, fsElems ):
         if ( fsElems.__class__.__name__ is 'str' ):
@@ -443,15 +444,18 @@ class DataHandler:
             self.initDB ()
 
         # Add images to FS and DB
+        imgids = []
         for fselem in fsElems:
             if ( os.path.exists (fselem) ):
-                self._addImage (fselem)
+                imgids.append( self._addImage (fselem) )
             elif ( os.path.isdir (fselem) ):
                 for subelem in os.listdir(fselem):
                     # We ignore the sub-directories.
                     tmpPath = os.path.join(fselem, subelem)
                     if ( os.path.exists(tmpPath) ):
-                        self._addImage (tmpPath)
+                        imgids.append( self._addImage (tmpPath) )
+
+        return imgids
 
     def addReviewer ( self, name ):
         if ( not self.dbExists() ):
