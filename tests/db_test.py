@@ -113,6 +113,25 @@ class DB_Creation (unittest.TestCase):
 
         self.assertEqual ( len(rows), 2 )
 
+    def test_picturesByPlotID (self):
+        images = [os.path.join(self.imagedir,"exif1.jpg"),
+                  os.path.join(self.imagedir,"exif2.jpg")]
+
+        imgids = self.dh.addImages( images )
+        revid = self.dh.addReviewer("testRev")
+        labid = self.dh.addLabel("testLabel")
+
+        self.dh.ah.addAnnotation ( "exif1.jpg", False,
+                "testLabel", False, "testRev", False,
+                "12,12" )
+        self.dh.ah.addAnnotation ( "exif2.jpg", False,
+                "testLabel", False, "testRev", False,
+                "13,13" )
+
+        rows = self.dh.ah.getPictureListByPlotID ()
+
+        self.assertEqual ( len(rows), 2 )
+
     def tearDown (self):
         pass
         # Remove everything from the Root Dir
