@@ -244,6 +244,24 @@ class AnnHandler:
 
         return rowid
 
+    def getPictureListByDate (self):
+        rows = []
+        conn = sqlite3.connect (self.dbFile)
+        c = conn.cursor()
+
+        c.execute ( "SELECT ANNpicture.pid, ANNpicture.pfile, "
+                           "ANNpicture.phash, ANNplot.plotID "
+                    "FROM ANNpicture, ANNplot "
+                    "WHERE ANNpicture.trackplot=ANNplot.plid "
+                    "ORDER BY ANNpicture.pdate;" )
+        rows = c.fetchall()
+        c.close()
+
+        return rows
+
+    def getPictureListByPlotID (self):
+        pass
+
     def getMetadata ( self, name ):
         conn = sqlite3.connect(self.dbFile)
         c = conn.cursor()
