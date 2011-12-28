@@ -249,8 +249,8 @@ class AnnHandler:
         conn = sqlite3.connect (self.dbFile)
         c = conn.cursor()
 
-        c.execute ( "SELECT ANNpicture.pid, ANNpicture.pfile, "
-                           "ANNpicture.phash, ANNplot.plotID "
+        c.execute ( "SELECT ANNpicture.pid, ANNpicture.pfile, ANNpicture.phash,"
+                           "ANNpicture.pdate, ANNplot.plotID "
                     "FROM ANNpicture, ANNplot "
                     "WHERE ANNpicture.trackplot=ANNplot.plid "
                     "ORDER BY ANNpicture.pdate;" )
@@ -264,8 +264,8 @@ class AnnHandler:
         conn = sqlite3.connect (self.dbFile)
         c = conn.cursor()
 
-        c.execute ( "SELECT ANNpicture.pid, ANNpicture.pfile, "
-                           "ANNpicture.phash, ANNplot.plotID "
+        c.execute ( "SELECT ANNpicture.pid, ANNpicture.pfile, ANNpicture.phash,"
+                           "ANNpicture.pdate, ANNplot.plotID "
                     "FROM ANNpicture, ANNplot "
                     "WHERE ANNpicture.trackplot=ANNplot.plid "
                     "ORDER BY ANNplot.plotID;" )
