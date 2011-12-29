@@ -21,6 +21,7 @@ import annData
 import os
 import os.path
 import shutil
+import datetime
 
 class DB_Creation (unittest.TestCase):
     def setUp (self):
@@ -40,10 +41,10 @@ class DB_Creation (unittest.TestCase):
         # The images should be in the db 
         for i in range(2):
             imgHash = annData.ImgHandler.calcHash(images[i])
-            self.assertNotEqual(self.dh.ah.isFileInDB(imgHash), -1)
+            self.assertTrue(self.dh.isHashInDB(imgHash))
 
         # The plots should be in the db.
-        self.assertNotEqual ( self.dh.ah.isPlotInDB("1234567890"), -1 )
+        self.assertTrue ( self.dh.isPlotInDB("1234567890") )
 
         # The images should be in rootDir and anndir
         for i in range(2):
@@ -59,9 +60,9 @@ class DB_Creation (unittest.TestCase):
     def test_reviewer (self):
         self.dh.initDB()
         self.dh.addReviewer("testRev")
-        self.assertNotEqual ( self.dh.ah.isRevInDB ("testRev" ), -1 )
+        self.assertTrue ( self.dh.isRevInDB("testRev") )
 
-        revList = self.dh.ah.getRevList()
+        revList = self.dh.getRevList()
         self.assertEqual ( len(revList), 2 )
         self.assertEqual (revList[0][1], "DEFAULT")
         self.assertEqual (revList[1][1], "testRev" )
@@ -70,9 +71,9 @@ class DB_Creation (unittest.TestCase):
         self.dh.initDB()
         self.dh.addLabel("testLabel")
 
-        self.assertNotEqual ( self.dh.ah.isLabelInDB ("testLabel"), -1 )
+        self.assertTrue ( self.dh.isLabelInDB("testLabel") )
 
-        labList = self.dh.ah.getLabelList()
+        labList = self.dh.getLabelList()
         self.assertEqual ( len(labList), 2 )
         self.assertEqual ( labList[0][1], "DEFAULT" )
         self.assertEqual ( labList[1][1], "testLabel" )
@@ -85,13 +86,14 @@ class DB_Creation (unittest.TestCase):
         revid = self.dh.addReviewer("testRev")
         labid = self.dh.addLabel("testLabel")
 
-        annid = self.dh.ah.addAnnotation ( "exif1.jpg", False,
-                "testLabel", False, "testRev", False,
-                "12,12,3,5,5,653,46,345,45,6,32" )
+        annid = self.dh.addAnnotation ( "exif1.jpg","testLabel",
+                                        "testRev", "12,12,12,32" )
         self.assertEqual ( annid, 1 )
 
+        self.dh.ah.activate()
         annid = self.dh.ah.addAnnotation (imgids[0], True,
-                labid, True, revid, True, "12,45,6,23,2,43,32,2,231,1" )
+                labid, True, revid, True, "12,1,1" )
+        self.dh.ah.deactivate()
         self.assertEqual ( annid, 2 )
 
     def test_picturesByDate (self):
@@ -102,16 +104,12 @@ class DB_Creation (unittest.TestCase):
         revid = self.dh.addReviewer("testRev")
         labid = self.dh.addLabel("testLabel")
 
-        self.dh.ah.addAnnotation ( "exif1.jpg", False,
-                "testLabel", False, "testRev", False,
-                "12,12" )
-        self.dh.ah.addAnnotation ( "exif2.jpg", False,
-                "testLabel", False, "testRev", False,
-                "13,13" )
+        self.dh.addAnnotation ( "exif1.jpg","testLabel","testRev","12,12" )
+        self.dh.addAnnotation ( "exif2.jpg","testLabel","testRev","13,13" )
 
-        rows = self.dh.ah.getPictureListByDate ()
+        off_rows = self.dh.getPicListAndOffsetByDate(datetime.datetime(1,1,1))
 
-        self.assertEqual ( len(rows), 2 )
+        self.assertEqual ( len(off_rows[1]), 2 )
 
     def test_picturesByPlotID (self):
         images = [os.path.join(self.imagedir,"exif1.jpg"),
@@ -121,16 +119,12 @@ class DB_Creation (unittest.TestCase):
         revid = self.dh.addReviewer("testRev")
         labid = self.dh.addLabel("testLabel")
 
-        self.dh.ah.addAnnotation ( "exif1.jpg", False,
-                "testLabel", False, "testRev", False,
-                "12,12" )
-        self.dh.ah.addAnnotation ( "exif2.jpg", False,
-                "testLabel", False, "testRev", False,
-                "13,13" )
+        self.dh.addAnnotation ( "exif1.jpg","testLabel","testRev","12,12" )
+        self.dh.addAnnotation ( "exif2.jpg","testLabel","testRev","13,13" )
 
-        rows = self.dh.ah.getPictureListByPlotID ()
+        off_rows = self.dh.getPicListAndOffsetByPlotID("0")
 
-        self.assertEqual ( len(rows), 2 )
+        self.assertEqual ( len(off_rows[1]), 2 )
 
     def tearDown (self):
         pass

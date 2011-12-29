@@ -40,9 +40,9 @@ class AnnHandler:
         return os.path.isfile ( self.dbFile )
 
     def initDB ( self ):
-        conn = sqlite3.connect(self.dbFile)
-        c = conn.cursor()
-        c.executescript ( """
+        Conn = sqlite3.connect(self.dbFile)
+        C = Conn.cursor()
+        C.executescript ( """
             create table ANNpicture (
                 pid INTEGER PRIMARY KEY,
                 phash TEXT NOT NULL UNIQUE,
@@ -86,82 +86,66 @@ class AnnHandler:
         """ )
 
         # Close stuff
-        conn.commit()
-        c.close()
+        Conn.commit()
+        C.close()
+
+    def activate ( self ):
+        self.conn = sqlite3.connect(self.dbFile)
+        self.c = self.conn.cursor()
+
+    def deactivate ( self ):
+        self.conn.commit()
+        self.c.close()
 
     def addReviewer ( self, name ):
         rowid = -1
         try:
-            conn = sqlite3.connect(self.dbFile)
-            c = conn.cursor()
-
-            c.execute ( "INSERT INTO ANNreviewer "
-                    "(reviewername) values (?)", (name,) )
-            rowid = c.lastrowid
+            self.c.execute ( "INSERT INTO ANNreviewer "
+                             "(reviewername) values (?)", (name,) )
+            rowid = self.c.lastrowid
         except sqlite3.IntegrityError as ie:
             # if it was not unique it was already there.
             if ( not str(ie).endswith("is not unique") ):
                 raise Exception ("Could not insert reviewer")
-        finally:
-            conn.commit()
-            c.close()
 
         return rowid
 
     def addPlot ( self, plid, pldesc = "" ):
         rowid = -1
         try:
-            conn = sqlite3.connect ( self.dbFile )
-            c = conn.cursor ()
-
-            c.execute ( "INSERT INTO ANNplot "
-                    "(plotid, plotdesc) values (?,?)", (plid, pldesc) )
-            rowid = c.lastrowid
+            self.c.execute ( "INSERT INTO ANNplot "
+                             "(plotid, plotdesc) values (?,?)", (plid, pldesc) )
+            rowid = self.c.lastrowid
         except sqlite3.IntegrityError as ie:
             # if it was not unique it was already there.
             if ( not str(ie).endswith("is not unique") ):
                 raise Exception ("Could not insert plot")
-        finally:
-            conn.commit()
-            c.close()
 
         return rowid
 
     def addMetadata ( self, name, value ):
         rowid = -1
         try:
-            conn = sqlite3.connect (self.dbFile)
-            c = conn.cursor ()
-
-            c.execute ( "INSERT INTO ANNmetadata "
-                    "(mname, mvalue) values (?, ?)", (name, value) )
-            rowid = c.lastrowid
+            self.c.execute ( "INSERT INTO ANNmetadata "
+                             "(mname, mvalue) values (?, ?)", (name, value) )
+            rowid = self.c.lastrowid
         except sqlite3.IntegrityError as ie:
             # if it was not unique it was already there.
             if ( not str(ie).endswith("is not unique") ):
                 raise Exception ("Could not insert metadata")
-        finally:
-            conn.commit()
-            c.close()
 
         return rowid
 
     def addLabel ( self, lname ):
         rowid = -1
         try:
-            conn = sqlite3.connect (self.dbFile)
-            c = conn.cursor ()
-
-            c.execute ( "INSERT INTO ANNlabel "
-                "(labelname) values (?)", (lname,) )
-            rowid = c.lastrowid
+            self.c.execute ( "INSERT INTO ANNlabel "
+                             "(labelname) values (?)", (lname,) )
+            rowid = self.c.lastrowid
         except sqlite3.IntegrityError as ie:
             # if it was not unique it was already there.
             if ( not str(ie).endswith("is not unique") ):
                 raise Exception ("Could not insert label")
-        finally:
-            conn.commit()
-            c.close()
 
         return rowid
 
@@ -177,21 +161,15 @@ class AnnHandler:
             plotRowID = plot
 
         try:
-            conn = sqlite3.connect (self.dbFile)
-            c = conn.cursor()
-
-            c.execute ( "INSERT INTO ANNpicture " \
-                        "(phash, pfile, trackplot, pdate) values " \
-                        "(?,?,?,datetime())", (phash, pfile, plotRowID) )
-            rowid = c.lastrowid
+            self.c.execute ( "INSERT INTO ANNpicture " \
+                             "(phash, pfile, trackplot, pdate) values " \
+                             "(?,?,?,datetime())", (phash, pfile, plotRowID) )
+            rowid = self.c.lastrowid
         except sqlite3.IntegrityError as ie:
             if ( str(ie) is "column phash is not unique" ):
                 raise Exception ( "Repeated image hash")
             else:
                 raise Exception ( "Failed to add picture: %s", ie )
-        finally:
-            conn.commit()
-            c.close()
 
         return rowid
 
@@ -223,11 +201,8 @@ class AnnHandler:
                 ( pictureidstr, labelidstr, revieweridstr )
 
         try:
-            conn = sqlite3.connect (self.dbFile)
-            c = conn.cursor()
-
-            c.execute ( sqlstr, (picture, label, reviewer, polygon) )
-            rowid = c.lastrowid
+            self.c.execute ( sqlstr, (picture, label, reviewer, polygon) )
+            rowid = self.c.lastrowid
         except sqlite3.IntegrityError as ie:
             if ( str(ie) is "ANNannotation.trackpicture may not be NULL" ):
                 raise Exception ("picture identifier %s does not exist" % \
@@ -239,91 +214,62 @@ class AnnHandler:
             else:
                 raise Exception ("Failed to add annotation: %s" % ie)
 
-        finally:
-            conn.commit()
-            c.close()
-
         return rowid
 
     def getPictureListByDate (self):
         rows = []
-        conn = sqlite3.connect (self.dbFile)
-        c = conn.cursor()
 
-        c.execute ( "SELECT ANNpicture.pid, ANNpicture.pfile, ANNpicture.phash,"
-                           "ANNpicture.pdate, ANNplot.plotID "
-                    "FROM ANNpicture, ANNplot "
-                    "WHERE ANNpicture.trackplot=ANNplot.plid "
-                    "ORDER BY ANNpicture.pdate;" )
-        rows = c.fetchall()
-        c.close()
-
+        self.c.execute ( "SELECT ANNpicture.pid, ANNpicture.pfile, "
+                                "ANNpicture.phash, ANNpicture.pdate, "
+                                " ANNplot.plotID "
+                        "FROM ANNpicture, ANNplot "
+                        "WHERE ANNpicture.trackplot=ANNplot.plid "
+                        "ORDER BY ANNpicture.pdate;" )
+        rows = self.c.fetchall()
         return rows
 
     def getPictureListByPlotID (self):
         rows = []
-        conn = sqlite3.connect (self.dbFile)
-        c = conn.cursor()
-
-        c.execute ( "SELECT ANNpicture.pid, ANNpicture.pfile, ANNpicture.phash,"
-                           "ANNpicture.pdate, ANNplot.plotID "
-                    "FROM ANNpicture, ANNplot "
-                    "WHERE ANNpicture.trackplot=ANNplot.plid "
-                    "ORDER BY ANNplot.plotID;" )
-        rows = c.fetchall()
-        c.close()
+        self.c.execute ( "SELECT ANNpicture.pid, ANNpicture.pfile, "
+                                "ANNpicture.phash, ANNpicture.pdate, "
+                                "ANNplot.plotID "
+                        "FROM ANNpicture, ANNplot "
+                        "WHERE ANNpicture.trackplot=ANNplot.plid "
+                        "ORDER BY ANNplot.plotID;" )
+        rows = self.c.fetchall()
 
         return rows
 
     def getMetadata ( self, name ):
-        conn = sqlite3.connect(self.dbFile)
-        c = conn.cursor()
-
-        c.execute ( "SELECT mvalue from ANNmetadata "
-                "WHERE mname=?;", (name,) )
-        qres = c.fetchall()
-        c.close()
-
+        self.c.execute ( "SELECT mvalue from ANNmetadata "
+                         "WHERE mname=?;", (name,) )
+        qres = self.c.fetchall()
         return qres[0][0]
 
     def getRevList ( self ):
         retVal = []
-        conn = sqlite3.connect(self.dbFile)
-        c = conn.cursor()
-
-        c.execute ( "SELECT * FROM ANNreviewer" )
-        retVal = c.fetchall()
-        c.close()
+        self.c.execute ( "SELECT * FROM ANNreviewer" )
+        retVal = self.c.fetchall()
         return retVal
 
     def getLabelList ( self ):
         retVal = []
-        conn = sqlite3.connect(self.dbFile)
-        c = conn.cursor()
-
-        c.execute ( "SELECT * FROM ANNlabel" )
-        retVal = c.fetchall()
-        c.close()
+        self.c.execute ( "SELECT * FROM ANNlabel" )
+        retVal = self.c.fetchall()
         return retVal
 
     def isFileInDB ( self, hexstr ):
         rowid = -1
-        conn = sqlite3.connect(self.dbFile)
-        c = conn.cursor()
-        c.execute ( "SELECT pid FROM ANNpicture WHERE phash=?", (hexstr,) )
-        qres = c.fetchall()
+        self.c.execute ( "SELECT pid FROM ANNpicture WHERE phash=?", (hexstr,) )
+        qres = self.c.fetchall()
         if ( len(qres) >= 1 ):
             rowid = qres[0][0]
-        c.close()
         return rowid
 
     def isPlotInDB ( self, plotid ):
         rowid = -1
-        conn = sqlite3.connect(self.dbFile)
-        c = conn.cursor()
-        c.execute ( "SELECT plid FROM ANNplot where plotID=?", (plotid,) )
-        qres = c.fetchall()
-        c.close()
+        self.c.execute ( "SELECT plid FROM ANNplot where plotID=?", (plotid,) )
+        qres = self.c.fetchall()
 
         if ( len(qres) >= 1 ):
             rowid = qres[0][0]
@@ -331,12 +277,9 @@ class AnnHandler:
 
     def isRevInDB (self, reviewer ):
         rowid = -1
-        conn = sqlite3.connect(self.dbFile)
-        c = conn.cursor()
-        c.execute ("SELECT rid FROM ANNreviewer WHERE reviewername=?",
-                (reviewer,) )
-        qres = c.fetchall ()
-        c.close()
+        self.c.execute ("SELECT rid FROM ANNreviewer WHERE reviewername=?",
+                        (reviewer,) )
+        qres = self.c.fetchall ()
 
         if ( len(qres) >= 1 ):
             rowid = qres[0][0]
@@ -345,11 +288,8 @@ class AnnHandler:
 
     def isLabelInDB ( self, label ):
         rowid = 1
-        conn = sqlite3.connect(self.dbFile)
-        c = conn.cursor()
-        c.execute ( "SELECT lid FROM ANNlabel WHERE labelname=?", (label,) )
-        qres = c.fetchall()
-        c.close()
+        self.c.execute ( "SELECT lid FROM ANNlabel WHERE labelname=?", (label,) )
+        qres = self.c.fetchall()
 
         if ( len(qres) >= 1 ):
             rowid = qres[0][0]
@@ -456,7 +396,7 @@ class DataHandler:
     def initDB ( self ):
         self.ah.initDB ()
 
-    def _addImage (self, imgPath ):
+    def _addImage ( self, imgPath ):
         #FIXME: both addPictrePlot and addImg throw exceptions.!!!!!
         imgHash = ImgHandler.calcHash (imgPath)
         imgPlotID = ImgHandler.getPlotIDFromExif (imgPath)
@@ -474,40 +414,107 @@ class DataHandler:
         if ( not self.dbExists() ):
             self.initDB ()
 
-        # Add images to FS and DB
-        imgids = []
-        for fselem in fsElems:
-            if ( os.path.exists (fselem) ):
-                imgids.append( self._addImage (fselem) )
-            elif ( os.path.isdir (fselem) ):
-                for subelem in os.listdir(fselem):
-                    # We ignore the sub-directories.
-                    tmpPath = os.path.join(fselem, subelem)
-                    if ( os.path.exists(tmpPath) ):
-                        imgids.append( self._addImage (tmpPath) )
+        try:
+            # Add images to FS and DB
+            imgids = []
+            self.ah.activate()
+            for fselem in fsElems:
+                if ( os.path.exists (fselem) ):
+                    imgids.append( self._addImage (fselem) )
+                elif ( os.path.isdir (fselem) ):
+                    for subelem in os.listdir(fselem):
+                        # We ignore the sub-directories.
+                        tmpPath = os.path.join(fselem, subelem)
+                        if ( os.path.exists(tmpPath) ):
+                            imgids.append( self._addImage (tmpPath) )
+        except:
+            raise Exception("Could not complete the image addition")
+        finally:
+            self.ah.deactivate()
 
         return imgids
 
     def addReviewer ( self, name ):
+        rowid = -1
         if ( not self.dbExists() ):
             raise Exception ("No database detected")
 
         # return rowid.
-        return self.ah.addReviewer(name)
+        try:
+            self.ah.activate()
+            rowid = self.ah.addReviewer(name)
+        except:
+            raise Exception("Could not add reviewer")
+        finally:
+            self.ah.deactivate()
 
+        return rowid
 
     def addLabel ( self, label ):
+        rowid = -1
         if ( not self.dbExists() ):
             raise Exception ("No database detected")
 
         # return rowid.
-        return self.ah.addLabel(label)
+        try:
+            self.ah.activate()
+            rowid = self.ah.addLabel(label)
+        except:
+            raise Exception("Could not add label")
+        finally:
+            self.ah.deactivate()
+
+        return rowid
+
+    def addAnnotation ( self, img, label, reviewer, polygon ):
+        rowid = -1
+
+        try:
+            self.ah.activate()
+            rowid = self.ah.addAnnotation ( img, False, label, False,
+                                            reviewer, False, polygon )
+        except:
+            raise Exception ("Could not add annotation in addAnnotation")
+        finally:
+            self.ah.deactivate()
+
+        return rowid
+
+    def getRevList (self):
+        revList = []
+        try:
+            self.ah.activate()
+            revList = self.ah.getRevList()
+        except:
+            raise Exception ("Could not retrieve rev list in getRevList")
+        finally:
+            self.ah.deactivate()
+
+        return revList
+
+    def getLabelList (self):
+        labelList = []
+        try:
+            self.ah.activate()
+            labelList = self.ah.getLabelList()
+        except:
+            raise Exception ("Could not retrieve label list in getLabelList")
+        finally:
+            self.ah.deactivate()
+
+        return labelList
 
     def getPicListAndOffsetByDate ( self, date ):
         if date.__class__.__name__ != "datetime":
             raise Exception("I expected a datetime object")
 
-        picList = self.ah.getPictureListByDate ()
+        try:
+            self.ah.activate()
+            picList = self.ah.getPictureListByDate ()
+        except:
+            raise Exception("Could not retrieve pic list")
+        finally:
+            self.ah.deactivate()
 
         for offset in range(len(picList)):
             D = datetime.datetime.strptime( picList[offset][3],
@@ -521,7 +528,13 @@ class DataHandler:
         if plotID.__class__.__name__ != "str":
             raise Exception("I expected a string object")
 
-        picList = self.ah.getPictureListByPlotID ()
+        try:
+            self.ah.activate()
+            picList = self.ah.getPictureListByPlotID ()
+        except:
+            raise Exception("Could not retrieve pic list")
+        finally:
+            self.ah.deactivate()
 
         for offset in range(len(picList)):
             if picList[offset][4] == plotID:
@@ -529,3 +542,63 @@ class DataHandler:
 
         return (offset, picList)
 
+
+    def isHashInDB ( self, imgHash ):
+        retVal = False
+        if imgHash.__class__.__name__ != "str":
+            raise Exception("Expected a string in isHashInDB")
+
+        try:
+            self.ah.activate()
+            retVal = self.ah.isFileInDB(imgHash) != -1
+        except:
+            raise Exception("Could not access DB in isHashInDB")
+        finally:
+            self.ah.deactivate()
+
+        return retVal
+
+    def isPlotInDB ( self, plotID ):
+        retVal = False
+        if plotID.__class__.__name__ != "str":
+            raise Exception("Expected a string in isPlotInDB")
+
+        try:
+            self.ah.activate()
+            retVal = self.ah.isPlotInDB(plotID) != -1
+        except:
+            raise Exception("Could not access DB in isPlotInDB")
+        finally:
+            self.ah.deactivate()
+
+        return retVal
+
+    def isRevInDB ( self, rev ):
+        retVal = False
+        if rev.__class__.__name__ != "str":
+            raise Exception("Expected a string in isRevInDB")
+
+        try:
+            self.ah.activate()
+            retVal = self.ah.isRevInDB(rev) != -1
+        except:
+            raise Exception("Could not access DB in isRevInDB")
+        finally:
+            self.ah.deactivate()
+
+        return retVal
+
+    def isLabelInDB ( self, label ):
+        retVal = False
+        if label.__class__.__name__ != "str":
+            raise Exception("Expected a string in isLabelInDB")
+
+        try:
+            self.ah.activate()
+            retVal = self.ah.isLabelInDB(label) != -1
+        except:
+            raise Exception("Could not access DB in isLabelInDB")
+        finally:
+            self.ah.deactivate()
+
+        return retVal
