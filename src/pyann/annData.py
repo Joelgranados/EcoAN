@@ -23,6 +23,7 @@ import hashlib
 import mimetypes
 import shutil
 import annexif
+import datetime
 
 #{{{ Annhandler
 class AnnHandler:
@@ -501,3 +502,30 @@ class DataHandler:
 
         # return rowid.
         return self.ah.addLabel(label)
+
+    def getPicListAndOffsetByDate ( self, date ):
+        if date.__class__.__name__ != "datetime":
+            raise Exception("I expected a datetime object")
+
+        picList = self.ah.getPictureListByDate ()
+
+        for offset in range(len(picList)):
+            D = datetime.datetime.strptime( picList[offset][3],
+                                            "%Y-%m-%d %H:%M:%S")
+            if D > date:
+                break
+
+        return (offset, picList)
+
+    def getPicListAndOffsetByPlotID (self, plotID ):
+        if plotID.__class__.__name__ != "str":
+            raise Exception("I expected a string object")
+
+        picList = self.ah.getPictureListByPlotID ()
+
+        for offset in range(len(picList)):
+            if picList[offset][4] == plotID:
+                break
+
+        return (offset, picList)
+
