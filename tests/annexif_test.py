@@ -25,17 +25,39 @@ class Exif_Handling (unittest.TestCase):
 
     def test_normGetter1 (self):
         import annexif
-        pid = annexif.getPlotID(os.path.join(self.imgdir, "exif1.jpg"))
-        self.assertEqual(pid, "1234567890")
-
-    def test_normGetter2 (self):
-        import annexif
-        pid = annexif.getPlotID(os.path.join(self.imgdir, "exif2.jpg"))
-        self.assertEqual(pid, "1234567890")
+        for file in ["exif1.jpg", "exif2.jpg"]:
+            pid = annexif.getPlotID(os.path.join(self.imgdir, file))
+            self.assertEqual(pid, "1234567890")
 
     def test_dateGetter1 (self):
         import annexif
         date = annexif.getNormDate(os.path.join(self.imgdir, "exif1.jpg"))
         self.assertEqual(date, "Fri Dec 23 11:46:33 2011")
 
+    def test_normSetter1 (self):
+        import annexif
+        import shutil
+        import os
 
+        tmpfile = os.path.join(self.imgdir,"tmpexif1.jpg")
+        shutil.copy( os.path.join(self.imgdir,"exif1.jpg"), tmpfile )
+
+        annexif.setNormDate("New date", tmpfile)
+        date = annexif.getNormDate(tmpfile)
+        os.remove(tmpfile)
+
+        self.assertEqual(date, "New date")
+
+    def test_plotSetter1 (self):
+        import annexif
+        import shutil
+        import os
+
+        tmpfile = os.path.join(self.imgdir,"tmpexif1.jpg")
+        shutil.copy( os.path.join(self.imgdir,"exif1.jpg"), tmpfile )
+
+        annexif.setPlotID("121212", tmpfile)
+        pID = annexif.getPlotID(tmpfile)
+        os.remove(tmpfile)
+
+        self.assertEqual(pID, "121212")
