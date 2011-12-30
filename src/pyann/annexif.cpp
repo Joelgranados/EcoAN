@@ -142,7 +142,8 @@ annexif_writeexif ( string &norm_date,
   userComment << "charset=Ascii normalized="
               << norm_date
               << ",plotid="
-              << plot_id;
+              << plot_id
+              << ",";
 
   Exiv2::Image::AutoPtr img = Exiv2::ImageFactory::open(img_file);
   img->readMetadata ();
