@@ -43,6 +43,7 @@ class AnnHandler:
         Conn = sqlite3.connect(self.dbFile)
         C = Conn.cursor()
         C.executescript ( """
+            PRAGMA foreign_keys = ON;
             create table ANNpicture (
                 pid INTEGER PRIMARY KEY,
                 phash TEXT NOT NULL UNIQUE,
@@ -69,14 +70,19 @@ class AnnHandler:
                 mname TEXT UNIQUE,
                 mvalue TEXT );
 
-            PRAGMA foreign_keys = ON;
+            create table ANNelement (
+                eid INTEGER PRIMARY KEY,
+                ecomment TEXT );
+
             create table ANNannotation (
                 akey INTEGER PRIMARY KEY,
+                trackelement INTEGER NOT NULL,
                 trackpicture INTEGER NOT NULL,
                 tracklabel INTEGER NOT NULL,
                 trackreviewer INTEGER NOT NULL,
                 anndate DATE NOT NULL,
                 polygon TEXT NOT NULL,
+                FOREIGN KEY(trackelement) REFERENCES ANNelement(eid),
                 FOREIGN KEY(trackpicture) REFERENCES ANNpicture(pid),
                 FOREIGN KEY(tracklabel) REFERENCES ANNlabel(lid),
                 FOREIGN KEy(trackreviewer) REFERENCES ANNreviewer(rid) );
@@ -149,6 +155,16 @@ class AnnHandler:
 
         return rowid
 
+    def addElement ( self, comment="" ):
+        rowid = -1
+        try:
+            self.c.execute ( "INSERT INTO ANNelement (ecomment) values (?)",
+                    (comment,) )
+            rowid = self.c.lastrowid
+        except sqlite3.IntegrityError as ie:
+            raise Exception ("Could not add element")
+        return rowid
+
     def addPicturePlot ( self, phash, pfile, plot, isplotid ):
         rowid = -1
 
@@ -173,44 +189,86 @@ class AnnHandler:
 
         return rowid
 
-    def addAnnotation ( self, picture, ispictureid,
-                              label, islabelid,
-                              reviewer, isreviewerid,
-                              polygon ):
+    # Arguments are dictionaries: pic[id="12"]
+    def addAnnotation(self, picture, label, reviewer, element, polygon):
+        if picture.__class__.__name__ != 'dict' \
+                or label.__class__.__name__ != 'dict' \
+                or reviewer.__class__.__name__ != 'dict' \
+                or element.__class__.__name__ != 'dict':
+            raise Exception ( "Wrong argument types for addAnnotation." )
+
         rowid = -1
-        # Create sql string.
-        pictureidstr = "?"
-        if ( not ispictureid ):
-            # Use pfile if its a file, phas if its a hash.
-            pictureidstr = \
-                    "(SELECT pid FROM ANNpicture WHERE %s=?)" % \
-                    "pfile" if (picture.find('.')!=-1) else "phash"
 
-        labelidstr = "?"
-        if ( not islabelid ):
-            labelidstr = "(SELECT lid FROM ANNlabel WHERE labelname=?)"
+        # Create picture str
+        picvalue = ""
+        picstr = "?"
+        if ( "id" in picture.keys() ):
+            picvalue = picture["id"]
+        elif ( "file" in picture.keys() ):
+            picvalue = picture["file"]
+            picstr = "(SELECT pid FROM ANNpicture WHERE pfile=?)"
+        elif ( "hash" in picture.keys() ):
+            picvalue = picture["hash"]
+            picstr = "(SELECT pid FROM ANNpicture WHERE phash=?)"
+        else:
+            raise Exception("Error picture arg (%s) in addAnnotation"%picture)
 
-        revieweridstr = "?"
-        if ( not isreviewerid ):
-            revieweridstr = \
-                    "(SELECT rid FROM ANNreviewer WHERE reviewername=?)"
+        # Create label str
+        labvalue = ""
+        labstr = "?"
+        if ( "id" in label.keys() ):
+            labvalue = label["id"]
+        elif ( "name" in label.keys() ):
+            labvalue = label["name"]
+            labstr = "(SELECT lid FROM ANNlabel WHERE labelname=?)"
+        else:
+            raise Exception("Error label arg (%s) in addAnnotation"%label)
 
-        sqlstr = "INSERT INTO ANNannotation " \
-                "(trackpicture, tracklabel, trackreviewer, anndate, polygon ) \
-                values (%s, %s, %s, datetime(), ?)" % \
-                ( pictureidstr, labelidstr, revieweridstr )
+        # Create reviewer str
+        revvalue = ""
+        revstr = "?"
+        if ( "id" in reviewer.keys() ):
+            revvalue = reviewer["id"]
+        elif ( "name" in reviewer.keys() ):
+            revvalue = reviewer["name"]
+            revstr = "(SELECT rid FROM ANNreviewer WHERE reviewername=?)"
+        else:
+            raise Exception("Error reviewer arg (%s) in addAnnotation"%reviewer)
+
+        # Create element str
+        elevalue = ""
+        elestr = "?"
+        if ( "id" in element.keys() ):
+            elevalue = element["id"]
+        elif ( "new" in element.keys() ): # create a new row
+            ecomm = ""
+            if ( "comment" in element.keys() ):
+                ecomm = element["comment"]
+            elevalue = self.addElement ( comment=ecomm )
+
+        # Create sql string
+        sqlstr = "INSERT INTO ANNannotation (trackelement, trackpicture, " \
+                                            "tracklabel, trackreviewer, " \
+                                            "anndate, polygon )" \
+                    "values (%s, %s, %s, %s, datetime(), ?)" % \
+                    ( elestr, picstr, labstr, revstr )
 
         try:
-            self.c.execute ( sqlstr, (picture, label, reviewer, polygon) )
+            self.c.execute ( sqlstr, (elevalue, picvalue, labvalue, revvalue, polygon) )
             rowid = self.c.lastrowid
         except sqlite3.IntegrityError as ie:
             if ( str(ie) is "ANNannotation.trackpicture may not be NULL" ):
                 raise Exception ("picture identifier %s does not exist" % \
-                        picture )
+                        picvalue )
+            elif ( str(ie) is "ANNannotation.trackelement may not be NULL" ):
+                raise Exception ("element identifier %s does not exist"% \
+                        elevalue)
             elif ( str(ie) is "ANNannotation.tracklabel may not be NULL" ):
-                raise Exception ("label identifier %s does not exist" % label )
+                raise Exception ("label identifier %s does not exist" % \
+                        labvalue )
             elif ( str(ie) is "ANNannotation.trackreviewer may not be NULL" ):
-                raise Exception ("label reviewer %s does not exist" % reviewer )
+                raise Exception ("label reviewer %s does not exist" % \
+                        revvalue )
             else:
                 raise Exception ("Failed to add annotation: %s" % ie)
 
@@ -466,13 +524,30 @@ class DataHandler:
 
         return rowid
 
-    def addAnnotation ( self, img, label, reviewer, polygon ):
+    # Adds an annotation and creates a new element.
+    def initAnn ( self, file, label, reviewer, polygon ):
         rowid = -1
 
         try:
             self.ah.activate()
-            rowid = self.ah.addAnnotation ( img, False, label, False,
-                                            reviewer, False, polygon )
+            rowid = self.ah.addAnnotation ( {"file":file}, {"name":label},
+                    {"name":reviewer}, {"new":"", "comment":"New Element"},
+                    polygon )
+        except:
+            raise Exception ("Could not add annotation in addAnnotation")
+        finally:
+            self.ah.deactivate()
+
+        return rowid
+
+
+    def appendAnn ( self, img, label, reviewer, elemid, polygon ):
+        rowid = -1
+
+        try:
+            self.ah.activate()
+            rowid = self.ah.addAnnotation ( {"file":img}, {"name":label},
+                    {"name":reviewer}, {"id":elemid}, polygon )
         except:
             raise Exception ("Could not add annotation in addAnnotation")
         finally:

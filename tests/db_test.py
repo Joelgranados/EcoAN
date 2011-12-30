@@ -86,15 +86,9 @@ class DB_Creation (unittest.TestCase):
         revid = self.dh.addReviewer("testRev")
         labid = self.dh.addLabel("testLabel")
 
-        annid = self.dh.addAnnotation ( "exif1.jpg","testLabel",
-                                        "testRev", "12,12,12,32" )
+        annid = self.dh.initAnn ( "exif1.jpg","testLabel",
+                                  "testRev", "12,12,12,32" )
         self.assertEqual ( annid, 1 )
-
-        self.dh.ah.activate()
-        annid = self.dh.ah.addAnnotation (imgids[0], True,
-                labid, True, revid, True, "12,1,1" )
-        self.dh.ah.deactivate()
-        self.assertEqual ( annid, 2 )
 
     def test_picturesByDate (self):
         images = [os.path.join(self.imagedir,"exif1.jpg"),
@@ -104,8 +98,8 @@ class DB_Creation (unittest.TestCase):
         revid = self.dh.addReviewer("testRev")
         labid = self.dh.addLabel("testLabel")
 
-        self.dh.addAnnotation ( "exif1.jpg","testLabel","testRev","12,12" )
-        self.dh.addAnnotation ( "exif2.jpg","testLabel","testRev","13,13" )
+        self.dh.initAnn ( "exif1.jpg","testLabel","testRev","12,12" )
+        self.dh.initAnn ( "exif2.jpg","testLabel","testRev","13,13" )
 
         off_rows = self.dh.getPicListAndOffsetByDate(datetime.datetime(1,1,1))
 
@@ -119,8 +113,8 @@ class DB_Creation (unittest.TestCase):
         revid = self.dh.addReviewer("testRev")
         labid = self.dh.addLabel("testLabel")
 
-        self.dh.addAnnotation ( "exif1.jpg","testLabel","testRev","12,12" )
-        self.dh.addAnnotation ( "exif2.jpg","testLabel","testRev","13,13" )
+        self.dh.initAnn ( "exif1.jpg","testLabel","testRev","12,12" )
+        self.dh.initAnn ( "exif2.jpg","testLabel","testRev","13,13" )
 
         off_rows = self.dh.getPicListAndOffsetByPlotID("0")
 
