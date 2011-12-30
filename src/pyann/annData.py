@@ -677,3 +677,4 @@ class DataHandler:
             self.ah.deactivate()
 
         return retVal
+#}}}DataHandler
