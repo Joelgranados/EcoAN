@@ -38,6 +38,7 @@ set_target_properties ( annexif PROPERTIES
 target_link_libraries ( annexif ${EXIV2_LIBRARIES} )
 
 file (COPY "${PROJECT_SOURCE_DIR}/src/pyann" DESTINATION "${PROJECT_BINARY_DIR}")
+file (COPY "${PROJECT_SOURCE_DIR}/src/matann" DESTINATION "${PROJECT_BINARY_DIR}")
 
 # Create the test target.
 file(COPY "${PROJECT_SOURCE_DIR}/tests" DESTINATION "${PROJECT_BINARY_DIR}")
