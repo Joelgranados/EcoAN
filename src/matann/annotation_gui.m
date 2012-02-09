@@ -212,17 +212,6 @@ function clear_files_Callback(hObject, eventdata, handles)
 function retimg = put_image_in_axis (input_image, axis_handler, handles)
     if exist (char(input_image)) > 0
         img = imread(char(input_image));
-        if get(handles.hsv, 'Value') == 1
-            img = rgb2hsv(img);
-        elseif get(handles.ycbcr, 'Value') == 1
-            img = rgb2ycbcr(img);
-        elseif get(handles.gray, 'Value') == 1
-            img = rgb2gray(img);
-            colormap(axis_handler, gray(256));
-        elseif get(handles.canny, 'Value') == 1
-            img = edge(rgb2gray(img), 'canny');
-            colormap(axis_handler, gray(2));
-        end
 
         % We maintain the zoom level if size allows.
         XLim = get(axis_handler, 'XLim');
