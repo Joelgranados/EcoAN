@@ -38,7 +38,7 @@ function annotation_save_VER20(handles, annotation)
     fprintf(fd, '#CVS format (1,2,3,4,5,6 are reserved for future use):\n');
     fprintf(fd, '#Xmin,Ymin,Width,Height describe the containing square\n');
     fprintf(fd, '#fileName,FormatVersion,LabelName,lastReviewer,');
-    fprintf(fd, 'reviewData,Xmin,Ymin,Width,Height,1,2,3,4,5,6,');
+    fprintf(fd, 'reviewData,1,2,3,4,5,6,Xmin,Ymin,Width,Height,');
     fprintf(fd, 'X1,Y1,X2,Y2...,XN,YN\n');
 
     for i=1:annotation.reg_offset,
