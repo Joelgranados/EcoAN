@@ -15,34 +15,44 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-cmake_minimum_required (VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED (VERSION 2.8)
 
-project (Annotation)
+# PROJECT METADATA STUFF
+PROJECT (Annotation)
+SET (EIP_AUTHOR "Joel Andres Granados <joel.granados@gmail.com>")
+SET (EIP_DESCRIPTION "Annotation annotates image sequences.")
+SET (EIP_NAME "Annotation")
+SET (EIP_NAME_SHORT "Ann")
+SET (EIP_LICENSE "GPL-3")
+SET (EIP_VER_MAJOR 0)
+SET (EIP_VER_MINOR 1)
 
-if(UNIX)
-    include (FindPkgConfig)
-    include (FindGit)
+# SANITY CHECK ENVIRONMENT
+IF(UNIX)
+    INCLUDE (FindPkgConfig)
+    INCLUDE (FindGit)
     pkg_search_module (EXIV2 exiv2 REQUIRED)
 
-    find_package (PythonLibs REQUIRED)
-    include_directories(${PYTHON_INCLUDE_PATH})
-else(UNIX)
-    message (FATAL_ERROR
+    FIND_PACKAGE (PythonLibs REQUIRED)
+    INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
+ELSE(UNIX)
+    MESSAGE (FATAL_ERROR
         "FIXME: Need to find python3 and exiv2 on other plotforms." )
-endif(UNIX)
+ENDIF(UNIX)
 
-add_library ( annexif SHARED src/pyann/annexif.cpp )
-set_target_properties ( annexif PROPERTIES PREFIX "" )
-set_target_properties ( annexif PROPERTIES
+# MAIN TARGET
+ADD_LIBRARY ( annexif SHARED src/pyann/annexif.cpp )
+SET_TARGET_PROPERTIES ( annexif PROPERTIES PREFIX "" )
+SET_TARGET_PROPERTIES ( annexif PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/pyann" )
 
-target_link_libraries ( annexif ${EXIV2_LIBRARIES} )
+TARGET_LINK_LIBRARIES ( annexif ${EXIV2_LIBRARIES} )
 
-file (COPY "${PROJECT_SOURCE_DIR}/src/pyann" DESTINATION "${PROJECT_BINARY_DIR}")
+FILE (COPY "${PROJECT_SOURCE_DIR}/src/pyann" DESTINATION "${PROJECT_BINARY_DIR}")
 
-# Create the test target.
-file(COPY "${PROJECT_SOURCE_DIR}/tests" DESTINATION "${PROJECT_BINARY_DIR}")
-add_custom_target ( test
+# TEST TARGET
+FILE(COPY "${PROJECT_SOURCE_DIR}/tests" DESTINATION "${PROJECT_BINARY_DIR}")
+ADD_CUSTOM_TARGET ( test
     COMMAND ${CMAKE_COMMAND} -E echo "====== STARTING TEST SUITE ======"
     COMMAND ${CMAKE_COMMAND} -E
             copy "${CMAKE_CURRENT_BINARY_DIR}/pyann/annexif.so"
@@ -53,3 +63,13 @@ add_custom_target ( test
     COMMAND ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_BINARY_DIR}/tests" ./test
     COMMAND ${CMAKE_COMMAND} -E echo "====== ENDING TEST SUITE ======" )
 add_dependencies(test annexif)
+
+# HTML5 TARGET.
+FILE ( MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/Ann" )
+
+CONFIGURE_FILE( "${PROJECT_SOURCE_DIR}/src/html5ann/ann.html"
+                "${PROJECT_BINARY_DIR}/Ann/ann.html" )
+CONFIGURE_FILE( "${PROJECT_SOURCE_DIR}/src/html5ann/zoom-pan.js"
+                "${PROJECT_BINARY_DIR}/Ann/zoom-pan.js" )
+FILE( COPY "${PROJECT_SOURCE_DIR}/src/raphael/raphael.js"
+      DESTINATION "${PROJECT_BINARY_DIR}/Ann/" )
