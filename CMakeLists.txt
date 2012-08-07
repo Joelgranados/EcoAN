@@ -22,7 +22,7 @@ project (Annotation)
 if(UNIX)
     include (FindPkgConfig)
     pkg_search_module (EXIV2 exiv2 REQUIRED)
-    pkg_search_module (PYTHON3 python3 REQURED)
+    pkg_search_module (PYTHON3 python3 REQUIRED)
 
     include_directories ( ${PYTHON3_INCLUDE_DIRS} )
 else(UNIX)
