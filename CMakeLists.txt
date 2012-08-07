@@ -22,9 +22,9 @@ project (Annotation)
 if(UNIX)
     include (FindPkgConfig)
     pkg_search_module (EXIV2 exiv2 REQUIRED)
-    pkg_search_module (PYTHON3 python3 REQUIRED)
 
-    include_directories ( ${PYTHON3_INCLUDE_DIRS} )
+    find_package (PythonLibs REQUIRED)
+    include_directories(${PYTHON_INCLUDE_PATH})
 else(UNIX)
     message (FATAL_ERROR
         "FIXME: Need to find python3 and exiv2 on other plotforms." )
