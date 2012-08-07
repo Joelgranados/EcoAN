@@ -21,6 +21,7 @@ project (Annotation)
 
 if(UNIX)
     include (FindPkgConfig)
+    include (FindGit)
     pkg_search_module (EXIV2 exiv2 REQUIRED)
 
     find_package (PythonLibs REQUIRED)
