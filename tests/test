@@ -15,4 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-python3 -m unittest discover -s . -p '*_test.py'
+
+# Python 3 is not always in the same place. This line tries to find it.
+P=`whereis python3 | tr ' ' '\n' | grep ".usr.*[0-9]$" | head -n 1`
+
+$P -m unittest discover -s . -p '*_test.py'
