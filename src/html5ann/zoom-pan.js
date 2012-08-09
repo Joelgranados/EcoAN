@@ -6,26 +6,25 @@ Raphael(function() {
     var svg = document.createElementNS("http://www.w3.org/2000/svg",'svg');
     var pt  = svg.createSVGPoint();
 
-    //jsomething
+    // Canvas size
+    var cwidth = 640;
+    var cheight = 480;
+
+    // State var controling the pan
     var panOn = false;
 
-    // Creates canvas 320 × 200 at 10, 50
-    var paper = Raphael(document.getElementById("canCell"), 640, 480);
+    // Creates canvas
+    var paper = Raphael( document.getElementById("table.content.canvas"),
+                         cwidth, cheight );
     paper.canvas.id = "canAnn";
     var canAnn = document.getElementById("canAnn");
 
-    // Default image is a message.
-    var t = paper.text(200, 50, "Upload an image.").attr({
-        font: "italic 20px Georgia"});
-
-    t.hide();
-
-    paper.image( "img.jpg", 10, 10, 640, 480);
+    paper.image( "img.jpg", 0, 0, cwidth, cheight );
     r = paper.rect(100, 100, 30, 30).attr({
         'stroke': "#f00",
         'stroke-width': 4});
 
-    paper.setViewBox( 0, 0, 640, 480 );
+    paper.setViewBox( 0, 0, cwidth, cheight );
 
     canAnn.onmousemove =  function(e) {
         var prevpt  = svg.createSVGPoint();
@@ -59,7 +58,6 @@ Raphael(function() {
         var _zfactor=1;
         var zwidth, zheight, zx, zy;
 
-        //zoom in factor is set by default
         if (d<0){_zfactor = zfactor+1;} // zoom out
         else if (d>0){_zfactor = zfactor;} // zoom in
 
