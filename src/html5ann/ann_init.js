@@ -8,6 +8,17 @@ var ann_list_w = Math.round(ann_can_w*.3)
 // div id containing layout
 var ann_layout_id = "ann.layout"
 
+// zoom factor. We use zfactor for zooming in and zfactor+1 for zooming out.
+var zfactor = .5;
+
+// The current mouse possition.
+var svg = document.createElementNS("http://www.w3.org/2000/svg",'svg');
+var pt  = svg.createSVGPoint();
+
+// State var controling the pan
+var panOn = false;
+
+
 repos_layout = function ()
 {
     // Center the main layout

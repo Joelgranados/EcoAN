@@ -1,14 +1,4 @@
 Raphael(function() {
-    // zoom factor. We use zfactor for zooming in and zfactor+1 for zooming out.
-    var zfactor = .5;
-
-    // This is updated onmousemove
-    var svg = document.createElementNS("http://www.w3.org/2000/svg",'svg');
-    var pt  = svg.createSVGPoint();
-
-    // State var controling the pan
-    var panOn = false;
-
     // Creates canvas
     var paper = Raphael( document.getElementById("ann.content.canvas"),
                          ann_can_w, ann_can_h );
