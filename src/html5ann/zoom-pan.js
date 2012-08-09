@@ -6,25 +6,21 @@ Raphael(function() {
     var svg = document.createElementNS("http://www.w3.org/2000/svg",'svg');
     var pt  = svg.createSVGPoint();
 
-    // Canvas size
-    var cwidth = 640;
-    var cheight = 480;
-
     // State var controling the pan
     var panOn = false;
 
     // Creates canvas
-    var paper = Raphael( document.getElementById("table.content.canvas"),
-                         cwidth, cheight );
+    var paper = Raphael( document.getElementById("ann.content.canvas"),
+                         ann_can_w, ann_can_h );
     paper.canvas.id = "canAnn";
     var canAnn = document.getElementById("canAnn");
 
-    paper.image( "img.jpg", 0, 0, cwidth, cheight );
+    paper.image( "img.jpg", 0, 0, ann_can_w, ann_can_h );
     r = paper.rect(100, 100, 30, 30).attr({
         'stroke': "#f00",
         'stroke-width': 4});
 
-    paper.setViewBox( 0, 0, cwidth, cheight );
+    paper.setViewBox( 0, 0, ann_can_w, ann_can_h );
 
     canAnn.onmousemove =  function(e) {
         var prevpt  = svg.createSVGPoint();
