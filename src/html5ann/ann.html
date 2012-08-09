@@ -1,15 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <style></style>
-    <script src="raphael.js"></script>
+  <script src="ann_init.js"></script>
+  <script src="raphael.js"></script>
+  <script src="zoom-pan.js"></script>
 </head>
 
 <body>
-    <script src="zoom-pan.js"></script>
-    <table>
-        <tr><td id="canCell"></td></tr>
-        <tr><td><p><span id="message">Copyright (C) 2012 Joel Granados</span></p></td></tr>
-    </table>
+  <div id="ann.layout">
+  <table>
+    <tr id="ann.header"><td>Annotation Tool</td></tr>
+    <tr id="ann.content">
+      <td id="ann.content.canvas"></td>
+      <td id="ann.content.list"></td>
+    </tr>
+    <tr id="ann.footer">
+      <td><p>
+        <span id="ann.message">Copyright (C) 2012 Joel Granados</span>
+      </p></td>
+    </tr>
+  </table>
+  </div>
 </body>
 </html>
