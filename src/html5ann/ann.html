@@ -9,12 +9,12 @@
       color: gray;
     }
 
-    .ann_content_list_buttons_nav{
+    .ann_list_buttons_nav{
       opacity:0;
       text-align:center;
     }
 
-    .ann_content_list_buttons_nav:hover{
+    .ann_list_buttons_nav:hover{
       opacity:1;
       -o-transition: opacity 1s;
       -moz-transition: opacity 1s;
@@ -22,9 +22,9 @@
       transition: opacity 1s;
     }
 
-    .ann_content_list_buttons_nav_add,
-    .ann_content_list_buttons_nav_rem,
-    .ann_content_list_buttons_nav_cls
+    .ann_list_buttons_add,
+    .ann_list_buttons_rem,
+    .ann_list_buttons_cls
     {
       font-size: inherit;
       color: gray;
@@ -49,8 +49,8 @@
     <tr id="ann.header"><td>Annotation Tool</td></tr>
 
     <tr id="ann.content">
-      <td id="ann.content.canvas" rowspan="2"></td>
-      <td id="ann.content.list" style="vertical-align:top">
+      <td id="ann.canvas" rowspan="2"></td>
+      <td id="ann.list" style="vertical-align:top">
         <select id=ann.filelist size=20 class="ann_filelist">
           <option value="ann.filelist.suggestion">
             Right click to add files
@@ -60,18 +60,18 @@
     </tr>
 
     <tr>
-      <td id="ann.content.list.buttons" style="vertical-align:bottom">
-        <nav id="ann.content.list.buttons.nav"
-             class="ann_content_list_buttons_nav">
+      <td id="ann.list.buttons" style="vertical-align:bottom">
+        <nav id="ann.list.buttons.nav"
+             class="ann_list_buttons_nav">
           <a href="add"Add
-            id="ann.content.list.buttons.nav.add"
-            class="ann_content_list_buttons_nav_add">Add</a>
+            id="ann.list.buttons.add"
+            class="ann_list_buttons_add">Add</a>
           <a href="remove"
-            id="ann.content.list.buttons.nav.add"
-            class="ann_content_list_buttons_nav_rem">Rem</a>
+            id="ann.list.buttons.add"
+            class="ann_list_buttons_rem">Rem</a>
           <a href="clear"
-            id="ann.content.list.buttons.nav.add"
-            class="ann_content_list_buttons_nav_cls">Cls</a>
+            id="ann.list.buttons.add"
+            class="ann_list_buttons_cls">Cls</a>
         </nav>
       </td>
     </tr>

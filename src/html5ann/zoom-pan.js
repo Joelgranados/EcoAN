@@ -1,6 +1,6 @@
 Raphael(function() {
     // Creates canvas
-    var paper = Raphael( document.getElementById("ann.content.canvas"),
+    var paper = Raphael( document.getElementById("ann.canvas"),
                          ann_can_w, ann_can_h );
     paper.canvas.id = "canAnn";
     var canAnn = document.getElementById("canAnn");
