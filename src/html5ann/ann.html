@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <style type="text/css">
+    .ann_filelist{
+      border:1px solid lightgray;
+      background:inherit;
+      font-size:inherit;
+      color: gray;
+    }
+  </style>
+
   <script src="raphael.js"></script>
   <script src="ann_init.js"></script>
   <script src="zoom-pan.js"></script>
@@ -13,7 +22,7 @@
     <tr id="ann.content">
       <td id="ann.content.canvas"></td>
       <td id="ann.content.list" style="vertical-align:top">
-        <select id=ann.filelist size=20 style="top:0">
+        <select id=ann.filelist size=20 class="ann_filelist">
           <option value="ann.filelist.suggestion">
             Right click to add files
           </option>
