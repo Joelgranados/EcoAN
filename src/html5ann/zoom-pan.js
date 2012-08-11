@@ -17,9 +17,9 @@ Raphael(function() {
         prevpt.x = pt.x;
         prevpt.y = pt.y;
 
-        pt.x = ( ( canAnn.viewBox.baseVal.width / canAnn.width.baseVal.value )
+        pt.x = ( ( canAnn.viewBox.baseVal.width/canAnn.width.baseVal.value )
                  * e.layerX ) + canAnn.viewBox.baseVal.x;
-        pt.y = ( (canAnn.viewBox.baseVal.height / canAnn.height.baseVal.value )
+        pt.y = ( (canAnn.viewBox.baseVal.height/canAnn.height.baseVal.value )
                  * e.layerY ) + canAnn.viewBox.baseVal.y;
 
         if (panOn)
