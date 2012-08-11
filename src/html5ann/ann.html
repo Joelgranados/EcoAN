@@ -9,23 +9,11 @@
       color: gray;
     }
 
-    .ann_list_buttons_nav{
-      opacity:0;
-      text-align:center;
-    }
-
-    .ann_list_buttons_nav:hover{
-      opacity:1;
-      -o-transition: opacity 1s;
-      -moz-transition: opacity 1s;
-      -webkit-transition: opacity 1s;
-      transition: opacity 1s;
-    }
-
     .ann_list_buttons_add,
     .ann_list_buttons_rem,
     .ann_list_buttons_cls
     {
+      opacity:.2;
       font-size: inherit;
       color: gray;
       padding: 0px 10px;
@@ -36,6 +24,16 @@
       border: 1px solid gray;
     }
 
+    .ann_list_buttons_add:hover,
+    .ann_list_buttons_rem:hover,
+    .ann_list_buttons_cls:hover
+    {
+      opacity:1;
+      -o-transition: opacity 1s;
+      -moz-transition: opacity 1s;
+      -webkit-transition: opacity 1s;
+      transition: opacity 1s;
+    }
   </style>
 
   <script src="raphael.js"></script>
@@ -61,8 +59,7 @@
 
     <tr>
       <td id="ann.list.buttons" style="vertical-align:bottom">
-        <nav id="ann.list.buttons.nav"
-             class="ann_list_buttons_nav">
+        <nav style="text-align:center">
           <a href="add"Add
             id="ann.list.buttons.add"
             class="ann_list_buttons_add">Add</a>
