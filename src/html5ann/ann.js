@@ -1,9 +1,9 @@
 Raphael(function() {
     // Creates canvas
-    var paper = Raphael( document.getElementById("ann.canvas"),
+    var paper = Raphael( document.getElementById("ann.td.canvas"),
                          ann_can_w, ann_can_h );
-    paper.canvas.id = "canAnn";
-    var canAnn = document.getElementById("canAnn");
+    paper.canvas.id = "ann.canvas";
+    var canAnn = document.getElementById("ann.canvas");
 
     paper.image( "img.jpg", 0, 0, ann_can_w, ann_can_h );
     r = paper.rect(100, 100, 30, 30).attr({
@@ -38,57 +38,61 @@ Raphael(function() {
         zoom(e.wheelDelta);
     };
 
-    // d = direction of the zoom. +number -> in, -number -> out
-    zoom = function ( d )
-    {
-        var _zfactor=1;
-        var zwidth, zheight, zx, zy;
-
-        if (d<0){_zfactor = zfactor+1;} // zoom out
-        else if (d>0){_zfactor = zfactor;} // zoom in
-
-        zx = pt.x - ( Math.abs(canAnn.viewBox.baseVal.x - pt.x) * _zfactor );
-        zx = (zx < 0)? 0: zx;
-
-        zy = pt.y - ( Math.abs(canAnn.viewBox.baseVal.y - pt.y) * _zfactor );
-        zy = (zy < 0)? 0: zy;
-
-        zwidth = (canAnn.viewBox.baseVal.width * _zfactor);
-        if ( zwidth+zx > canAnn.width.baseVal.value )
-            zwidth = Math.abs ( zx - canAnn.width.baseVal.value );
-
-        zheight = (canAnn.viewBox.baseVal.height * _zfactor);
-        if ( zheight+zy > canAnn.height.baseVal.value )
-            zheight = Math.abs ( zy - canAnn.height.baseVal.value );
-
-        canAnn.viewBox.baseVal.width = zwidth;
-        canAnn.viewBox.baseVal.height = zheight;
-        canAnn.viewBox.baseVal.x = zx;
-        canAnn.viewBox.baseVal.y = zy;
-    }
-
-    // d_x = Delta for x.
-    // d_y = Delta for y. Sign matters for both.
-    pan = function ( d_x, d_y )
-    {
-        var zx, zy;
-
-        zx = canAnn.viewBox.baseVal.x - d_x;
-        zx = (zx < 0)? 0: zx;
-
-        zy = canAnn.viewBox.baseVal.y - d_y;
-        zy = (zy < 0)? 0: zy;
-
-        if ( zx+canAnn.viewBox.baseVal.width > canAnn.width.baseVal.value )
-            zx = zx - ( ( zx+canAnn.viewBox.baseVal.width )
-                        - canAnn.width.baseVal.value );
-
-        if ( zy+canAnn.viewBox.baseVal.height > canAnn.height.baseVal.value )
-            zy = zy - ( ( zy+canAnn.viewBox.baseVal.height )
-                        - canAnn.height.baseVal.value );
-
-        canAnn.viewBox.baseVal.x = zx;
-        canAnn.viewBox.baseVal.y = zy;
-    }
-
 });
+
+// d = direction of the zoom. +number -> in, -number -> out
+zoom = function ( d )
+{
+  var canAnn = document.getElementById("ann.canvas");
+  var _zfactor=1;
+  var zwidth, zheight, zx, zy;
+
+  if (d<0){_zfactor = zfactor+1;} // zoom out
+  else if (d>0){_zfactor = zfactor;} // zoom in
+
+  zx = pt.x - ( Math.abs(canAnn.viewBox.baseVal.x - pt.x) * _zfactor );
+  zx = (zx < 0)? 0: zx;
+
+  zy = pt.y - ( Math.abs(canAnn.viewBox.baseVal.y - pt.y) * _zfactor );
+  zy = (zy < 0)? 0: zy;
+
+  zwidth = (canAnn.viewBox.baseVal.width * _zfactor);
+  if ( zwidth+zx > canAnn.width.baseVal.value )
+    zwidth = Math.abs ( zx - canAnn.width.baseVal.value );
+
+  zheight = (canAnn.viewBox.baseVal.height * _zfactor);
+  if ( zheight+zy > canAnn.height.baseVal.value )
+    zheight = Math.abs ( zy - canAnn.height.baseVal.value );
+
+  canAnn.viewBox.baseVal.width = zwidth;
+  canAnn.viewBox.baseVal.height = zheight;
+  canAnn.viewBox.baseVal.x = zx;
+  canAnn.viewBox.baseVal.y = zy;
+}
+
+// d_x = Delta for x.
+// d_y = Delta for y. Sign matters for both.
+pan = function ( d_x, d_y )
+{
+  var canAnn = document.getElementById("ann.canvas");
+  var zx, zy;
+
+  zx = canAnn.viewBox.baseVal.x - d_x;
+  zx = (zx < 0)? 0: zx;
+
+  zy = canAnn.viewBox.baseVal.y - d_y;
+  zy = (zy < 0)? 0: zy;
+
+  if ( zx+canAnn.viewBox.baseVal.width > canAnn.width.baseVal.value )
+    zx = zx - ( ( zx+canAnn.viewBox.baseVal.width )
+                - canAnn.width.baseVal.value );
+
+  if ( zy+canAnn.viewBox.baseVal.height > canAnn.height.baseVal.value )
+    zy = zy - ( ( zy+canAnn.viewBox.baseVal.height )
+                - canAnn.height.baseVal.value );
+
+  canAnn.viewBox.baseVal.x = zx;
+  canAnn.viewBox.baseVal.y = zy;
+}
+
+
