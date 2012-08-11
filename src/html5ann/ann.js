@@ -1,45 +1,3 @@
-Raphael(function() {
-    // Creates canvas
-    var paper = Raphael( document.getElementById("ann.td.canvas"),
-                         ann_can_w, ann_can_h );
-    paper.canvas.id = "ann.canvas";
-    var canAnn = document.getElementById("ann.canvas");
-
-    paper.image( "img.jpg", 0, 0, ann_can_w, ann_can_h );
-    r = paper.rect(100, 100, 30, 30).attr({
-        'stroke': "#f00",
-        'stroke-width': 4});
-
-    paper.setViewBox( 0, 0, ann_can_w, ann_can_h );
-
-    canAnn.onmousemove =  function(e) {
-        var prevpt  = svg.createSVGPoint();
-        prevpt.x = pt.x;
-        prevpt.y = pt.y;
-
-        pt.x = ( ( canAnn.viewBox.baseVal.width/canAnn.width.baseVal.value )
-                 * e.layerX ) + canAnn.viewBox.baseVal.x;
-        pt.y = ( (canAnn.viewBox.baseVal.height/canAnn.height.baseVal.value )
-                 * e.layerY ) + canAnn.viewBox.baseVal.y;
-
-        if (panOn)
-            pan(pt.x-prevpt.x, pt.y-prevpt.y);
-    };
-
-    canAnn.onmousedown = function (e) {
-        panOn = true;
-    }
-
-    canAnn.onmouseup = function (e) {
-        panOn = false;
-    }
-
-    canAnn.onmousewheel = function(e) {
-        zoom(e.wheelDelta);
-    };
-
-});
-
 // d = direction of the zoom. +number -> in, -number -> out
 zoom = function ( d )
 {
@@ -95,4 +53,47 @@ pan = function ( d_x, d_y )
   canAnn.viewBox.baseVal.y = zy;
 }
 
+main = function () {
+  // Creates canvas
+  var paper = Raphael( document.getElementById("ann.td.canvas"),
+             ann_can_w, ann_can_h );
+  paper.canvas.id = "ann.canvas";
+  var canAnn = document.getElementById("ann.canvas");
+
+  paper.image( "img.jpg", 0, 0, ann_can_w, ann_can_h );
+  r = paper.rect(100, 100, 30, 30).attr({
+    'stroke': "#f00",
+    'stroke-width': 4});
+
+  paper.setViewBox( 0, 0, ann_can_w, ann_can_h );
+
+  canAnn.onmousemove =  function(e) {
+    var prevpt  = svg.createSVGPoint();
+    prevpt.x = pt.x;
+    prevpt.y = pt.y;
+
+    pt.x = ( ( canAnn.viewBox.baseVal.width/canAnn.width.baseVal.value )
+             * e.layerX ) + canAnn.viewBox.baseVal.x;
+    pt.y = ( (canAnn.viewBox.baseVal.height/canAnn.height.baseVal.value )
+             * e.layerY ) + canAnn.viewBox.baseVal.y;
+
+    if (panOn)
+      pan(pt.x-prevpt.x, pt.y-prevpt.y);
+  };
+
+  canAnn.onmousedown = function (e) {
+    panOn = true;
+  }
+
+  canAnn.onmouseup = function (e) {
+    panOn = false;
+  }
+
+  canAnn.onmousewheel = function(e) {
+    zoom(e.wheelDelta);
+  };
+
+}
+
+Raphael(main);
 
