@@ -61,7 +61,10 @@ Raphael(function() {
         if ( zheight+zy > canAnn.height.baseVal.value )
             zheight = Math.abs ( zy - canAnn.height.baseVal.value );
 
-        paper.setViewBox( zx, zy, zwidth, zheight );
+        canAnn.viewBox.baseVal.width = zwidth;
+        canAnn.viewBox.baseVal.height = zheight;
+        canAnn.viewBox.baseVal.x = zx;
+        canAnn.viewBox.baseVal.y = zy;
     }
 
     // d_x = Delta for x.
@@ -84,9 +87,8 @@ Raphael(function() {
             zy = zy - ( ( zy+canAnn.viewBox.baseVal.height )
                         - canAnn.height.baseVal.value );
 
-        paper.setViewBox( zx, zy,
-                          canAnn.viewBox.baseVal.width,
-                          canAnn.viewBox.baseVal.height );
+        canAnn.viewBox.baseVal.x = zx;
+        canAnn.viewBox.baseVal.y = zy;
     }
 
 });

@@ -18,7 +18,6 @@ var pt  = svg.createSVGPoint();
 // State var controling the pan
 var panOn = false;
 
-
 repos_layout = function ()
 {
     // Center the main layout
