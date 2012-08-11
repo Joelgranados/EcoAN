@@ -1,56 +1,56 @@
 // d = direction of the zoom. +number -> in, -number -> out
 zoom = function ( d )
 {
-  var canAnn = document.getElementById("ann.canvas");
+  var ann_can = document.getElementById("ann.canvas");
   var _zfactor=1;
   var zwidth, zheight, zx, zy;
 
   if (d<0){_zfactor = zfactor+1;} // zoom out
   else if (d>0){_zfactor = zfactor;} // zoom in
 
-  zx = pt.x - ( Math.abs(canAnn.viewBox.baseVal.x - pt.x) * _zfactor );
+  zx = pt.x - ( Math.abs(ann_can.viewBox.baseVal.x - pt.x) * _zfactor );
   zx = (zx < 0)? 0: zx;
 
-  zy = pt.y - ( Math.abs(canAnn.viewBox.baseVal.y - pt.y) * _zfactor );
+  zy = pt.y - ( Math.abs(ann_can.viewBox.baseVal.y - pt.y) * _zfactor );
   zy = (zy < 0)? 0: zy;
 
-  zwidth = (canAnn.viewBox.baseVal.width * _zfactor);
-  if ( zwidth+zx > canAnn.width.baseVal.value )
-    zwidth = Math.abs ( zx - canAnn.width.baseVal.value );
+  zwidth = (ann_can.viewBox.baseVal.width * _zfactor);
+  if ( zwidth+zx > ann_can.width.baseVal.value )
+    zwidth = Math.abs ( zx - ann_can.width.baseVal.value );
 
-  zheight = (canAnn.viewBox.baseVal.height * _zfactor);
-  if ( zheight+zy > canAnn.height.baseVal.value )
-    zheight = Math.abs ( zy - canAnn.height.baseVal.value );
+  zheight = (ann_can.viewBox.baseVal.height * _zfactor);
+  if ( zheight+zy > ann_can.height.baseVal.value )
+    zheight = Math.abs ( zy - ann_can.height.baseVal.value );
 
-  canAnn.viewBox.baseVal.width = zwidth;
-  canAnn.viewBox.baseVal.height = zheight;
-  canAnn.viewBox.baseVal.x = zx;
-  canAnn.viewBox.baseVal.y = zy;
+  ann_can.viewBox.baseVal.width = zwidth;
+  ann_can.viewBox.baseVal.height = zheight;
+  ann_can.viewBox.baseVal.x = zx;
+  ann_can.viewBox.baseVal.y = zy;
 }
 
 // d_x = Delta for x.
 // d_y = Delta for y. Sign matters for both.
 pan = function ( d_x, d_y )
 {
-  var canAnn = document.getElementById("ann.canvas");
+  var ann_can = document.getElementById("ann.canvas");
   var zx, zy;
 
-  zx = canAnn.viewBox.baseVal.x - d_x;
+  zx = ann_can.viewBox.baseVal.x - d_x;
   zx = (zx < 0)? 0: zx;
 
-  zy = canAnn.viewBox.baseVal.y - d_y;
+  zy = ann_can.viewBox.baseVal.y - d_y;
   zy = (zy < 0)? 0: zy;
 
-  if ( zx+canAnn.viewBox.baseVal.width > canAnn.width.baseVal.value )
-    zx = zx - ( ( zx+canAnn.viewBox.baseVal.width )
-                - canAnn.width.baseVal.value );
+  if ( zx+ann_can.viewBox.baseVal.width > ann_can.width.baseVal.value )
+    zx = zx - ( ( zx+ann_can.viewBox.baseVal.width )
+                - ann_can.width.baseVal.value );
 
-  if ( zy+canAnn.viewBox.baseVal.height > canAnn.height.baseVal.value )
-    zy = zy - ( ( zy+canAnn.viewBox.baseVal.height )
-                - canAnn.height.baseVal.value );
+  if ( zy+ann_can.viewBox.baseVal.height > ann_can.height.baseVal.value )
+    zy = zy - ( ( zy+ann_can.viewBox.baseVal.height )
+                - ann_can.height.baseVal.value );
 
-  canAnn.viewBox.baseVal.x = zx;
-  canAnn.viewBox.baseVal.y = zy;
+  ann_can.viewBox.baseVal.x = zx;
+  ann_can.viewBox.baseVal.y = zy;
 }
 
 main = function () {
@@ -58,7 +58,7 @@ main = function () {
   var paper = Raphael( document.getElementById("ann.td.canvas"),
              ann_can_w, ann_can_h );
   paper.canvas.id = "ann.canvas";
-  var canAnn = document.getElementById("ann.canvas");
+  var ann_can = document.getElementById("ann.canvas");
 
   paper.image( "img.jpg", 0, 0, ann_can_w, ann_can_h );
   r = paper.rect(100, 100, 30, 30).attr({
@@ -67,29 +67,29 @@ main = function () {
 
   paper.setViewBox( 0, 0, ann_can_w, ann_can_h );
 
-  canAnn.onmousemove =  function(e) {
+  ann_can.onmousemove =  function(e) {
     var prevpt  = svg.createSVGPoint();
     prevpt.x = pt.x;
     prevpt.y = pt.y;
 
-    pt.x = ( ( canAnn.viewBox.baseVal.width/canAnn.width.baseVal.value )
-             * e.layerX ) + canAnn.viewBox.baseVal.x;
-    pt.y = ( (canAnn.viewBox.baseVal.height/canAnn.height.baseVal.value )
-             * e.layerY ) + canAnn.viewBox.baseVal.y;
+    pt.x = ( ( ann_can.viewBox.baseVal.width/ann_can.width.baseVal.value )
+             * e.layerX ) + ann_can.viewBox.baseVal.x;
+    pt.y = ( (ann_can.viewBox.baseVal.height/ann_can.height.baseVal.value )
+             * e.layerY ) + ann_can.viewBox.baseVal.y;
 
     if (panOn)
       pan(pt.x-prevpt.x, pt.y-prevpt.y);
   };
 
-  canAnn.onmousedown = function (e) {
+  ann_can.onmousedown = function (e) {
     panOn = true;
   }
 
-  canAnn.onmouseup = function (e) {
+  ann_can.onmouseup = function (e) {
     panOn = false;
   }
 
-  canAnn.onmousewheel = function(e) {
+  ann_can.onmousewheel = function(e) {
     zoom(e.wheelDelta);
   };
 
