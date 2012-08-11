@@ -51,11 +51,15 @@
     .ann_list_buttons_rem:hover,
     .ann_list_buttons_cls:hover
     {
-      opacity:1;
-      -o-transition: opacity 1s;
+      opacity:1; -o-transition: opacity 1s;
       -moz-transition: opacity 1s;
       -webkit-transition: opacity 1s;
       transition: opacity 1s;
+    }
+
+    .ann_list_buttons_add input{
+      font-size: 8px;
+      width: 60px;
     }
   </style>
 
@@ -83,15 +87,13 @@
     <tr>
       <td id="ann.list.buttons" style="vertical-align:bottom">
         <nav style="text-align:center">
-          <a href="add"Add
-            id="ann.list.buttons.add"
-            class="ann_list_buttons_add">Add</a>
-          <a href="remove"
-            id="ann.list.buttons.rem"
-            class="ann_list_buttons_rem">Rem</a>
-          <a href="clear"
-            id="ann.list.buttons.cls"
-            class="ann_list_buttons_cls">Cls</a>
+          <span id="ann.list.buttons.add" class="ann_list_buttons_add">
+            <input type=file id="ann.input" multiple/>
+          </span>
+          <span id="ann.list.buttons.rem" class="ann_list_buttons_rem">
+            Rem</span>
+          <span id="ann.list.buttons.cls" class="ann_list_buttons_cls">
+            Cls</span>
         </nav>
       </td>
     </tr>

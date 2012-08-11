@@ -17,6 +17,18 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+ann_input.onchange = function ( evt )
+{
+  var files = evt.target.files;
+
+  var output = [];
+  for (var i = 0, f; f = files[i]; i++)
+    output.push( '<option value="',escape(f.name), '">',
+            escape(f.name), '</option>' );
+
+  ann_list.innerHTML = output.join('');
+}
+
 // d = direction of the zoom. +number -> in, -number -> out
 zoom = function ( d )
 {

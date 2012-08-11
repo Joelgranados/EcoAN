@@ -22,12 +22,22 @@ var ann_can_w = 640;
 var ann_can_h = 480;
 
 // The list should be 30% the width of canvas.
-var ann_list_w = Math.round(ann_can_w*.3)
+var ann_list_w = Math.round(ann_can_w*.3);
 
-// div id containing layout
+// List buttons
+var ann_list_add = document.getElementById("ann.list.buttons.add");
+var ann_list_del = document.getElementById("ann.list.buttons.del");
+var ann_list_cls = document.getElementById("ann.list.buttons.cls");
+
+// The file list select
+var ann_list = document.getElementById("ann.filelist");
+var ann_input = document.getElementById("ann.input");
+
+// div containing layout
 var ann_layout = document.getElementById("ann.layout");
 
-// zoom factor. We use zfactor for zooming in and zfactor+1 for zooming out.
+// zoom-in -> zfactor
+// zoom-out -> zfactor+1
 var zfactor = .5;
 
 // The current mouse possition.
