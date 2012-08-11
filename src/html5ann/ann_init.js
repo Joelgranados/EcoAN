@@ -6,7 +6,7 @@ var ann_can_h = 480;
 var ann_list_w = Math.round(ann_can_w*.3)
 
 // div id containing layout
-var ann_layout_id = "ann.layout"
+var ann_layout = document.getElementById("ann.layout");
 
 // zoom factor. We use zfactor for zooming in and zfactor+1 for zooming out.
 var zfactor = .5;
@@ -21,12 +21,11 @@ var panOn = false;
 repos_layout = function ()
 {
     // Center the main layout
-    lo = document.getElementById(ann_layout_id);
     lpos = 0;
     if ( window.innerWidth > (ann_can_w + ann_list_w) )
         lpos = (window.innerWidth - (ann_can_w + ann_list_w))/2;
-    lo.style.position = "absolute";
-    lo.style.left = lpos+"px";
+    ann_layout.style.position = "absolute";
+    ann_layout.style.left = lpos+"px";
 }
 
 window.onload = function ()
