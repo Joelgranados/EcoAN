@@ -29,6 +29,8 @@
       border:1px solid lightgray;
       background:inherit;
       font-size:inherit;
+      overflow-x:scroll;
+      overflow-y:scroll;
       color: gray;
     }
 
@@ -76,11 +78,11 @@
     <tr id="ann.content">
       <td id="ann.td.canvas" rowspan="2"></td>
       <td id="ann.list" style="vertical-align:top">
-        <select id=ann.filelist class="ann_filelist">
-          <option value="ann.filelist.suggestion">
-            Right click to add files, this is av erty long linek......
-          </option>
-        </select>
+        <div id=ann.filelist class="ann_filelist">
+          <span value="ann.filelist.suggestion">
+            File list.
+          </span>
+        </div>
       </td>
     </tr>
 

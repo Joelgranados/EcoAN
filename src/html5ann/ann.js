@@ -23,8 +23,9 @@ ann_input.onchange = function ( evt )
 
   var output = [];
   for (var i = 0, f; f = files[i]; i++)
-    output.push( '<option value="',escape(f.name), '">',
-            escape(f.name), '</option>' );
+    //FIXME: might want to remove all spaces.
+    output.push( '<span value="',escape(f.name), '">',
+            escape(f.name), '</span>' );
 
   ann_list.innerHTML = output.join('');
 }
