@@ -28,11 +28,23 @@ ann_input.onchange = function ( evt )
       continue;
 
     //FIXME: might want to remove all spaces.
-    output.push( '<span value="',escape(f.name), '">',
+    output.push( '<span value="',escape(f.name), '"',
+                 ' onclick="ann_filelist_click( this )">',
             escape(f.name), '</span><br>' );
   }
 
   ann_list.innerHTML = ann_list.innerHTML + output.join('');
+}
+
+ann_filelist_click = function ( evt )
+{
+  if ( ann_file_selected != null )
+    ann_file_selected.style.background="";
+
+  ann_file_selected = evt;
+  ann_file_selected.style.background = "lightgray";
+
+  console.log("here goes the logic to fetch a file")
 }
 
 // d = direction of the zoom. +number -> in, -number -> out

@@ -31,7 +31,7 @@ var ann_list_add = document.getElementById("ann.list.buttons.add");
 var ann_list_del = document.getElementById("ann.list.buttons.del");
 var ann_list_cls = document.getElementById("ann.list.buttons.cls");
 
-// The file list select
+// The file list
 var ann_list = document.getElementById("ann.filelist");
 var ann_input = document.getElementById("ann.input");
 
@@ -45,6 +45,9 @@ var zfactor = .5;
 // The current mouse possition.
 var svg = document.createElementNS("http://www.w3.org/2000/svg",'svg');
 var pt  = svg.createSVGPoint();
+
+// The selected element in the filelist.
+var ann_file_selected = null;
 
 // State var controling the pan
 var panOn = false;
