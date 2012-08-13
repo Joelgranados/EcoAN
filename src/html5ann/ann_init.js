@@ -23,6 +23,8 @@ var ann_can_h = 480;
 
 // The list should be 30% the width of canvas.
 var ann_list_w = Math.round(ann_can_w*.3);
+// 20 pixels of the buttons.
+var ann_list_h = ann_can_h - 20;
 
 // List buttons
 var ann_list_add = document.getElementById("ann.list.buttons.add");
@@ -59,8 +61,13 @@ repos_layout = function ()
 
 window.onload = function ()
 {
-    // Center the main layout
-    repos_layout();
+  // Center the main layout
+  repos_layout();
+
+  // Size the file list
+  ann_list.style.width = ann_list_w+"px";
+  ann_list.style.height = ann_list_h+"px";
+  ann_list.style.overflow = "scroll";
 }
 
 window.onresize = function ()
