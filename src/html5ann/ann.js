@@ -23,9 +23,14 @@ ann_input.onchange = function ( evt )
 
   var output = [];
   for (var i = 0, f; f = files[i]; i++)
+  {
+    if (!f.type.match('image.*'))
+      continue;
+
     //FIXME: might want to remove all spaces.
     output.push( '<span value="',escape(f.name), '">',
             escape(f.name), '</span><br>' );
+  }
 
   ann_list.innerHTML = ann_list.innerHTML + output.join('');
 }
