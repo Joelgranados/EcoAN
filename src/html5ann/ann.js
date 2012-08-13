@@ -25,9 +25,9 @@ ann_input.onchange = function ( evt )
   for (var i = 0, f; f = files[i]; i++)
     //FIXME: might want to remove all spaces.
     output.push( '<span value="',escape(f.name), '">',
-            escape(f.name), '</span>' );
+            escape(f.name), '</span><br>' );
 
-  ann_list.innerHTML = output.join('');
+  ann_list.innerHTML = ann_list.innerHTML + output.join('');
 }
 
 // d = direction of the zoom. +number -> in, -number -> out
