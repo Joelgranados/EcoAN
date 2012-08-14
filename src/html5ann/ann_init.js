@@ -49,6 +49,9 @@ var pt  = svg.createSVGPoint();
 // The selected element in the filelist.
 var ann_file_selected = null;
 
+// The raphael object to help us with svgs
+var ann_paper = null;
+
 // State var controling the pan
 var panOn = false;
 

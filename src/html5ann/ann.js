@@ -104,17 +104,17 @@ pan = function ( d_x, d_y )
 
 main = function () {
   // Creates canvas
-  var paper = Raphael( document.getElementById("ann.td.canvas"),
-             ann_can_w, ann_can_h );
-  paper.canvas.id = "ann.canvas";
+  ann_paper = Raphael( document.getElementById("ann.td.canvas"),
+                       ann_can_w, ann_can_h );
+  ann_paper.canvas.id = "ann.canvas";
   var ann_can = document.getElementById("ann.canvas");
 
-  paper.image( "img.jpg", 0, 0, ann_can_w, ann_can_h );
-  r = paper.rect(100, 100, 30, 30).attr({
+  ann_paper.image( "img.jpg", 0, 0, ann_can_w, ann_can_h );
+  r = ann_paper.rect(100, 100, 30, 30).attr({
     'stroke': "#f00",
     'stroke-width': 4});
 
-  paper.setViewBox( 0, 0, ann_can_w, ann_can_h );
+  ann_paper.setViewBox( 0, 0, ann_can_w, ann_can_h );
 
   ann_can.onmousemove =  function(e) {
     var prevpt  = svg.createSVGPoint();
