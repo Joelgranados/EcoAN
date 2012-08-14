@@ -59,8 +59,12 @@ function FileList(name, parent, width, height, paper)
   nav.appendChild(this.remBut);
   nav.appendChild(this.clsBut);
 
-  this.parent.appendChild(this.list);
-  this.parent.appendChild(nav);
+  /* gather everything under a div */
+  div = document.createElement('div');
+  div.obj = this; //For autoreference
+  div.appendChild(this.list);
+  div.appendChild(nav);
+  this.parent.appendChild(div);
 
   /* Create file list & buttons CSS. */
   // FIXME: It might be a messy for multiple filelist obj.
@@ -108,6 +112,17 @@ function FileList(name, parent, width, height, paper)
     + '}';
 
   document.getElementsByTagName('head')[0].appendChild(style);
+
+  /* Set all the callbacks */
+  this.input.onchange = function ( evt )
+  {
+    /* This is painful. For the life of me, I could not find any way how to
+     * refer to 'this' (the FileList object). This is an ugly Ugly UGLY hack
+     * to address this
+     */
+    this_obj = evt.srcElement.parentElement.parentElement.parentElement.obj;
+    this_obj.append_files ( evt.target.files );
+  }
 }
 
 FileList.prototype.ann_filelist_click = function ( evt )

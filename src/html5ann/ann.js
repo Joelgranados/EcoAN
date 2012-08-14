@@ -118,9 +118,3 @@ Raphael(main);
 var ann_list_td = document.getElementById("ann.list");
 ann_fl = new FileList( 'filelist', ann_list_td,
     ann_list_w, ann_can_h, ann_paper );
-
-/* Set all the callbacks */
-ann_fl.input.onchange = function ( evt )
-{
-  ann_fl.append_files ( evt.target.files );
-}
