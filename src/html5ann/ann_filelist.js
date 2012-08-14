@@ -114,15 +114,20 @@ function FileList(name, parent, width, height, paper)
   document.getElementsByTagName('head')[0].appendChild(style);
 
   /* Set all the callbacks */
-  this.input.onchange = function ( evt )
+  this.input.onchange = (function ( obj )
   {
-    /* This is painful. For the life of me, I could not find any way how to
-     * refer to 'this' (the FileList object). This is an ugly Ugly UGLY hack
-     * to address this
-     */
-    this_obj = evt.srcElement.parentElement.parentElement.parentElement.obj;
-    this_obj.append_files ( evt.target.files );
-  }
+    return function ( evt ) {
+      obj.append_files ( evt.target.files );
+    };
+  })(this);
+
+  this.remBut.onclick = (function ( obj )
+  {
+    return function() {
+      if ( obj.list.selected != null )
+        obj.remove_file(obj.list.selected);
+    };
+  })(this);
 }
 
 FileList.prototype.ann_filelist_click = function ( evt )
@@ -152,4 +157,10 @@ FileList.prototype.append_files = function ( files )
     this.list.appendChild(s);
     this.list.appendChild(document.createElement('br'));
   }
+}
+
+/* file is the whole span element */
+FileList.prototype.remove_file = function ( file )
+{
+  this.list.removeChild(file);
 }
