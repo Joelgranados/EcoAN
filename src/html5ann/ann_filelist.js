@@ -30,11 +30,12 @@ function FileList(name, parent, width, height, paper)
   this.parent = parent;
 
   // The selected element in the filelist.
-  var selected = null;
+  this.selected = null;
 
   /* Create file list & buttons html */
   this.list = document.createElement('div');
   this.list.className = this.class + '_list';
+  this.list.selected = null;
 
   this.addBut = document.createElement('span');
   this.addBut.className = this.id + '_butAdd';
@@ -107,17 +108,33 @@ function FileList(name, parent, width, height, paper)
     + '}';
 
   document.getElementsByTagName('head')[0].appendChild(style);
-
 }
 
 FileList.prototype.ann_filelist_click = function ( evt )
 {
-  if ( this.selected != null )
-    this.selected.style.background="";
+  tmpList = evt.srcElement.parentElement;
+  if ( tmpList.selected != null )
+    tmpList.selected.style.background="";
 
-  this.selected = evt;
-  this.selected.style.background = "lightgray";
+  tmpList.selected = evt.srcElement;
+  tmpList.selected.style.background = "lightgray";
 
   console.log("here goes the logic to fetch a file")
 }
 
+FileList.prototype.append_files = function ( files )
+{
+  for (var i = 0, f; f = files[i]; i++)
+  {
+    if (!f.type.match('image.*'))
+      continue;
+
+    s = document.createElement('span');
+    s.value = escape(f.name);
+    //FIXME: might want to remove all spaces.
+    s.innerHTML = escape(f.name);
+    s.onclick = this.ann_filelist_click;
+    this.list.appendChild(s);
+    this.list.appendChild(document.createElement('br'));
+  }
+}

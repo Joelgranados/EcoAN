@@ -122,19 +122,5 @@ ann_fl = new FileList( 'filelist', ann_list_td,
 /* Set all the callbacks */
 ann_fl.input.onchange = function ( evt )
 {
-  var files = evt.target.files;
-
-  var output = [];
-  for (var i = 0, f; f = files[i]; i++)
-  {
-    if (!f.type.match('image.*'))
-      continue;
-
-    //FIXME: might want to remove all spaces.
-    output.push( '<span value="',escape(f.name), '"',
-                 ' onclick="ann_fl.ann_filelist_click( this )">',
-            escape(f.name), '</span><br>' );
-  }
-
-  ann_fl.list.innerHTML = ann_fl.list.innerHTML + output.join('');
+  ann_fl.append_files ( evt.target.files );
 }
