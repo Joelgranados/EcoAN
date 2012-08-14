@@ -128,6 +128,15 @@ function FileList(name, parent, width, height, paper)
         obj.list.removeChild(obj.list.selected);
     };
   })(this);
+
+  this.clsBut.onclick = (function ( obj )
+  {
+    return function () {
+      var ch = null;
+      while ( ch = obj.list.children[0] )
+        obj.list.removeChild(ch);
+    };
+  })(this);
 }
 
 FileList.prototype.ann_filelist_click = function ( evt )
