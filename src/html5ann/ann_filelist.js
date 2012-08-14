@@ -154,8 +154,8 @@ FileList.prototype.append_files = function ( files )
     //FIXME: might want to remove all spaces.
     s.innerHTML = escape(f.name);
     s.onclick = this.ann_filelist_click;
+    s.appendChild(document.createElement('br'));
     this.list.appendChild(s);
-    this.list.appendChild(document.createElement('br'));
   }
 }
 
