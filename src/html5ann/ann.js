@@ -17,35 +17,101 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-ann_input.onchange = function ( evt )
+/* Class File list */
+function FileList(name, parent, width, height, paper)
 {
-  var files = evt.target.files;
+  this.name = name;
+  this.id = name;
+  this.class = name;
+  this.width = width;
+  this.height = height;
+  this.list_height = height - 20;
+  this.buttons_height = 20;
+  this.paper = paper;
+  this.parent = parent;
 
-  var output = [];
-  for (var i = 0, f; f = files[i]; i++)
-  {
-    if (!f.type.match('image.*'))
-      continue;
+  // The selected element in the filelist.
+  var selected = null;
 
-    //FIXME: might want to remove all spaces.
-    output.push( '<span value="',escape(f.name), '"',
-                 ' onclick="ann_filelist_click( this )">',
-            escape(f.name), '</span><br>' );
-  }
+  /* Create file list & buttons html */
+  this.list = document.createElement('div');
+  this.list.className = this.class + '_list';
 
-  ann_list.innerHTML = ann_list.innerHTML + output.join('');
+  this.addBut = document.createElement('span');
+  this.addBut.className = this.id + '_butAdd';
+  this.input = document.createElement('input');
+  this.input.type = 'file';
+  this.input.id = this.id + '_input';
+  this.input.multiple = true;
+  this.addBut.appendChild(this.input);
+
+  this.remBut = document.createElement('span');
+  this.remBut.className = this.id + '_butRem';
+  this.remBut.innerHTML = 'Rem';
+
+  this.clsBut = document.createElement('span');
+  this.clsBut.className = this.id + '_butCls';
+  this.clsBut.innerHTML = 'Cls';
+
+  var nav = document.createElement('nav');
+  nav.style.textAlign = "center";
+  nav.appendChild(this.addBut);
+  nav.appendChild(this.remBut);
+  nav.appendChild(this.clsBut);
+
+  this.parent.appendChild(this.list);
+  this.parent.appendChild(nav);
+
+  /* Create file list & buttons CSS. */
+  // FIXME: It might be a messy for multiple filelist obj.
+  var style = document.createElement('style');
+  style.type = 'text/css';
+  style.innerHTML = '.' + this.list.className + ' {'
+    + 'border:1px solid lightgray;'
+    + 'background:inherit;'
+    + 'font-size:inherit;'
+    + 'overflow-x:scroll;'
+    + 'overflow-y:scroll;'
+    + 'overflow:scroll;'
+    + 'color: gray;'
+    + 'width: ' + this.width + 'px;'
+    + 'height: ' + this.list_height + 'px;'
+    + '}'
+
+    + '.'+this.addBut.className+','
+    + '.'+this.remBut.className+','
+    + '.'+this.clsBut.className+'{'
+    + 'opacity:.2;'
+    + 'font-size: inherit;'
+    + 'color: gray;'
+    + 'padding: 0px 10px;'
+    + 'background: inherit;'
+    + '-moz-border-radius: 7px;'
+    + '-webkit-border-radius: 7px;'
+    + 'border-radius: 7px;'
+    + 'border: 1px solid gray;'
+    + '}'
+
+    + '.'+this.addBut.className+':hover,'
+    + '.'+this.remBut.className+':hover,'
+    + '.'+this.clsBut.className+':hover{'
+    + 'opacity:1;'
+    + '-o-transition: opacity 1s;'
+    + '-moz-transition: opacity 1s;'
+    + '-webkit-transition: opacity 1s;'
+    + 'transition: opacity 1s;'
+    + '}'
+
+    + '.'+this.addBut.className+' input{'
+    + 'font-size: 8px;'
+    + 'width: 60px;'
+    + '}';
+
+  document.getElementsByTagName('head')[0].appendChild(style);
+
 }
 
-ann_filelist_click = function ( evt )
-{
-  if ( ann_file_selected != null )
-    ann_file_selected.style.background="";
-
-  ann_file_selected = evt;
-  ann_file_selected.style.background = "lightgray";
-
-  console.log("here goes the logic to fetch a file")
-}
+/* End Class File list */
 
 // d = direction of the zoom. +number -> in, -number -> out
 zoom = function ( d )
@@ -145,4 +211,38 @@ main = function () {
 }
 
 Raphael(main);
+var ann_list_td = document.getElementById("ann.list");
+ann_fl = new FileList( 'filelist', ann_list_td,
+    ann_list_w, ann_can_h, ann_paper );
+
+/* Set all the callbacks */
+ann_fl.input.onchange = function ( evt )
+{
+  var files = evt.target.files;
+
+  var output = [];
+  for (var i = 0, f; f = files[i]; i++)
+  {
+    if (!f.type.match('image.*'))
+      continue;
+
+    //FIXME: might want to remove all spaces.
+    output.push( '<span value="',escape(f.name), '"',
+                 ' onclick="ann_filelist_click( this )">',
+            escape(f.name), '</span><br>' );
+  }
+
+  ann_fl.list.innerHTML = ann_fl.list.innerHTML + output.join('');
+}
+
+ann_filelist_click = function ( evt )
+{
+  if ( ann_fl.selected != null )
+    ann_fl.selected.style.background="";
+
+  ann_fl.selected = evt;
+  ann_fl.selected.style.background = "lightgray";
+
+  console.log("here goes the logic to fetch a file")
+}
 

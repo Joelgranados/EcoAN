@@ -24,45 +24,6 @@
     a {
       text-decoration:none;
     }
-
-    .ann_filelist{
-      border:1px solid lightgray;
-      background:inherit;
-      font-size:inherit;
-      overflow-x:scroll;
-      overflow-y:scroll;
-      color: gray;
-    }
-
-    .ann_list_buttons_add,
-    .ann_list_buttons_rem,
-    .ann_list_buttons_cls
-    {
-      opacity:.2;
-      font-size: inherit;
-      color: gray;
-      padding: 0px 10px;
-      background: inherit;
-      -moz-border-radius: 7px;
-      -webkit-border-radius: 7px;
-      border-radius: 7px;
-      border: 1px solid gray;
-    }
-
-    .ann_list_buttons_add:hover,
-    .ann_list_buttons_rem:hover,
-    .ann_list_buttons_cls:hover
-    {
-      opacity:1; -o-transition: opacity 1s;
-      -moz-transition: opacity 1s;
-      -webkit-transition: opacity 1s;
-      transition: opacity 1s;
-    }
-
-    .ann_list_buttons_add input{
-      font-size: 8px;
-      width: 60px;
-    }
   </style>
 
   <script src="raphael.js"></script>
@@ -76,25 +37,8 @@
     <tr id="ann.header"><td>Annotation Tool</td></tr>
 
     <tr id="ann.content">
-      <td id="ann.td.canvas" rowspan="2"></td>
-      <td id="ann.list" style="vertical-align:top">
-        <div id=ann.filelist class="ann_filelist">
-        </div>
-      </td>
-    </tr>
-
-    <tr>
-      <td id="ann.list.buttons" style="vertical-align:bottom">
-        <nav style="text-align:center">
-          <span id="ann.list.buttons.add" class="ann_list_buttons_add">
-            <input type=file id="ann.input" multiple/>
-          </span>
-          <span id="ann.list.buttons.rem" class="ann_list_buttons_rem">
-            Rem</span>
-          <span id="ann.list.buttons.cls" class="ann_list_buttons_cls">
-            Cls</span>
-        </nav>
-      </td>
+      <td id="ann.td.canvas"></td>
+      <td id="ann.list" style="vertical-align:top"></td>
     </tr>
 
     <tr id="ann.footer">
