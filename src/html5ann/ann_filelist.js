@@ -17,7 +17,6 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-/* Class File list */
 function FileList(name, parent, width, height, paper)
 {
   this.name = name;
@@ -121,7 +120,4 @@ FileList.prototype.ann_filelist_click = function ( evt )
 
   console.log("here goes the logic to fetch a file")
 }
-
-/* End Class File list */
-
 
