@@ -125,7 +125,7 @@ function FileList(name, parent, width, height, paper)
   {
     return function() {
       if ( obj.list.selected != null )
-        obj.remove_file(obj.list.selected);
+        obj.list.removeChild(obj.list.selected);
     };
   })(this);
 }
@@ -157,10 +157,4 @@ FileList.prototype.append_files = function ( files )
     s.appendChild(document.createElement('br'));
     this.list.appendChild(s);
   }
-}
-
-/* file is the whole span element */
-FileList.prototype.remove_file = function ( file )
-{
-  this.list.removeChild(file);
 }
