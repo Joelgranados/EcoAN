@@ -111,6 +111,17 @@ function FileList(name, parent, width, height, paper)
 
 }
 
+FileList.prototype.ann_filelist_click = function ( evt )
+{
+  if ( this.selected != null )
+    this.selected.style.background="";
+
+  this.selected = evt;
+  this.selected.style.background = "lightgray";
+
+  console.log("here goes the logic to fetch a file")
+}
+
 /* End Class File list */
 
 // d = direction of the zoom. +number -> in, -number -> out
@@ -228,21 +239,9 @@ ann_fl.input.onchange = function ( evt )
 
     //FIXME: might want to remove all spaces.
     output.push( '<span value="',escape(f.name), '"',
-                 ' onclick="ann_filelist_click( this )">',
+                 ' onclick="ann_fl.ann_filelist_click( this )">',
             escape(f.name), '</span><br>' );
   }
 
   ann_fl.list.innerHTML = ann_fl.list.innerHTML + output.join('');
 }
-
-ann_filelist_click = function ( evt )
-{
-  if ( ann_fl.selected != null )
-    ann_fl.selected.style.background="";
-
-  ann_fl.selected = evt;
-  ann_fl.selected.style.background = "lightgray";
-
-  console.log("here goes the logic to fetch a file")
-}
-
