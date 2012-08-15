@@ -151,15 +151,25 @@ FileList.prototype.ann_filelist_click = function ( obj )
     obj.list.selected = evt.srcElement;
     obj.list.selected.style.background = "lightgray";
 
-    var reader = new FileReader();
-    reader.onload = (function ( theFile ) {
+    /* Paint the image */
+    var imgReader = new FileReader();
+    imgReader.onload = (function ( theFile ) {
       return function ( e ) {
         obj.annCan.paper.image ( e.target.result, 0, 0,
           ann_can_w, ann_can_h );
       };
     }) ( obj.list.selected.imgObj );
+    imgReader.readAsDataURL ( obj.list.selected.imgObj );
 
-    reader.readAsDataURL ( obj.list.selected.imgObj );
+    /* Paint the annotations */
+    var csvReader = new FileReader();
+    csvReader.onload = (function ( theFile ) {
+      return function ( e ) {
+        obj.annCan.csvOnCanvas ( e.target.result );
+      };
+    }) ( obj.list.selected.csvObj );
+    csvReader.readAsText ( obj.list.selected.csvObj );
+
   };
 }
 

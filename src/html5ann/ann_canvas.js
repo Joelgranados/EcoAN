@@ -145,3 +145,9 @@ AnnCanvas.prototype.pan = function ( obj, d_x, d_y )
   obj.canvas.viewBox.baseVal.x = zx;
   obj.canvas.viewBox.baseVal.y = zy;
 }
+
+AnnCanvas.prototype.csvOnCanvas = function ( uri )
+{
+  console.log("this is were I read the csv file"+uri);
+
+}
