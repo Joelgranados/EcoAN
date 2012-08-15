@@ -20,8 +20,6 @@
 function FileList(name, parent, width, height, paper)
 {
   this.name = name;
-  this.id = name;
-  this.class = name;
   this.width = width;
   this.height = height;
   this.list_height = height - 20;
@@ -34,23 +32,23 @@ function FileList(name, parent, width, height, paper)
 
   /* Create file list & buttons html */
   this.list = document.createElement('div');
-  this.list.className = this.class + '_list';
+  this.list.className = this.name + '_list';
   this.list.selected = null;
 
   this.addBut = document.createElement('span');
-  this.addBut.className = this.id + '_butAdd';
+  this.addBut.className = this.name + '_butAdd';
   this.input = document.createElement('input');
   this.input.type = 'file';
-  this.input.id = this.id + '_input';
+  this.input.id = this.name + '_input';
   this.input.multiple = true;
   this.addBut.appendChild(this.input);
 
   this.remBut = document.createElement('span');
-  this.remBut.className = this.id + '_butRem';
+  this.remBut.className = this.name + '_butRem';
   this.remBut.innerHTML = 'Rem';
 
   this.clsBut = document.createElement('span');
-  this.clsBut.className = this.id + '_butCls';
+  this.clsBut.className = this.name + '_butCls';
   this.clsBut.innerHTML = 'Cls';
 
   var nav = document.createElement('nav');
