@@ -61,7 +61,6 @@ function FileList(name, parent, width, height, paper)
 
   /* gather everything under a div */
   div = document.createElement('div');
-  div.obj = this; //For autoreference
   div.appendChild(this.list);
   div.appendChild(nav);
   this.parent.appendChild(div);
