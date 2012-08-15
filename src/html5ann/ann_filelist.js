@@ -200,7 +200,7 @@ FileList.prototype.append_files = function ( files )
   {
     s = document.createElement('span');
     s.value = escape(pairs[i][0].name);
-    s.innerHTML = pairs[i][0].name.replace(' ', '_');
+    s.innerHTML = pairs[i][0].name;
     s.onclick = this.ann_filelist_click(this);
     s.appendChild(document.createElement('br'));
     s.imgObj = pairs[i][0];
