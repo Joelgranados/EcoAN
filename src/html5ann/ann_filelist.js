@@ -122,7 +122,10 @@ function FileList(name, parent, width, height, annCan)
   {
     return function() {
       if ( obj.list.selected != null )
+      {
         obj.list.removeChild(obj.list.selected);
+        obj.annCan.clear(obj.annCan);
+      }
     };
   })(this);
 
