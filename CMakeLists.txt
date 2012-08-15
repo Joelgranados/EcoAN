@@ -19,13 +19,13 @@ CMAKE_MINIMUM_REQUIRED (VERSION 2.8)
 
 # PROJECT METADATA STUFF
 PROJECT (Annotation)
-SET (EIP_AUTHOR "Joel Andres Granados <joel.granados@gmail.com>")
-SET (EIP_DESCRIPTION "Annotation annotates image sequences.")
-SET (EIP_NAME "Annotation")
-SET (EIP_NAME_SHORT "Ann")
-SET (EIP_LICENSE "GPL-3")
-SET (EIP_VER_MAJOR 0)
-SET (EIP_VER_MINOR 1)
+SET (ANN_AUTHOR "Joel Andres Granados <joel.granados@gmail.com>")
+SET (ANN_DESCRIPTION "Annotation annotates image sequences.")
+SET (ANN_NAME "Annotation")
+SET (ANN_NAME_SHORT "Ann")
+SET (ANN_LICENSE "GPL-3")
+SET (ANN_VER_MAJOR 0)
+SET (ANN_VER_MINOR 1)
 
 # SANITY CHECK ENVIRONMENT
 IF(UNIX)
