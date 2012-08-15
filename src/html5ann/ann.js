@@ -164,4 +164,4 @@ main = function () {
       ann_list_w, ann_can_h, ann_paper );
 }
 
-Raphael(main);
+main();
