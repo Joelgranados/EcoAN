@@ -51,4 +51,4 @@ var ann_list_w = Math.round(ann_can_w*.3);
 ann_ca = new AnnCanvas( 'anncan', document.getElementById("ann.td.canvas"),
     ann_can_w, ann_can_h );
 ann_fl = new FileList( 'filelist', document.getElementById("ann.list"),
-    ann_list_w, ann_can_h, ann_ca.paper );
+    ann_list_w, ann_can_h, ann_ca );

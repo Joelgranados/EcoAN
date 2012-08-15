@@ -17,14 +17,14 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-function FileList(name, parent, width, height, paper)
+function FileList(name, parent, width, height, annCan)
 {
   this.name = name;
   this.width = width;
   this.height = height;
   this.list_height = height - 20;
   this.buttons_height = 20;
-  this.paper = paper;
+  this.annCan = annCan;
   this.parent = parent;
 
   // The selected element in the filelist.
@@ -132,6 +132,7 @@ function FileList(name, parent, width, height, paper)
       var ch = null;
       while ( ch = obj.list.children[0] )
         obj.list.removeChild(ch);
+      obj.annCan.clear(obj.annCan);
     };
   })(this);
 }
@@ -148,7 +149,8 @@ FileList.prototype.ann_filelist_click = function ( obj )
     var reader = new FileReader();
     reader.onload = (function ( theFile ) {
       return function ( e ) {
-        obj.paper.image ( e.target.result, 0, 0, ann_can_w, ann_can_h );
+        obj.annCan.paper.image ( e.target.result, 0, 0,
+          ann_can_w, ann_can_h );
       };
     }) ( obj.list.selected.fileObj );
 
