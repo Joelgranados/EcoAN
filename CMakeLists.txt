@@ -70,7 +70,9 @@ FILE ( MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/Ann" )
 
 CONFIGURE_FILE( "${PROJECT_SOURCE_DIR}/src/html5ann/ann.html"
                 "${PROJECT_BINARY_DIR}/Ann/ann.html" )
-CONFIGURE_FILE( "${PROJECT_SOURCE_DIR}/src/html5ann/zoom-pan.js"
-                "${PROJECT_BINARY_DIR}/Ann/zoom-pan.js" )
+CONFIGURE_FILE( "${PROJECT_SOURCE_DIR}/src/html5ann/ann_filelist.js"
+                "${PROJECT_BINARY_DIR}/Ann/ann_filelist.js" )
+CONFIGURE_FILE( "${PROJECT_SOURCE_DIR}/src/html5ann/ann_canvas.js"
+                "${PROJECT_BINARY_DIR}/Ann/ann_canvas.js" )
 FILE( COPY "${PROJECT_SOURCE_DIR}/src/raphael/raphael.js"
       DESTINATION "${PROJECT_BINARY_DIR}/Ann/" )
