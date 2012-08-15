@@ -59,6 +59,8 @@ function FileList(name, parent, width, height, annCan)
 
   /* gather everything under a div */
   div = document.createElement('div');
+  div.style.whiteSpace = "nowrap";
+  div.style.overflow = "hidden";
   div.appendChild(this.list);
   div.appendChild(nav);
   this.parent.appendChild(div);
@@ -155,26 +157,54 @@ FileList.prototype.ann_filelist_click = function ( obj )
         obj.annCan.paper.image ( e.target.result, 0, 0,
           ann_can_w, ann_can_h );
       };
-    }) ( obj.list.selected.fileObj );
+    }) ( obj.list.selected.imgObj );
 
-    reader.readAsDataURL ( obj.list.selected.fileObj );
+    reader.readAsDataURL ( obj.list.selected.imgObj );
   };
 }
 
 FileList.prototype.append_files = function ( files )
 {
-  for (var i = 0, f; f = files[i]; i++)
-  {
-    if (!f.type.match('image.*'))
-      continue;
+  endsWith = function ( str, suffix ) {
+    return str.indexOf(suffix, str.length - suffix.length) !== -1;
+  }
 
+  /* FIXME: there is probably a faster way of doing this */
+  getPairs = function ( files )
+  {
+    var pairs = [];
+    var imgs = [];
+    var csvs = [];
+    for ( var i = 0, f; f = files[i]; i++ )
+      if ( f.type.match('image.*') )
+        imgs.push(f);
+      else if ( endsWith( f.name, '.csv' ) )
+        csvs.push(f);
+
+    /* crappy search */
+    for ( var i = 0, f; f = imgs[i]; i++ )
+      for ( var j = 0, F; F = csvs[j]; j++ )
+        if ( f.name+'.csv' == F.name )
+        {
+          // we have a winner !!!
+          pairs.push([f,F]);
+          csvs.splice(j, 1);
+          break;
+        }
+
+    return pairs;
+  }
+
+  var pairs = getPairs(files);
+  for ( var i = 0; i < pairs.length ; i++ )
+  {
     s = document.createElement('span');
-    s.value = escape(f.name);
-    //FIXME: might want to remove all spaces.
-    s.innerHTML = escape(f.name);
+    s.value = escape(pairs[i][0].name);
+    s.innerHTML = escape(pairs[i][0].name.replace(' ', '_'));
     s.onclick = this.ann_filelist_click(this);
     s.appendChild(document.createElement('br'));
-    s.fileObj = f;
+    s.imgObj = pairs[i][0];
+    s.csvObj = pairs[i][1];
     this.list.appendChild(s);
   }
 }
