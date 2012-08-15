@@ -274,6 +274,59 @@ class AnnHandler:
 
         return rowid
 
+    def updateAnnotation ( self, picture, elemid, label, reviewer, polygon ):
+        if picture.__class__.__name__ != 'dict' \
+                or label.__class__.__name__ != 'dict' \
+                or reviewer.__class__.__name__ != 'dict':
+            raise Exception ( "Wrong argument types for updateAnnotation." )
+
+        # Create label str
+        labvalue = ""
+        labstr = "?"
+        if ( "id" in label.keys() ):
+            labvalue = label["id"]
+        elif ( "name" in label.keys() ):
+            labvalue = label["name"]
+            labstr = "(SELECT lid FROM ANNlabel WHERE labelname=?)"
+        else:
+            raise Exception("Error label arg (%s) in updateAnnotation"%label)
+
+        # Create reviewer str
+        revvalue = ""
+        revstr = "?"
+        if ( "id" in reviewer.keys() ):
+            revvalue = reviewer["id"]
+        elif ( "name" in reviewer.keys() ):
+            revvalue = reviewer["name"]
+            revstr = "(SELECT rid FROM ANNreviewer WHERE reviewername=?)"
+        else:
+            raise Exception("Error reviewer arg (%s) in updateAnnotation"%reviewer)
+
+        # Create picture str
+        picvalue = ""
+        picstr = "?"
+        if ( "id" in picture.keys() ):
+            picvalue = picture["id"]
+        elif ( "file" in picture.keys() ):
+            picvalue = picture["file"]
+            picstr = "(SELECT pid FROM ANNpicture WHERE pfile=?)"
+        elif ( "hash" in picture.keys() ):
+            picvalue = picture["hash"]
+            picstr = "(SELECT pid FROM ANNpicture WHERE phash=?)"
+        else:
+            raise Exception("Error picture arg (%s) in updateAnnotation"%picture)
+
+        sqlstr = "UPDATE ANNannotation set " \
+                    "tracklabel=%s, trackreviewer=%s, polygon=? " \
+                    "WHERE trackpicture=%s AND trackelement=?;", \
+                    (labstr,revstr,picstr)
+
+        try:
+            self.c.execute(sqlstr,
+                    (labvalue, revvalue, polygon, picvalue, elemid))
+        except sqlite3.IntegrityError as ie:
+            raise Exception ("Failed to update annotation: %s" % ie)
+
     def getPictureListByDate (self):
         rows = []
 
@@ -549,11 +602,22 @@ class DataHandler:
             rowid = self.ah.addAnnotation ( {"file":img}, {"name":label},
                     {"name":reviewer}, {"id":elemid}, polygon )
         except:
-            raise Exception ("Could not add annotation in addAnnotation")
+            raise Exception ("Could not add annotation in addAnn")
         finally:
             self.ah.deactivate()
 
         return rowid
+
+    # Method updates label reviewer and polygon of an annotation
+    def updateAnn ( self, img, elemid, label, reviewer, polygon ):
+        try:
+            self.ah.activate()
+            self.ah.updateAnnotation ( {"file":img}, elemid, {"name":label},
+                    {"name":reviewer}, polygon )
+        except:
+            raise Exception ("Could not apdate annotation in updateAnn")
+        finally:
+            self.ah.deactivate()
 
     def getRevList (self):
         revList = []
@@ -677,3 +741,4 @@ class DataHandler:
             self.ah.deactivate()
 
         return retVal
+#}}}DataHandler
