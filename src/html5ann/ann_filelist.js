@@ -164,6 +164,7 @@ FileList.prototype.append_files = function ( files )
     s.innerHTML = escape(f.name);
     s.onclick = this.ann_filelist_click;
     s.appendChild(document.createElement('br'));
+    s.fileObj = f;
     this.list.appendChild(s);
   }
 }
