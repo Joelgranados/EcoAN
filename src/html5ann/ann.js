@@ -112,9 +112,10 @@ main = function () {
     zoom(e.wheelDelta);
   };
 
+
+  var ann_list_td = document.getElementById("ann.list");
+  ann_fl = new FileList( 'filelist', ann_list_td,
+      ann_list_w, ann_can_h, ann_paper );
 }
 
 Raphael(main);
-var ann_list_td = document.getElementById("ann.list");
-ann_fl = new FileList( 'filelist', ann_list_td,
-    ann_list_w, ann_can_h, ann_paper );
