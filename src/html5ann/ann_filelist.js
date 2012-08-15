@@ -139,16 +139,15 @@ function FileList(name, parent, width, height, paper)
   })(this);
 }
 
-FileList.prototype.ann_filelist_click = function ( evt )
+FileList.prototype.ann_filelist_click = function ( obj )
 {
-  tmpList = evt.srcElement.parentElement;
-  if ( tmpList.selected != null )
-    tmpList.selected.style.background="";
+  return function ( evt ){
+    if ( obj.list.selected != null )
+      obj.list.selected.style.background = "";
 
-  tmpList.selected = evt.srcElement;
-  tmpList.selected.style.background = "lightgray";
-
-  console.log("here goes the logic to fetch a file")
+    obj.list.selected = evt.srcElement;
+    obj.list.selected.style.background = "lightgray";
+  };
 }
 
 FileList.prototype.append_files = function ( files )
@@ -162,7 +161,7 @@ FileList.prototype.append_files = function ( files )
     s.value = escape(f.name);
     //FIXME: might want to remove all spaces.
     s.innerHTML = escape(f.name);
-    s.onclick = this.ann_filelist_click;
+    s.onclick = this.ann_filelist_click(this);
     s.appendChild(document.createElement('br'));
     s.fileObj = f;
     this.list.appendChild(s);
