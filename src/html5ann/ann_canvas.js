@@ -24,26 +24,27 @@ function AnnCanvas ( name, parent, width, height )
   this.name = name;
   this.parent = parent;
 
-  this.panOn = false; // State var controling the pan
-
   /* zoom-out -> zfactor+1, zoom-in -> zfactor*/
   this.zfactor = .5;
 
   this.paper = Raphael(this.parent, this.width, this.height );
   this.paper.canvas.id = "ann.canvas";
-  this.canvas = document.getElementById("ann.canvas");
+  this.canvas = this.paper.canvas;
 
-  // The current mouse possition.
   this.svg = document.createElementNS("http://www.w3.org/2000/svg",'svg');
-  this.pt  = this.svg.createSVGPoint();
+  this.pt  = this.svg.createSVGPoint(); // The current mouse possition.
+  this.panOn = false; // State var controling the pan
 
-  this.paper.image( "img.jpg", 0, 0, this.width, this.height );
-  r = this.paper.rect(100, 100, 30, 30).attr({
-    'stroke': "#f00",
-    'stroke-width': 4});
-
+  this.clear(this);
   this.paper.setViewBox( 0, 0, this.width, this.height );
 
+  /* CSS for the canvas */
+  this.canvas.style.border = "1px solid lightgray";
+  this.canvas.style.background = "inherit";
+  this.canvas.style.fontSize = "inherit";
+  this.canvas.style.color = "gray";
+
+  /* Create all callbacks */
   this.canvas.onmousemove = ( function ( obj ){
     return function ( e ) {
       var prevpt  = obj.svg.createSVGPoint();
@@ -79,6 +80,13 @@ function AnnCanvas ( name, parent, width, height )
       obj.zoom(obj, e.wheelDelta);
     };
   }) (this);
+}
+
+AnnCanvas.prototype.clear = function ( obj )
+{
+  obj.paper.clear ();
+  t = obj.paper.text ( obj.width/2, obj.height/2,
+      "Yet another annotation tool :)" );
 }
 
 // d = direction of the zoom. +number -> in, -number -> out
