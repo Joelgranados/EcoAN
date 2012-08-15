@@ -17,6 +17,52 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+// Define global variables
+var ann_can_w = 640;
+var ann_can_h = 480;
+
+// The list should be 30% the width of canvas.
+var ann_list_w = Math.round(ann_can_w*.3);
+
+// div containing layout
+var ann_layout = document.getElementById("ann.layout");
+
+// zoom-in -> zfactor
+// zoom-out -> zfactor+1
+var zfactor = .5;
+
+// The current mouse possition.
+var svg = document.createElementNS("http://www.w3.org/2000/svg",'svg');
+var pt  = svg.createSVGPoint();
+
+// The raphael object to help us with svgs
+var ann_paper = null;
+
+// State var controling the pan
+var panOn = false;
+
+repos_layout = function ()
+{
+    // Center the main layout
+    lpos = 0;
+    if ( window.innerWidth > (ann_can_w + ann_list_w) )
+        lpos = (window.innerWidth - (ann_can_w + ann_list_w))/2;
+    ann_layout.style.position = "absolute";
+    ann_layout.style.left = lpos+"px";
+}
+
+window.onload = function ()
+{
+  // Center the main layout
+  repos_layout();
+}
+
+window.onresize = function ()
+{
+    // Make sure that layout follows resize
+    repos_layout();
+}
+
 // d = direction of the zoom. +number -> in, -number -> out
 zoom = function ( d )
 {
