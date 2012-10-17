@@ -17,7 +17,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-function FileList(name, parent, width, height, annCan)
+function AnnFileList(name, parent, width, height, annCan)
 {
   this.name = name;
   this.width = width;
@@ -142,7 +142,7 @@ function FileList(name, parent, width, height, annCan)
   })(this);
 }
 
-FileList.prototype.ann_filelist_click = function ( obj )
+AnnFileList.prototype.ann_filelist_click = function ( obj )
 {
   return function ( evt ){
     if ( obj.list.selected != null )
@@ -173,7 +173,7 @@ FileList.prototype.ann_filelist_click = function ( obj )
   };
 }
 
-FileList.prototype.append_files = function ( files )
+AnnFileList.prototype.append_files = function ( files )
 {
   endsWith = function ( str, suffix ) {
     return str.indexOf(suffix, str.length - suffix.length) !== -1;
