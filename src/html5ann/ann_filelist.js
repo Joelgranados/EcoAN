@@ -153,6 +153,9 @@ AnnFileList.prototype.ann_filelist_click = function ( obj )
     obj.list.selected = evt.srcElement;
     obj.list.selected.style.background = "lightgray";
 
+    /* Remove polygons */
+    obj.annCan.remPoly();
+
     /* Paint the image */
     var imgReader = new FileReader();
     imgReader.onload = (function ( theFile ) {
