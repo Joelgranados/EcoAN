@@ -181,4 +181,7 @@ AnnCanvas.prototype.clnSVG = function ()
   /*When we stop using raphael it will be 1*/
   while (this.canvas.childElementCount > 3)
     this.canvas.removeChild(this.canvas.lastChild);
+
+  this.img.setAttributeNS("http://www.w3.org/1999/xlink",
+                          "href", "undefined.jpg" )
 }
