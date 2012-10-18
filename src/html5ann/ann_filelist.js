@@ -126,7 +126,7 @@ function AnnFileList(name, parent, width, height, annCan)
       if ( obj.list.selected != null )
       {
         obj.list.removeChild(obj.list.selected);
-        obj.annCan.clnSVG()
+        obj.annCan.clnSVG();
       }
     };
   })(this);
@@ -134,10 +134,10 @@ function AnnFileList(name, parent, width, height, annCan)
   this.clsBut.onclick = (function ( obj )
   {
     return function () {
-      var ch = null;
-      while ( ch = obj.list.children[0] )
-        obj.list.removeChild(ch);
-      obj.annCan.clnSVG()
+      while ( obj.list.firstChild )
+        obj.list.removeChild(obj.list.firstChild);
+      obj.list.selected = null;
+      obj.annCan.clnSVG();
     };
   })(this);
 }
