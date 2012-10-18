@@ -28,14 +28,20 @@ function AnnCanvas ( name, parent, width, height )
   this.zfactor = .5;
 
   this.paper = Raphael(this.parent, this.width, this.height );
-  this.paper.canvas.id = "ann.canvas";
   this.canvas = this.paper.canvas;
+  this.canvas.id = "ann.canvas";
+
+  this.img = document.createElementNS('http://www.w3.org/2000/svg','image');
+  this.img.setAttributeNS(null,'height', ann_can_h);
+  this.img.setAttributeNS(null,'width', ann_can_w);
+  this.img.setAttributeNS("http://www.w3.org/1999/xlink",
+                          "href", "undefined.jpg" )
+  this.canvas.appendChild(this.img);
 
   this.svg = document.createElementNS("http://www.w3.org/2000/svg",'svg');
   this.pt  = this.svg.createSVGPoint(); // The current mouse possition.
   this.panOn = false; // State var controling the pan
 
-  this.clear(this);
   this.paper.setViewBox( 0, 0, this.width, this.height );
 
   /* CSS for the canvas */
@@ -80,13 +86,6 @@ function AnnCanvas ( name, parent, width, height )
       obj.zoom(obj, e.wheelDelta);
     };
   }) (this);
-}
-
-AnnCanvas.prototype.clear = function ( obj )
-{
-  obj.paper.clear ();
-  t = obj.paper.text ( obj.width/2, obj.height/2,
-      "Yet another annotation tool :)" );
 }
 
 // d = direction of the zoom. +number -> in, -number -> out
@@ -146,8 +145,26 @@ AnnCanvas.prototype.pan = function ( obj, d_x, d_y )
   obj.canvas.viewBox.baseVal.y = zy;
 }
 
-AnnCanvas.prototype.csvOnCanvas = function ( uri )
+AnnCanvas.prototype.csvOnCanvas = function ( anns )
 {
-  console.log("this is were I read the csv file"+uri);
+  for ( var i = 0; i < anns.anns.length ; i++ )
+  {
+    var polygon = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+    polygon.setAttribute("points", anns.anns[i].polyString);
+    this.canvas.appendChild(polygon);
+  }
+}
 
+AnnCanvas.prototype.imgOnSVG = function ( img )
+{
+  //FIXME: Probably need to handle the image size.
+  this.img.setAttributeNS("http://www.w3.org/1999/xlink", "href", img )
+}
+
+/* have JUST the initial message */
+AnnCanvas.prototype.clnSVG = function ()
+{
+  /*When we stop using raphael it will be 1*/
+  while (this.canvas.childElementCount > 3)
+    this.canvas.removeChild(this.canvas.lastChild);
 }

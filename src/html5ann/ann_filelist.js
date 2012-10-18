@@ -126,7 +126,7 @@ function AnnFileList(name, parent, width, height, annCan)
       if ( obj.list.selected != null )
       {
         obj.list.removeChild(obj.list.selected);
-        obj.annCan.clear(obj.annCan);
+        obj.annCan.clnSVG()
       }
     };
   })(this);
@@ -137,7 +137,7 @@ function AnnFileList(name, parent, width, height, annCan)
       var ch = null;
       while ( ch = obj.list.children[0] )
         obj.list.removeChild(ch);
-      obj.annCan.clear(obj.annCan);
+      obj.annCan.clnSVG()
     };
   })(this);
 }
@@ -151,12 +151,14 @@ AnnFileList.prototype.ann_filelist_click = function ( obj )
     obj.list.selected = evt.srcElement;
     obj.list.selected.style.background = "lightgray";
 
+    /* Remove all from canvas */
+    obj.annCan.clnSVG ()
+
     /* Paint the image */
     var imgReader = new FileReader();
     imgReader.onload = (function ( theFile ) {
       return function ( e ) {
-        obj.annCan.paper.image ( e.target.result, 0, 0,
-          ann_can_w, ann_can_h );
+        obj.annCan.imgOnSVG ( e.target.result );
       };
     }) ( obj.list.selected.imgObj );
     imgReader.readAsDataURL ( obj.list.selected.imgObj );
@@ -165,7 +167,7 @@ AnnFileList.prototype.ann_filelist_click = function ( obj )
     var csvReader = new FileReader();
     csvReader.onload = (function ( theFile ) {
       return function ( e ) {
-        obj.annCan.csvOnCanvas ( e.target.result );
+        obj.annCan.csvOnCanvas ( new AnnCSVReader ( e.target.result ) );
       };
     }) ( obj.list.selected.csvObj );
     csvReader.readAsText ( obj.list.selected.csvObj );
