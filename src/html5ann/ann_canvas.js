@@ -157,7 +157,10 @@ AnnCanvas.prototype.csvOnCanvas = function ( anns )
 
 AnnCanvas.prototype.imgOnSVG = function ( img )
 {
-  //FIXME: Probably need to handle the image size.
+  /*FIXME: Probably need to handle the image size. */
+  /*FIXME: This is painful. All the methods I tried put the image bytes in the
+    resources/Frame/images of the page. When I change of image, the original
+    one is not removed. This could potentially use lots of memory. */
   this.img.setAttributeNS("http://www.w3.org/1999/xlink", "href", img )
 }
 
