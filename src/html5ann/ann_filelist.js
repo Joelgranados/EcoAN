@@ -151,9 +151,6 @@ AnnFileList.prototype.ann_filelist_click = function ( obj )
     obj.list.selected = evt.srcElement;
     obj.list.selected.style.background = "lightgray";
 
-    /* Remove all from canvas */
-    obj.annCan.clnSVG ()
-
     /* Paint the image */
     var imgReader = new FileReader();
     imgReader.onload = (function ( theFile ) {
