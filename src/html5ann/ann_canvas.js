@@ -176,12 +176,15 @@ AnnCanvas.prototype.imgOnSVG = function ( img )
 }
 
 /* have JUST the initial message */
-AnnCanvas.prototype.clnSVG = function ()
+AnnCanvas.prototype.remPoly = function ()
 {
   /*When we stop using raphael it will be 1*/
   while (this.canvas.childElementCount > 3)
     this.canvas.removeChild(this.canvas.lastChild);
+}
 
+AnnCanvas.prototype.remImg = function ()
+{
   this.img.setAttributeNS("http://www.w3.org/1999/xlink",
                           "href", "undefined.jpg" )
 }

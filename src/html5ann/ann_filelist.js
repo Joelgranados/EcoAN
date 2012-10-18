@@ -126,7 +126,8 @@ function AnnFileList(name, parent, width, height, annCan)
       if ( obj.list.selected != null )
       {
         obj.list.removeChild(obj.list.selected);
-        obj.annCan.clnSVG();
+        obj.annCan.remPoly();
+        obj.annCan.remImg();
       }
     };
   })(this);
@@ -137,7 +138,8 @@ function AnnFileList(name, parent, width, height, annCan)
       while ( obj.list.firstChild )
         obj.list.removeChild(obj.list.firstChild);
       obj.list.selected = null;
-      obj.annCan.clnSVG();
+      obj.annCan.remPoly();
+      obj.annCan.remImg();
     };
   })(this);
 }
