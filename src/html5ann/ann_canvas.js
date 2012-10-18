@@ -50,6 +50,17 @@ function AnnCanvas ( name, parent, width, height )
   this.canvas.style.fontSize = "inherit";
   this.canvas.style.color = "gray";
 
+  var style = document.createElement('style');
+  style.type = 'text/css';
+  style.innerHTML = 'polygon {'
+    + 'fill:none;'
+    + 'stroke:red;'
+    + 'stroke-width:1;'
+    + '}';
+
+  document.getElementsByTagName('head')[0].appendChild(style);
+
+
   /* Create all callbacks */
   this.canvas.onmousemove = ( function ( obj ){
     return function ( e ) {
