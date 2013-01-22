@@ -26,10 +26,13 @@ function AnnCanvas ( name, parent, width, height )
   this.canvas.widht = width;
   this.canvas.height = height;
 
+  this.ctx = this.canvas.getContext('2d');
+  trackTransforms(this.ctx);
+
   this.img = new Image;
   this.img.src = 'undefined.jpg';
 
-  this.svg = document.createElementNS("http://www.w3.org/2000/svg",'svg');
+  this.currAnns = null;
 
   /* CSS for the canvas */
   this.canvas.style.border = "1px solid lightgray";
@@ -37,18 +40,9 @@ function AnnCanvas ( name, parent, width, height )
   this.canvas.style.fontSize = "inherit";
   this.canvas.style.color = "gray";
 
-  var style = document.createElement('style');
-  style.type = 'text/css';
-  style.innerHTML = 'polygon {'
-    + 'fill:none;'
-    + 'stroke:red;'
-    + 'stroke-width:1;'
-    + '}';
-
-  document.getElementsByTagName('head')[0].appendChild(style);
-
-  this.ctx = this.canvas.getContext('2d');
-  trackTransforms(this.ctx);
+  this.ctx.strokeStyle = '#ff0000';
+  //FIXME: this needs to change with image size and zoom
+  this.ctx.lineWidth = 20;
 
   this.lastX = this.canvas.width / 2;
   this.lastY = this.canvas.height / 2;
@@ -108,9 +102,30 @@ AnnCanvas.prototype.redraw = function (imgsrc)
   var p2 = this.ctx.transformedPoint(this.canvas.width, this.canvas.height);
   this.ctx.clearRect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y);
   this.ctx.drawImage(this.img, 0, 0);
+
+  if ( this.currAnns == null )
+    return;
+
+  for ( var i = 0; i < this.currAnns.anns.length ; i++ )
+  {
+    var pi = this.currAnns.anns[i].polyInt;
+    if ( pi.length < 2 )
+      continue;
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(pi[pi.length-2], pi[pi.length-1]);
+    for ( var j = 0; j < pi.length; j=j+2 )
+      this.ctx.lineTo(pi[j], pi[j+1]);
+    this.ctx.stroke();
+    this.ctx.closePath();
+    this.ctx.save();
+  }
 }
 
-AnnCanvas.prototype.remImg = function() { this.redraw('undefined.jpg'); }
+AnnCanvas.prototype.remImg = function() {
+  this.currAnns = null;
+  this.redraw('undefined.jpg');
+}
 
 AnnCanvas.prototype.imgOnSVG = function ( img )
 {
@@ -139,10 +154,19 @@ AnnCanvas.prototype.csvOnCanvas = function ( anns )
 {
   for ( var i = 0; i < anns.anns.length ; i++ )
   {
-    var polygon = document.createElementNS('http://www.w3.org/2000/svg','polygon');
-    polygon.setAttribute("points", anns.anns[i].polyString);
-    this.canvas.appendChild(polygon);
+    var pi = anns.anns[i].polyInt;
+    if ( pi.length < 2 )
+      continue;
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(pi[pi.length-2], pi[pi.length-1]);
+    for ( var j = 0; j < pi.length; j=j+2 )
+      this.ctx.lineTo(pi[j], pi[j+1]);
+    this.ctx.stroke();
+    this.ctx.closePath();
+    this.ctx.save();
   }
+  this.currAnns = anns;
 }
 
 /* have JUST the initial message */

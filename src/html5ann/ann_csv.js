@@ -37,6 +37,10 @@ function AnnCSVAnnotation ( line )
   for ( var i = 0; i < this.nonCoorStart; i++ )
     polyFrom = polyFrom + this.parts[i].length +1;
   this.polyString = line.slice(polyFrom);
+
+  this.polyInt = this.polyString.split(',');
+  for ( var i = 0; i < this.polyInt.length; i++ )
+    this.polyInt[i] = parseInt(this.polyInt[i]);
 }
 
 AnnCSVAnnotation.prototype.getPolySize = function ()
