@@ -26,12 +26,8 @@ function AnnCanvas ( name, parent, width, height )
   this.canvas.widht = width;
   this.canvas.height = height;
 
-  this.img = document.createElementNS('http://www.w3.org/2000/svg','image');
-  this.img.setAttributeNS(null,'height', this.canvas.height);
-  this.img.setAttributeNS(null,'width', this.canvas.width);
-  this.img.setAttributeNS("http://www.w3.org/1999/xlink",
-                          "href", "undefined.jpg" )
-  this.canvas.appendChild(this.img);
+  this.img = new Image;
+  this.img.src = 'undefined.jpg';
 
   this.svg = document.createElementNS("http://www.w3.org/2000/svg",'svg');
 
@@ -51,8 +47,6 @@ function AnnCanvas ( name, parent, width, height )
 
   document.getElementsByTagName('head')[0].appendChild(style);
 
-  this.undefImg = new Image;
-  this.undefImg.src = 'undefined.jpg';
   this.ctx = this.canvas.getContext('2d');
   trackTransforms(this.ctx);
 
@@ -105,13 +99,30 @@ function AnnCanvas ( name, parent, width, height )
   this.canvas.addEventListener('mousewheel', handleScroll, false);
 }
 
-AnnCanvas.prototype.redraw = function ()
+AnnCanvas.prototype.redraw = function (imgsrc)
 {
-  // Clear the entire canvas
+  if ( imgsrc != undefined )
+    this.img.src = imgsrc;
+
   var p1 = this.ctx.transformedPoint(0, 0);
   var p2 = this.ctx.transformedPoint(this.canvas.width, this.canvas.height);
   this.ctx.clearRect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y);
-  this.ctx.drawImage(this.undefImg, 0, 0);
+  this.ctx.drawImage(this.img, 0, 0);
+}
+
+AnnCanvas.prototype.remImg = function() { this.redraw('undefined.jpg'); }
+
+AnnCanvas.prototype.imgOnSVG = function ( img )
+{
+  /*FIXME: Probably need to handle the image size. */
+  /*FIXME: This is painful. All the methods I tried put the image bytes in the
+    resources/Frame/images of the page. When I change of image, the original
+    one is not removed. This could potentially use lots of memory. */
+  this.img.src = img;
+  var p1 = this.ctx.transformedPoint(0, 0);
+  var p2 = this.ctx.transformedPoint(this.canvas.width, this.canvas.height);
+  this.ctx.clearRect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y);
+  this.ctx.drawImage(this.img, 0, 0);
 }
 
 AnnCanvas.prototype.zoom = function (clicks)
@@ -124,7 +135,6 @@ AnnCanvas.prototype.zoom = function (clicks)
   this.redraw();
 }
 
-
 AnnCanvas.prototype.csvOnCanvas = function ( anns )
 {
   for ( var i = 0; i < anns.anns.length ; i++ )
@@ -135,27 +145,12 @@ AnnCanvas.prototype.csvOnCanvas = function ( anns )
   }
 }
 
-AnnCanvas.prototype.imgOnSVG = function ( img )
-{
-  /*FIXME: Probably need to handle the image size. */
-  /*FIXME: This is painful. All the methods I tried put the image bytes in the
-    resources/Frame/images of the page. When I change of image, the original
-    one is not removed. This could potentially use lots of memory. */
-  this.img.setAttributeNS("http://www.w3.org/1999/xlink", "href", img )
-}
-
 /* have JUST the initial message */
 AnnCanvas.prototype.remPoly = function ()
 {
   /*When we stop using raphael it will be 1*/
   while (this.canvas.childElementCount > 3)
     this.canvas.removeChild(this.canvas.lastChild);
-}
-
-AnnCanvas.prototype.remImg = function ()
-{
-  this.img.setAttributeNS("http://www.w3.org/1999/xlink",
-                          "href", "undefined.jpg" )
 }
 
 /* Handles and tracks the svg transformations */
