@@ -37,8 +37,8 @@ window.onload = function ()
 
 window.onresize = function ()
 {
-    // Make sure that layout follows resize
-    repos_layout();
+  // Make sure that layout follows resize
+  repos_layout();
 }
 
 /* Define global variables */
@@ -50,5 +50,6 @@ var ann_list_w = Math.round(ann_can_w*.3);
 
 ann_ca = new AnnCanvas( 'anncan', document.getElementById("ann.td.canvas"),
     ann_can_w, ann_can_h );
+ann_ca.redraw();
 ann_fl = new AnnFileList( 'filelist', document.getElementById("ann.list"),
     ann_list_w, ann_can_h, ann_ca );

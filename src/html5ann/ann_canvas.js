@@ -19,30 +19,21 @@
 
 function AnnCanvas ( name, parent, width, height )
 {
-  this.width = width;
-  this.height = height;
   this.name = name;
   this.parent = parent;
 
-  /* zoom-out -> zfactor+1, zoom-in -> zfactor*/
-  this.zfactor = .5;
-
-  this.paper = Raphael(this.parent, this.width, this.height );
-  this.canvas = this.paper.canvas;
-  this.canvas.id = "ann.canvas";
+  this.canvas = document.getElementsByTagName('canvas')[0];
+  this.canvas.widht = width;
+  this.canvas.height = height;
 
   this.img = document.createElementNS('http://www.w3.org/2000/svg','image');
-  this.img.setAttributeNS(null,'height', ann_can_h);
-  this.img.setAttributeNS(null,'width', ann_can_w);
+  this.img.setAttributeNS(null,'height', this.canvas.height);
+  this.img.setAttributeNS(null,'width', this.canvas.width);
   this.img.setAttributeNS("http://www.w3.org/1999/xlink",
                           "href", "undefined.jpg" )
   this.canvas.appendChild(this.img);
 
   this.svg = document.createElementNS("http://www.w3.org/2000/svg",'svg');
-  this.pt  = this.svg.createSVGPoint(); // The current mouse possition.
-  this.panOn = false; // State var controling the pan
-
-  this.paper.setViewBox( 0, 0, this.width, this.height );
 
   /* CSS for the canvas */
   this.canvas.style.border = "1px solid lightgray";
@@ -60,101 +51,79 @@ function AnnCanvas ( name, parent, width, height )
 
   document.getElementsByTagName('head')[0].appendChild(style);
 
+  this.undefImg = new Image;
+  this.undefImg.src = 'undefined.jpg';
+  this.ctx = this.canvas.getContext('2d');
+  trackTransforms(this.ctx);
 
-  /* Create all callbacks */
-  this.canvas.onmousemove = ( function ( obj ){
-    return function ( e ) {
-      var prevpt  = obj.svg.createSVGPoint();
-      prevpt.x = obj.pt.x;
-      prevpt.y = obj.pt.y;
+  this.lastX = this.canvas.width / 2;
+  this.lastY = this.canvas.height / 2;
+  this.dragStart = null;
+  this.dragged = false;
+  this.scaleFactor = 1.1;
 
-      obj.pt.x = ( ( obj.canvas.viewBox.baseVal.width
-                     / obj.canvas.width.baseVal.value )
-                   * e.layerX ) + obj.canvas.viewBox.baseVal.x;
-      obj.pt.y = ( ( obj.canvas.viewBox.baseVal.height
-                     / obj.canvas.height.baseVal.value )
-                   * e.layerY ) + obj.canvas.viewBox.baseVal.y;
-
-      if (obj.panOn)
-        obj.pan(obj, obj.pt.x-prevpt.x, obj.pt.y-prevpt.y);
+  this.canvas.onmousedown = ( function (obj) {
+    return function (evt) {
+      document.body.style.mozUserSelect = document.body.style.webkitUserSelect = document.body.style.userSelect = 'none';
+      obj.lastX = evt.offsetX || (evt.pageX - obj.canvas.offsetLeft);
+      obj.lastY = evt.offsetY || (evt.pageY - obj.canvas.offsetTop);
+      obj.dragStart = obj.ctx.transformedPoint(obj.lastX, obj.lastY);
+      obj.dragged = false;
     };
   }) (this);
 
-  this.canvas.onmousedown = ( function ( obj ) {
-    return function ( e ) {
-      obj.panOn = true;
+  this.canvas.onmousemove = ( function(obj) {
+    return function (evt) {
+      obj.lastX = evt.offsetX || (evt.pageX - obj.canvas.offsetLeft);
+      obj.lastY = evt.offsetY || (evt.pageY - obj.canvas.offsetTop);
+      obj.dragged = true;
+      if (obj.dragStart) {
+          var pt = obj.ctx.transformedPoint(obj.lastX, obj.lastY);
+          obj.ctx.translate(pt.x - obj.dragStart.x, pt.y - obj.dragStart.y);
+          obj.redraw();
+      }
     };
   }) (this);
 
-  this.canvas.onmouseup = ( function ( obj ) {
-    return function ( e ) {
-      obj.panOn = false;
+  this.canvas.onmouseup = ( function(obj) {
+    return function(evt) {
+      obj.dragStart = null;
+      if (!obj.dragged)
+          obj.zoom(evt.shiftKey ? -1 : 1);
     };
   }) (this);
 
-  this.canvas.onmousewheel = ( function ( obj ) {
-    return function ( e ) {
-      obj.zoom(obj, e.wheelDelta);
+  var handleScroll = ( function (obj) {
+    return function (evt) {
+      var delta = evt.wheelDelta ? evt.wheelDelta / 40 : evt.detail ? -evt.detail : 0;
+      if (delta)
+          obj.zoom(delta);
+      return evt.preventDefault() && false;
     };
   }) (this);
+  this.canvas.addEventListener('DOMMouseScroll', handleScroll, false);
+  this.canvas.addEventListener('mousewheel', handleScroll, false);
 }
 
-// d = direction of the zoom. +number -> in, -number -> out
-AnnCanvas.prototype.zoom = function ( obj, d )
+AnnCanvas.prototype.redraw = function ()
 {
-  var _zfactor=1;
-  var zwidth, zheight, zx, zy;
-
-  if (d<0){_zfactor = obj.zfactor+1;} // zoom out
-  else if (d>0){_zfactor = obj.zfactor;} // zoom in
-
-  zx = obj.pt.x - ( Math.abs(obj.canvas.viewBox.baseVal.x - obj.pt.x)
-                     * _zfactor );
-  zx = (zx < 0)? 0: zx;
-
-  zy = obj.pt.y - ( Math.abs(obj.canvas.viewBox.baseVal.y - obj.pt.y)
-                     * _zfactor );
-  zy = (zy < 0)? 0: zy;
-
-  zwidth = (obj.canvas.viewBox.baseVal.width * _zfactor);
-  if ( zwidth+zx > obj.canvas.width.baseVal.value )
-    zwidth = Math.abs ( zx - obj.canvas.width.baseVal.value );
-
-  zheight = (obj.canvas.viewBox.baseVal.height * _zfactor);
-  if ( zheight+zy > obj.canvas.height.baseVal.value )
-    zheight = Math.abs ( zy - obj.canvas.height.baseVal.value );
-
-  obj.canvas.viewBox.baseVal.width = zwidth;
-  obj.canvas.viewBox.baseVal.height = zheight;
-  obj.canvas.viewBox.baseVal.x = zx;
-  obj.canvas.viewBox.baseVal.y = zy;
+  // Clear the entire canvas
+  var p1 = this.ctx.transformedPoint(0, 0);
+  var p2 = this.ctx.transformedPoint(this.canvas.width, this.canvas.height);
+  this.ctx.clearRect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y);
+  this.ctx.drawImage(this.undefImg, 0, 0);
 }
 
-// d_x = Delta for x.
-// d_y = Delta for y. Sign matters for both.
-AnnCanvas.prototype.pan = function ( obj, d_x, d_y )
+AnnCanvas.prototype.zoom = function (clicks)
 {
-  var zx, zy;
-
-  zx = obj.canvas.viewBox.baseVal.x - d_x;
-  zx = (zx < 0)? 0: zx;
-
-  zy = obj.canvas.viewBox.baseVal.y - d_y;
-  zy = (zy < 0)? 0: zy;
-
-  if ( zx+obj.canvas.viewBox.baseVal.width
-       > obj.canvas.width.baseVal.value )
-    zx = zx - ( ( zx+obj.canvas.viewBox.baseVal.width )
-                - obj.canvas.width.baseVal.value );
-
-  if ( zy+obj.canvas.viewBox.baseVal.height
-       > obj.canvas.height.baseVal.value )
-    zy = zy - ( ( zy+obj.canvas.viewBox.baseVal.height )
-                - obj.canvas.height.baseVal.value );
-
-  obj.canvas.viewBox.baseVal.x = zx;
-  obj.canvas.viewBox.baseVal.y = zy;
+  var pt = this.ctx.transformedPoint(this.lastX, this.lastY);
+  this.ctx.translate(pt.x, pt.y);
+  var factor = Math.pow(this.scaleFactor, clicks);
+  this.ctx.scale(factor, factor);
+  this.ctx.translate(-pt.x, -pt.y);
+  this.redraw();
 }
+
 
 AnnCanvas.prototype.csvOnCanvas = function ( anns )
 {
@@ -188,3 +157,69 @@ AnnCanvas.prototype.remImg = function ()
   this.img.setAttributeNS("http://www.w3.org/1999/xlink",
                           "href", "undefined.jpg" )
 }
+
+/* Handles and tracks the svg transformations */
+function trackTransforms(ctx) {
+    var svg = document.createElementNS("http://www.w3.org/2000/svg", 'svg');
+    var xform = svg.createSVGMatrix();
+    /*Returns an SVGMatrix */
+    ctx.getTransform = function() {
+        return xform;
+    };
+    var savedTransforms = [];
+    var save = ctx.save;
+    ctx.save = function() {
+        savedTransforms.push(xform.translate(0, 0));
+        return save.call(ctx);
+    };
+    var restore = ctx.restore;
+    ctx.restore = function() {
+        xform = savedTransforms.pop();
+        return restore.call(ctx);
+    };
+    var scale = ctx.scale;
+    ctx.scale = function(sx, sy) {
+        xform = xform.scaleNonUniform(sx, sy);
+        return scale.call(ctx, sx, sy);
+    };
+    var rotate = ctx.rotate;
+    ctx.rotate = function(radians) {
+        xform = xform.rotate(radians * 180 / Math.PI);
+        return rotate.call(ctx, radians);
+    };
+    var translate = ctx.translate;
+    ctx.translate = function(dx, dy) {
+        xform = xform.translate(dx, dy);
+        return translate.call(ctx, dx, dy);
+    };
+    var transform = ctx.transform;
+    ctx.transform = function(a, b, c, d, e, f) {
+        var m2 = svg.createSVGMatrix();
+        m2.a = a;
+        m2.b = b;
+        m2.c = c;
+        m2.d = d;
+        m2.e = e;
+        m2.f = f;
+        xform = xform.multiply(m2);
+        return transform.call(ctx, a, b, c, d, e, f);
+    };
+    var setTransform = ctx.setTransform;
+    ctx.setTransform = function(a, b, c, d, e, f) {
+        xform.a = a;
+        xform.b = b;
+        xform.c = c;
+        xform.d = d;
+        xform.e = e;
+        xform.f = f;
+        return setTransform.call(ctx, a, b, c, d, e, f);
+    };
+    var pt = svg.createSVGPoint();
+    /* Returns an SVGPoint */
+    ctx.transformedPoint = function(x, y) {
+        pt.x = x;
+        pt.y = y;
+        return pt.matrixTransform(xform.inverse());
+    }
+}
+
