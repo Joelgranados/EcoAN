@@ -143,25 +143,6 @@ AnnCanvas.prototype.zoom = function (clicks)
   this.redraw();
 }
 
-AnnCanvas.prototype.csvOnCanvas = function ( anns )
-{
-  for ( var i = 0; i < anns.anns.length ; i++ )
-  {
-    var pi = anns.anns[i].polyInt;
-    if ( pi.length < 2 )
-      continue;
-
-    this.ctx.beginPath();
-    this.ctx.moveTo(pi[pi.length-2], pi[pi.length-1]);
-    for ( var j = 0; j < pi.length; j=j+2 )
-      this.ctx.lineTo(pi[j], pi[j+1]);
-    this.ctx.stroke();
-    this.ctx.closePath();
-    this.ctx.save();
-  }
-  this.currAnns = anns;
-}
-
 /* Handles and tracks the svg transformations */
 function trackTransforms(ctx) {
     var svg = document.createElementNS("http://www.w3.org/2000/svg", 'svg');
