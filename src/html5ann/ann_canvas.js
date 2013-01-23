@@ -49,13 +49,33 @@ function AnnCanvas ( name, parent, width, height )
   this.dragged = false;
   this.scaleFactor = 1.1;
 
+  /*
+   * The canvas can be in either of 3 states:
+   * 0 panzoom : Default state. User can pan zoom.
+   * 1 polygon : Enters state by holding keyCode 80.
+   *             Leaves state by releasing keyCode 80.
+   *             User can create general polygons.
+   * 2 rectangle : Enters state by holding keyCode 82.
+   *               Leaves state by releasing keyCode 82.
+   *               User can create only rectangles.
+   */
+  this.action = 0;
+
   this.canvas.onmousedown = ( function (obj) {
     return function (evt) {
-      document.body.style.mozUserSelect = document.body.style.webkitUserSelect = document.body.style.userSelect = 'none';
-      obj.lastX = evt.offsetX || (evt.pageX - obj.canvas.offsetLeft);
-      obj.lastY = evt.offsetY || (evt.pageY - obj.canvas.offsetTop);
-      obj.dragStart = obj.ctx.transformedPoint(obj.lastX, obj.lastY);
-      obj.dragged = false;
+      if ( obj.action == 0 ) {
+        document.body.style.mozUserSelect =
+          document.body.style.webkitUserSelect =
+          document.body.style.userSelect = 'none';
+        obj.lastX = evt.offsetX || (evt.pageX - obj.canvas.offsetLeft);
+        obj.lastY = evt.offsetY || (evt.pageY - obj.canvas.offsetTop);
+        obj.dragStart = obj.ctx.transformedPoint(obj.lastX, obj.lastY);
+        obj.dragged = false;
+      } else if ( obj.action == 1 ) {
+        console.log ( "making polygons" );
+      } else if ( obj.action == 2 ) {
+        console.log ( "making rectangles" );
+      }
     };
   }) (this);
 
@@ -63,29 +83,68 @@ function AnnCanvas ( name, parent, width, height )
     return function (evt) {
       obj.lastX = evt.offsetX || (evt.pageX - obj.canvas.offsetLeft);
       obj.lastY = evt.offsetY || (evt.pageY - obj.canvas.offsetTop);
-      obj.dragged = true;
-      if (obj.dragStart) {
-          var pt = obj.ctx.transformedPoint(obj.lastX, obj.lastY);
-          obj.ctx.translate(pt.x - obj.dragStart.x, pt.y - obj.dragStart.y);
-          obj.redraw();
+
+      if ( obj.action == 0 ) {
+        obj.dragged = true;
+        if (obj.dragStart) {
+            var pt = obj.ctx.transformedPoint(obj.lastX, obj.lastY);
+            obj.ctx.translate(pt.x - obj.dragStart.x, pt.y - obj.dragStart.y);
+            obj.redraw();
+        }
       }
     };
   }) (this);
 
   this.canvas.onmouseup = ( function(obj) {
-    return function(evt) {obj.dragStart = null;};
+    return function(evt) {
+      if ( obj.action == 0 ) {
+        obj.dragStart = null;
+      } else if ( obj.action == 1 ) {
+        console.log ( "making polygons" );
+      } else if ( obj.action == 2 ) {
+        console.log ( "making rectangles" );
+      }
+    };
   }) (this);
 
   var handleScroll = ( function (obj) {
     return function (evt) {
-      var delta = evt.wheelDelta ? evt.wheelDelta / 40 : evt.detail ? -evt.detail : 0;
-      if (delta)
+      if ( obj.action == 0 ) {
+        var delta = evt.wheelDelta ? evt.wheelDelta / 40 : evt.detail ? -evt.detail : 0;
+        if (delta)
           obj.zoom(delta);
-      return evt.preventDefault() && false;
+        return evt.preventDefault() && false;
+      }
     };
   }) (this);
   this.canvas.addEventListener('DOMMouseScroll', handleScroll, false);
   this.canvas.addEventListener('mousewheel', handleScroll, false);
+
+  //FIXME: We still need to analyze strange cases.
+  //FIXME: Need to make sure that panzoom state is left sane
+  document.onkeydown = ( function(obj) {
+    return function (evt) {
+      /* Ignore all keypresses when making polygons and rectangles. */
+      if ( obj.action == 1 || obj.action == 2 )
+        return;
+
+      if ( evt.keyCode == 80 )
+        obj.action = 1;
+      else if ( evt.keyCode == 82 )
+        obj.action = 2;
+      console.log(obj.action);
+    };
+  }) (this);
+
+  //FIXME: Need to make sure that 1,2 are left in a sane way.
+  document.onkeyup = ( function (obj) {
+    return function (evt) {
+      if ( evt.keyCode == 80 )
+        obj.action = 0;
+      else if ( evt.keyCode == 82 )
+        obj.action = 0;
+    };
+  }) (this);
 }
 
 AnnCanvas.prototype.redraw = function ()
