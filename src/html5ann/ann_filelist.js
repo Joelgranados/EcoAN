@@ -126,7 +126,6 @@ function AnnFileList(name, parent, width, height, annCan)
       if ( obj.list.selected != null )
       {
         obj.list.removeChild(obj.list.selected);
-        obj.annCan.remPoly();
         obj.annCan.remImg();
       }
     };
@@ -138,7 +137,6 @@ function AnnFileList(name, parent, width, height, annCan)
       while ( obj.list.firstChild )
         obj.list.removeChild(obj.list.firstChild);
       obj.list.selected = null;
-      obj.annCan.remPoly();
       obj.annCan.remImg();
     };
   })(this);
@@ -152,9 +150,6 @@ AnnFileList.prototype.ann_filelist_click = function ( obj )
 
     obj.list.selected = evt.srcElement;
     obj.list.selected.style.background = "lightgray";
-
-    /* Remove polygons */
-    obj.annCan.remPoly();
 
     /* Paint the image */
     var imgReader = new FileReader();

@@ -163,13 +163,6 @@ AnnCanvas.prototype.csvOnCanvas = function ( anns )
   this.currAnns = anns;
 }
 
-AnnCanvas.prototype.remPoly = function ()
-{
-  /*When we stop using raphael it will be 1*/
-  while (this.canvas.childElementCount > 3)
-    this.canvas.removeChild(this.canvas.lastChild);
-}
-
 /* Handles and tracks the svg transformations */
 function trackTransforms(ctx) {
     var svg = document.createElementNS("http://www.w3.org/2000/svg", 'svg');
