@@ -93,15 +93,12 @@ function AnnCanvas ( name, parent, width, height )
   this.canvas.addEventListener('mousewheel', handleScroll, false);
 }
 
-AnnCanvas.prototype.redraw = function (imgsrc)
+AnnCanvas.prototype.redraw = function ()
 {
   /*FIXME: Probably need to handle the image size. */
   /*FIXME: This is painful. All the methods I tried put the image bytes in the
     resources/Frame/images of the page. When I change of image, the original
     one is not removed. This could potentially use lots of memory. */
-  if ( imgsrc != undefined )
-    this.img.src = imgsrc;
-
   var p1 = this.ctx.transformedPoint(0, 0);
   var p2 = this.ctx.transformedPoint(this.canvas.width, this.canvas.height);
   this.ctx.clearRect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y);
@@ -124,12 +121,18 @@ AnnCanvas.prototype.redraw = function (imgsrc)
     }
 }
 
-AnnCanvas.prototype.remImg = function() {
+AnnCanvas.prototype.remImg = function()
+{
   this.currAnns = null;
-  this.redraw('undefined.jpg');
+  this.img.src = 'undefined.jpg';
+  this.redraw();
 }
 
-AnnCanvas.prototype.imgOnSVG = function(img) {this.redraw(img);}
+AnnCanvas.prototype.imgOnSVG = function(img)
+{
+  this.img.src = img;
+  this.redraw();
+}
 
 AnnCanvas.prototype.zoom = function (clicks)
 {
@@ -160,7 +163,6 @@ AnnCanvas.prototype.csvOnCanvas = function ( anns )
   this.currAnns = anns;
 }
 
-/* have JUST the initial message */
 AnnCanvas.prototype.remPoly = function ()
 {
   /*When we stop using raphael it will be 1*/
