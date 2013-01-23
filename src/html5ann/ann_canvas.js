@@ -73,11 +73,7 @@ function AnnCanvas ( name, parent, width, height )
   }) (this);
 
   this.canvas.onmouseup = ( function(obj) {
-    return function(evt) {
-      obj.dragStart = null;
-      if (!obj.dragged)
-          obj.zoom(evt.shiftKey ? -1 : 1);
-    };
+    return function(evt) {obj.dragStart = null;};
   }) (this);
 
   var handleScroll = ( function (obj) {
