@@ -41,12 +41,6 @@ function AnnCanvas ( name, parent, width, height )
 
   this.currAnns = null;
 
-  /* CSS for the canvas */
-  this.canvas.style.border = "1px solid lightgray";
-  this.canvas.style.background = "inherit";
-  this.canvas.style.fontSize = "inherit";
-  this.canvas.style.color = "gray";
-
   this.ctx.strokeStyle = '#ff0000';
   //FIXME: this needs to change with image size and zoom
   this.ctx.lineWidth = 20;
