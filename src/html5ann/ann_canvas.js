@@ -64,13 +64,7 @@ function AnnCanvas ( name, parent, width, height )
   this.canvas.onmousedown = ( function (obj) {
     return function (evt) {
       if ( obj.action == 0 ) {
-        document.body.style.mozUserSelect =
-          document.body.style.webkitUserSelect =
-          document.body.style.userSelect = 'none';
-        obj.lastX = evt.offsetX || (evt.pageX - obj.canvas.offsetLeft);
-        obj.lastY = evt.offsetY || (evt.pageY - obj.canvas.offsetTop);
-        obj.dragStart = obj.ctx.transformedPoint(obj.lastX, obj.lastY);
-        obj.dragged = false;
+        obj.zeroOMD( evt );
       } else if ( obj.action == 1 ) {
         console.log ( "making polygons" );
       } else if ( obj.action == 2 ) {
@@ -85,12 +79,7 @@ function AnnCanvas ( name, parent, width, height )
       obj.lastY = evt.offsetY || (evt.pageY - obj.canvas.offsetTop);
 
       if ( obj.action == 0 ) {
-        obj.dragged = true;
-        if (obj.dragStart) {
-            var pt = obj.ctx.transformedPoint(obj.lastX, obj.lastY);
-            obj.ctx.translate(pt.x - obj.dragStart.x, pt.y - obj.dragStart.y);
-            obj.redraw();
-        }
+        obj.zeroOMM();
       }
     };
   }) (this);
@@ -98,7 +87,7 @@ function AnnCanvas ( name, parent, width, height )
   this.canvas.onmouseup = ( function(obj) {
     return function(evt) {
       if ( obj.action == 0 ) {
-        obj.dragStart = null;
+        obj.zeroOMU();
       } else if ( obj.action == 1 ) {
         console.log ( "making polygons" );
       } else if ( obj.action == 2 ) {
@@ -110,10 +99,7 @@ function AnnCanvas ( name, parent, width, height )
   var handleScroll = ( function (obj) {
     return function (evt) {
       if ( obj.action == 0 ) {
-        var delta = evt.wheelDelta ? evt.wheelDelta / 40 : evt.detail ? -evt.detail : 0;
-        if (delta)
-          obj.zoom(delta);
-        return evt.preventDefault() && false;
+        return ( obj.zeroOMS(evt) );
       }
     };
   }) (this);
@@ -194,6 +180,32 @@ AnnCanvas.prototype.zoom = function (clicks)
   this.ctx.scale(factor, factor);
   this.ctx.translate(-pt.x, -pt.y);
   this.redraw();
+}
+
+/* AnnCanvas functions for this.action == 0 */
+AnnCanvas.prototype.zeroOMU = function() {this.dragStart = null;}
+AnnCanvas.prototype.zeroOMD = function ( evt ) {
+  document.body.style.mozUserSelect =
+    document.body.style.webkitUserSelect =
+    document.body.style.userSelect = 'none';
+  this.lastX = evt.offsetX || (evt.pageX - this.canvas.offsetLeft);
+  this.lastY = evt.offsetY || (evt.pageY - this.canvas.offsetTop);
+  this.dragStart = this.ctx.transformedPoint(this.lastX, this.lastY);
+  this.dragged = false;
+}
+AnnCanvas.prototype.zeroOMM = function () {
+  this.dragged = true;
+  if (this.dragStart) {
+    var pt = this.ctx.transformedPoint(this.lastX, this.lastY);
+    this.ctx.translate(pt.x - this.dragStart.x, pt.y - this.dragStart.y);
+    this.redraw();
+  }
+}
+AnnCanvas.prototype.zeroOMS = function ( evt ) {
+  var delta = evt.wheelDelta ? evt.wheelDelta / 40 : evt.detail ? -evt.detail : 0;
+  if (delta)
+    this.zoom(delta);
+  return evt.preventDefault() && false;
 }
 
 /* Handles and tracks the svg transformations */
