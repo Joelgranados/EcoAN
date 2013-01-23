@@ -29,8 +29,15 @@ function AnnCanvas ( name, parent, width, height )
   this.ctx = this.canvas.getContext('2d');
   trackTransforms(this.ctx);
 
+  /*
+   * There is a race condition where redraw is called before the image is
+   * loaded. We avoid this by using onload.
+   */
   this.img = new Image;
   this.img.src = 'undefined.jpg';
+  this.img.onload = ( function (obj) {
+    return function() {obj.redraw();};
+  }) (this);
 
   this.currAnns = null;
 
@@ -124,7 +131,6 @@ AnnCanvas.prototype.remImg = function()
 {
   this.currAnns = null;
   this.img.src = 'undefined.jpg';
-  this.redraw();
 }
 
 AnnCanvas.prototype.zoom = function (clicks)

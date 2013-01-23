@@ -168,9 +168,6 @@ AnnFileList.prototype.ann_filelist_click = function ( obj )
       };
     }) ( obj.list.selected.csvObj );
     csvReader.readAsText ( obj.list.selected.csvObj );
-
-    /* Paint image */
-    obj.annCan.redraw();
   };
 }
 
