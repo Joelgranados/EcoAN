@@ -41,9 +41,9 @@ function AnnCanvas ( name, parent, width, height )
 
   this.currAnns = null;
 
-  this.ctx.strokeStyle = '#ff0000';
-  //FIXME: this needs to change with image size and zoom
-  this.ctx.lineWidth = 20;
+  this.ctx.fillStyle = "rgba(255, 0, 0, 0.2)"
+  this.ctx.strokeStyle = "rgba(255, 0, 0, 0.2)";
+  this.ctx.lineWidth = 1;
 
   this.lastX = this.canvas.width / 2;
   this.lastY = this.canvas.height / 2;
@@ -117,6 +117,7 @@ AnnCanvas.prototype.redraw = function ()
       for ( var j = 0; j < pi.length; j=j+2 )
         this.ctx.lineTo(pi[j], pi[j+1]);
       this.ctx.stroke();
+      this.ctx.fill();
       this.ctx.closePath();
     }
 }
