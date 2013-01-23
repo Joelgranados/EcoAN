@@ -151,24 +151,26 @@ AnnFileList.prototype.ann_filelist_click = function ( obj )
     obj.list.selected = evt.srcElement;
     obj.list.selected.style.background = "lightgray";
 
-    /* Paint the image */
+    /* Set image */
     var imgReader = new FileReader();
     imgReader.onload = (function ( theFile ) {
       return function ( e ) {
-        obj.annCan.imgOnSVG ( e.target.result );
+        obj.annCan.img.src = e.target.result;
       };
     }) ( obj.list.selected.imgObj );
     imgReader.readAsDataURL ( obj.list.selected.imgObj );
 
-    /* Paint the annotations */
+    /* Set annotations */
     var csvReader = new FileReader();
     csvReader.onload = (function ( theFile ) {
       return function ( e ) {
-        obj.annCan.csvOnCanvas ( new AnnCSVReader ( e.target.result ) );
+        obj.annCan.currAnns = new AnnCSVReader ( e.target.result );
       };
     }) ( obj.list.selected.csvObj );
     csvReader.readAsText ( obj.list.selected.csvObj );
 
+    /* Paint image */
+    obj.annCan.redraw();
   };
 }
 

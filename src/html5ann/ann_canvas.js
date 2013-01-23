@@ -117,7 +117,6 @@ AnnCanvas.prototype.redraw = function ()
         this.ctx.lineTo(pi[j], pi[j+1]);
       this.ctx.stroke();
       this.ctx.closePath();
-      this.ctx.save();
     }
 }
 
@@ -125,12 +124,6 @@ AnnCanvas.prototype.remImg = function()
 {
   this.currAnns = null;
   this.img.src = 'undefined.jpg';
-  this.redraw();
-}
-
-AnnCanvas.prototype.imgOnSVG = function(img)
-{
-  this.img.src = img;
   this.redraw();
 }
 
