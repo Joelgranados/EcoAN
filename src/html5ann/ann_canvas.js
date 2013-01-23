@@ -28,6 +28,9 @@ function AnnCanvas ( name, parent, width, height )
 
   this.ctx = this.canvas.getContext('2d');
   trackTransforms(this.ctx);
+  this.ctx.fillStyle = "rgba(255, 0, 0, 0.2)"
+  this.ctx.strokeStyle = "rgba(255, 0, 0, 0.2)";
+  this.ctx.lineWidth = 1;
 
   /*
    * There is a race condition where redraw is called before the image is
@@ -40,11 +43,6 @@ function AnnCanvas ( name, parent, width, height )
   }) (this);
 
   this.currAnns = null;
-
-  this.ctx.fillStyle = "rgba(255, 0, 0, 0.2)"
-  this.ctx.strokeStyle = "rgba(255, 0, 0, 0.2)";
-  this.ctx.lineWidth = 1;
-
   this.lastX = this.canvas.width / 2;
   this.lastY = this.canvas.height / 2;
   this.dragStart = null;
