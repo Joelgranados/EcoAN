@@ -23,7 +23,7 @@ function AnnCanvas ( name, parent, width, height )
   this.parent = parent;
 
   this.canvas = document.getElementsByTagName('canvas')[0];
-  this.canvas.widht = width;
+  this.canvas.width = width;
   this.canvas.height = height;
 
   this.ctx = this.canvas.getContext('2d');
