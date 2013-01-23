@@ -61,50 +61,11 @@ function AnnCanvas ( name, parent, width, height )
    */
   this.action = 0;
 
-  this.canvas.onmousedown = ( function (obj) {
-    return function (evt) {
-      if ( obj.action == 0 ) {
-        obj.zeroOMD( evt );
-      } else if ( obj.action == 1 ) {
-        console.log ( "making polygons" );
-      } else if ( obj.action == 2 ) {
-        console.log ( "making rectangles" );
-      }
-    };
-  }) (this);
-
-  this.canvas.onmousemove = ( function(obj) {
-    return function (evt) {
-      obj.lastX = evt.offsetX || (evt.pageX - obj.canvas.offsetLeft);
-      obj.lastY = evt.offsetY || (evt.pageY - obj.canvas.offsetTop);
-
-      if ( obj.action == 0 ) {
-        obj.zeroOMM();
-      }
-    };
-  }) (this);
-
-  this.canvas.onmouseup = ( function(obj) {
-    return function(evt) {
-      if ( obj.action == 0 ) {
-        obj.zeroOMU();
-      } else if ( obj.action == 1 ) {
-        console.log ( "making polygons" );
-      } else if ( obj.action == 2 ) {
-        console.log ( "making rectangles" );
-      }
-    };
-  }) (this);
-
-  var handleScroll = ( function (obj) {
-    return function (evt) {
-      if ( obj.action == 0 ) {
-        return ( obj.zeroOMS(evt) );
-      }
-    };
-  }) (this);
-  this.canvas.addEventListener('DOMMouseScroll', handleScroll, false);
-  this.canvas.addEventListener('mousewheel', handleScroll, false);
+  this.canvas.onmousedown = this.zeroOMD(this);
+  this.canvas.onmousemove = this.zeroOMM(this);
+  this.canvas.onmouseup = this.zeroOMU(this);
+  this.canvas.addEventListener('DOMMouseScroll', this.zeroOMS(this), false);
+  this.canvas.addEventListener('mousewheel', this.zeroOMS(this), false);
 
   //FIXME: We still need to analyze strange cases.
   //FIXME: Need to make sure that panzoom state is left sane
@@ -114,10 +75,21 @@ function AnnCanvas ( name, parent, width, height )
       if ( obj.action == 1 || obj.action == 2 )
         return;
 
-      if ( evt.keyCode == 80 )
+      if ( evt.keyCode == 80 ) {
+        obj.canvas.onmousedown = obj.oneOMD(obj);
+        obj.canvas.onmousemove = obj.oneOMM(obj);
+        obj.canvas.onmouseup = obj.oneOMU(obj);
+        obj.canvas.addEventListener('DOMMouseScroll', obj.oneOMS(obj), false);
+        obj.canvas.addEventListener('mousewheel', obj.oneOMS(obj), false);
         obj.action = 1;
-      else if ( evt.keyCode == 82 )
+      } else if ( evt.keyCode == 82 ) {
+        obj.canvas.onmousedown = obj.twoOMD(obj);
+        obj.canvas.onmousemove = obj.twoOMM(obj);
+        obj.canvas.onmouseup = obj.twoOMU(obj);
+        obj.canvas.addEventListener('DOMMouseScroll', obj.twoOMS(obj), false);
+        obj.canvas.addEventListener('mousewheel', obj.twoOMS(obj), false);
         obj.action = 2;
+      }
       console.log(obj.action);
     };
   }) (this);
@@ -125,10 +97,13 @@ function AnnCanvas ( name, parent, width, height )
   //FIXME: Need to make sure that 1,2 are left in a sane way.
   document.onkeyup = ( function (obj) {
     return function (evt) {
-      if ( evt.keyCode == 80 )
-        obj.action = 0;
-      else if ( evt.keyCode == 82 )
-        obj.action = 0;
+      if ( evt.keyCode == 80 || evt.keyCode == 82 ) {
+        obj.canvas.onmousedown = obj.zeroOMD(obj);
+        obj.canvas.onmousemove = obj.zeroOMM(obj);
+        obj.canvas.onmouseup = obj.zeroOMU(obj);
+        obj.handleScroll = obj.zeroOMS(obj);
+      }
+      obj.action = 0;
     };
   }) (this);
 }
@@ -183,30 +158,70 @@ AnnCanvas.prototype.zoom = function (clicks)
 }
 
 /* AnnCanvas functions for this.action == 0 */
-AnnCanvas.prototype.zeroOMU = function() {this.dragStart = null;}
-AnnCanvas.prototype.zeroOMD = function ( evt ) {
-  document.body.style.mozUserSelect =
-    document.body.style.webkitUserSelect =
-    document.body.style.userSelect = 'none';
-  this.lastX = evt.offsetX || (evt.pageX - this.canvas.offsetLeft);
-  this.lastY = evt.offsetY || (evt.pageY - this.canvas.offsetTop);
-  this.dragStart = this.ctx.transformedPoint(this.lastX, this.lastY);
-  this.dragged = false;
+AnnCanvas.prototype.zeroOMU = function ( obj )
+{
+  return function (evt) {obj.dragStart = null;};
 }
-AnnCanvas.prototype.zeroOMM = function () {
-  this.dragged = true;
-  if (this.dragStart) {
-    var pt = this.ctx.transformedPoint(this.lastX, this.lastY);
-    this.ctx.translate(pt.x - this.dragStart.x, pt.y - this.dragStart.y);
-    this.redraw();
-  }
+AnnCanvas.prototype.zeroOMD = function ( obj ) {
+  return function (evt) {
+    document.body.style.mozUserSelect =
+      document.body.style.webkitUserSelect =
+      document.body.style.userSelect = 'none';
+    obj.lastX = evt.offsetX || (evt.pageX - obj.canvas.offsetLeft);
+    obj.lastY = evt.offsetY || (evt.pageY - obj.canvas.offsetTop);
+    obj.dragStart = obj.ctx.transformedPoint(obj.lastX, obj.lastY);
+    obj.dragged = false;
+  };
 }
-AnnCanvas.prototype.zeroOMS = function ( evt ) {
-  var delta = evt.wheelDelta ? evt.wheelDelta / 40 : evt.detail ? -evt.detail : 0;
-  if (delta)
-    this.zoom(delta);
-  return evt.preventDefault() && false;
+AnnCanvas.prototype.zeroOMM = function (obj) {
+  return function (evt) {
+    obj.lastX = evt.offsetX || (evt.pageX - obj.canvas.offsetLeft);
+    obj.lastY = evt.offsetY || (evt.pageY - obj.canvas.offsetTop);
+    obj.dragged = true;
+    if (obj.dragStart) {
+      var pt = obj.ctx.transformedPoint(obj.lastX, obj.lastY);
+      obj.ctx.translate(pt.x - obj.dragStart.x, pt.y - obj.dragStart.y);
+      obj.redraw();
+    }
+  };
 }
+AnnCanvas.prototype.zeroOMS = function ( obj ) {
+  return function (evt) {
+    var delta = evt.wheelDelta ? evt.wheelDelta / 40 : evt.detail ? -evt.detail : 0;
+    if (delta)
+      obj.zoom(delta);
+    return evt.preventDefault() && false;
+  };
+}
+
+/* AnnCanvas function for this.actions == 1 */
+AnnCanvas.prototype.oneOMU = function ( obj ) {
+  return function (evt){};
+}
+AnnCanvas.prototype.oneOMD = function ( obj ) {
+  return function (evt){};
+}
+AnnCanvas.prototype.oneOMM = function ( obj ) {
+  return function (evt){};
+}
+AnnCanvas.prototype.oneOMS = function ( obj ) {
+  return function (evt){};
+}
+
+/* AnnCanvas function for this.actions == 2 */
+AnnCanvas.prototype.twoOMU = function ( obj ) {
+  return function (evt){};
+}
+AnnCanvas.prototype.twoOMD = function ( obj ) {
+  return function (evt){};
+}
+AnnCanvas.prototype.twoOMM = function ( obj ) {
+  return function (evt){};
+}
+AnnCanvas.prototype.twoOMS = function ( obj ) {
+  return function (evt){};
+}
+
 
 /* Handles and tracks the svg transformations */
 function trackTransforms(ctx) {
