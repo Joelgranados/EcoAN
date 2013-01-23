@@ -28,9 +28,9 @@ function AnnCanvas ( name, parent, width, height )
 
   this.ctx = this.canvas.getContext('2d');
   trackTransforms(this.ctx);
-  this.ctx.fillStyle = "rgba(255, 0, 0, 0.2)"
   this.ctx.strokeStyle = "rgba(255, 0, 0, 0.2)";
   this.ctx.lineWidth = 1;
+  this.ctx.font = "bold 30px Arial";
 
   /*
    * There is a race condition where redraw is called before the image is
@@ -106,17 +106,22 @@ AnnCanvas.prototype.redraw = function ()
   if ( this.currAnns != null )
     for ( var i = 0; i < this.currAnns.anns.length ; i++ )
     {
-      var pi = this.currAnns.anns[i].polyInt;
-      if ( pi.length < 2 )
+      var ann = this.currAnns.anns[i];
+      var len = ann.polyInt.length;
+      if ( len < 2 )
         continue;
 
       this.ctx.beginPath();
-      this.ctx.moveTo(pi[pi.length-2], pi[pi.length-1]);
-      for ( var j = 0; j < pi.length; j=j+2 )
-        this.ctx.lineTo(pi[j], pi[j+1]);
+      this.ctx.moveTo(ann.polyInt[len-2], ann.polyInt[len-1]);
+      for ( var j = 0; j < len; j=j+2 )
+        this.ctx.lineTo(ann.polyInt[j], ann.polyInt[j+1]);
+      this.ctx.fillStyle = "rgba(255, 0, 0, 0.2)";
       this.ctx.stroke();
       this.ctx.fill();
       this.ctx.closePath();
+
+      this.ctx.fillStyle = "rgb(255, 0, 0)";
+      this.ctx.fillText(ann.label, ann.xmin, ann.ymin);
     }
 }
 
