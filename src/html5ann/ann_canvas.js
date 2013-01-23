@@ -107,23 +107,21 @@ AnnCanvas.prototype.redraw = function (imgsrc)
   this.ctx.clearRect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y);
   this.ctx.drawImage(this.img, 0, 0);
 
-  if ( this.currAnns == null )
-    return;
+  if ( this.currAnns != null )
+    for ( var i = 0; i < this.currAnns.anns.length ; i++ )
+    {
+      var pi = this.currAnns.anns[i].polyInt;
+      if ( pi.length < 2 )
+        continue;
 
-  for ( var i = 0; i < this.currAnns.anns.length ; i++ )
-  {
-    var pi = this.currAnns.anns[i].polyInt;
-    if ( pi.length < 2 )
-      continue;
-
-    this.ctx.beginPath();
-    this.ctx.moveTo(pi[pi.length-2], pi[pi.length-1]);
-    for ( var j = 0; j < pi.length; j=j+2 )
-      this.ctx.lineTo(pi[j], pi[j+1]);
-    this.ctx.stroke();
-    this.ctx.closePath();
-    this.ctx.save();
-  }
+      this.ctx.beginPath();
+      this.ctx.moveTo(pi[pi.length-2], pi[pi.length-1]);
+      for ( var j = 0; j < pi.length; j=j+2 )
+        this.ctx.lineTo(pi[j], pi[j+1]);
+      this.ctx.stroke();
+      this.ctx.closePath();
+      this.ctx.save();
+    }
 }
 
 AnnCanvas.prototype.remImg = function() {
