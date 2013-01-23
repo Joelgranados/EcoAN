@@ -95,6 +95,10 @@ function AnnCanvas ( name, parent, width, height )
 
 AnnCanvas.prototype.redraw = function (imgsrc)
 {
+  /*FIXME: Probably need to handle the image size. */
+  /*FIXME: This is painful. All the methods I tried put the image bytes in the
+    resources/Frame/images of the page. When I change of image, the original
+    one is not removed. This could potentially use lots of memory. */
   if ( imgsrc != undefined )
     this.img.src = imgsrc;
 
@@ -127,18 +131,7 @@ AnnCanvas.prototype.remImg = function() {
   this.redraw('undefined.jpg');
 }
 
-AnnCanvas.prototype.imgOnSVG = function ( img )
-{
-  /*FIXME: Probably need to handle the image size. */
-  /*FIXME: This is painful. All the methods I tried put the image bytes in the
-    resources/Frame/images of the page. When I change of image, the original
-    one is not removed. This could potentially use lots of memory. */
-  this.img.src = img;
-  var p1 = this.ctx.transformedPoint(0, 0);
-  var p2 = this.ctx.transformedPoint(this.canvas.width, this.canvas.height);
-  this.ctx.clearRect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y);
-  this.ctx.drawImage(this.img, 0, 0);
-}
+AnnCanvas.prototype.imgOnSVG = function(img) {this.redraw(img);}
 
 AnnCanvas.prototype.zoom = function (clicks)
 {
