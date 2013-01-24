@@ -47,14 +47,6 @@ function AnnCanvas ( name, parent, width, height )
   this.lastX = this.canvas.width / 2;
   this.lastY = this.canvas.height / 2;
 
-  /*
-   * Canvas in 3 states:
-   * 0 panzoom : Default.
-   * 1 polygon : Enters holding keyCode 80, leaves by releasing it.
-   * 2 rectangle : Enters holding keyCode 82, leaves by releasing it.
-   */
-  this.action = 0;
-
   /* panzoom */
   this.dragStart = null;
   this.dragged = false;
@@ -67,11 +59,13 @@ function AnnCanvas ( name, parent, width, height )
   /* polygon */
   this.polygon = null;
 
-  /* Default action=0 */
-  this.canvas.onmousedown = this.zeroOMD(this);
-  this.canvas.onmousemove = this.zeroOMM(this);
-  this.canvas.onmouseup = this.zeroOMU(this);
-  this.canvas.ondblclick = null;
+  /*
+   * Canvas in 3 states:
+   * 0 panzoom : Default.
+   * 1 polygon : Enters holding keyCode 80, leaves by releasing it.
+   * 2 rectangle : Enters holding keyCode 82, leaves by releasing it.
+   */
+  this.enterzero();
 
   /* In function because cannot directly access scroll events */
   var handleScroll = ( function (obj) {
@@ -96,16 +90,9 @@ function AnnCanvas ( name, parent, width, height )
         return;
 
       if ( evt.keyCode == 80 ) {
-        obj.canvas.onmousedown = obj.oneOMD(obj);
-        obj.canvas.onmousemove = obj.oneOMM(obj);
-        obj.canvas.onmouseup = obj.oneOMU(obj);
-        obj.canvas.ondblclick = obj.oneODC(obj);
-        obj.action = 1;
+        obj.enterone();
       } else if ( evt.keyCode == 82 ) {
-        obj.canvas.onmousedown = obj.twoOMD(obj);
-        obj.canvas.onmousemove = obj.twoOMM(obj);
-        obj.canvas.onmouseup = obj.twoOMU(obj);
-        obj.action = 2;
+        obj.entertwo();
       }
     };
   }) (this);
@@ -116,11 +103,7 @@ function AnnCanvas ( name, parent, width, height )
       if ( (evt.keyCode == 80 && obj.action == 1)
            || (evt.keyCode == 82 && obj.action == 2) )
       {
-        obj.canvas.onmousedown = obj.zeroOMD(obj);
-        obj.canvas.onmousemove = obj.zeroOMM(obj);
-        obj.canvas.onmouseup = obj.zeroOMU(obj);
-        obj.canvas.ondblclick = null;
-        obj.action = 0;
+        obj.enterzero();
       } else
         return;
     };
@@ -176,7 +159,14 @@ AnnCanvas.prototype.zoom = function (clicks)
   this.redraw();
 }
 
-/* AnnCanvas functions for this.action == 0 */
+/*panzoom*/
+AnnCanvas.prototype.enterzero = function () {
+  this.canvas.onmousedown = this.zeroOMD(this);
+  this.canvas.onmousemove = this.zeroOMM(this);
+  this.canvas.onmouseup = this.zeroOMU(this);
+  this.canvas.ondblclick = null;
+  this.action = 0;
+}
 AnnCanvas.prototype.zeroOMU = function ( obj )
 {
   return function (evt) {obj.dragStart = null;};
@@ -212,6 +202,13 @@ AnnCanvas.prototype.zeroOMS = function ( evt ) {
 }
 
 /*polygon*/
+AnnCanvas.prototype.enterone = function () {
+  this.canvas.onmousedown = this.oneOMD(this);
+  this.canvas.onmousemove = this.oneOMM(this);
+  this.canvas.onmouseup = this.oneOMU(this);
+  this.canvas.ondblclick = this.oneODC(this);
+  this.action = 1;
+}
 AnnCanvas.prototype.oneOMU = function ( obj ) {
   return function (evt){};
 }
@@ -245,7 +242,6 @@ AnnCanvas.prototype.oneOMM = function ( obj ) {
     obj.redraw();
     obj.ctx.beginPath();
     obj.ctx.moveTo(obj.polygon[0].x, obj.polygon[0].y);
-    console.log(obj.polygon.length)
     for ( var i = 1; i < obj.polygon.length ; i++ )
       obj.ctx.lineTo(obj.polygon[i].x, obj.polygon[i].y);
     var curPt = obj.ctx.transformedPoint(obj.lastX, obj.lastY);
@@ -264,6 +260,12 @@ AnnCanvas.prototype.oneODC = function ( obj ) {
 /*AnnCanvas.prototype.oneOMS = function ( evt ) {}*/
 
 /*rectangle*/
+AnnCanvas.prototype.entertwo = function () {
+  this.canvas.onmousedown = this.twoOMD(this);
+  this.canvas.onmousemove = this.twoOMM(this);
+  this.canvas.onmouseup = this.twoOMU(this);
+  this.action = 2;
+}
 AnnCanvas.prototype.twoOMU = function ( obj ) {
   return function (evt){
     if ( obj.sqrStart != null )
