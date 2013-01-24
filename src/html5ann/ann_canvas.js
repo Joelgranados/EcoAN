@@ -47,18 +47,6 @@ function AnnCanvas ( name, parent, width, height )
   this.lastX = this.canvas.width / 2;
   this.lastY = this.canvas.height / 2;
 
-  /* panzoom */
-  this.dragStart = null;
-  this.dragged = false;
-  this.scaleFactor = 1.1;
-
-  /* square */
-  this.sqrStart = null;
-  this.lastSqr = null;
-
-  /* polygon */
-  this.polygon = null;
-
   /*
    * Canvas in 3 states:
    * 0 panzoom : Default.
@@ -66,6 +54,8 @@ function AnnCanvas ( name, parent, width, height )
    * 2 rectangle : Enters holding keyCode 82, leaves by releasing it.
    */
   this.enterzero();
+  /* panzoom */
+  this.scaleFactor = 1.1;
 
   /* In function because cannot directly access scroll events */
   var handleScroll = ( function (obj) {
@@ -81,8 +71,6 @@ function AnnCanvas ( name, parent, width, height )
   this.canvas.addEventListener('DOMMouseScroll', handleScroll, false);
   this.canvas.addEventListener('mousewheel', handleScroll, false);
 
-  //FIXME: We still need to analyze strange cases.
-  //FIXME: Need to make sure that panzoom state is left sane
   document.onkeydown = ( function(obj) {
     return function (evt) {
       /* Ignore all keypresses when making polygons and rectangles. */
@@ -97,7 +85,6 @@ function AnnCanvas ( name, parent, width, height )
     };
   }) (this);
 
-  //FIXME: Need to make sure that 1,2 are left in a sane way.
   document.onkeyup = ( function (obj) {
     return function (evt) {
       if ( (evt.keyCode == 80 && obj.action == 1)
@@ -159,8 +146,18 @@ AnnCanvas.prototype.zoom = function (clicks)
   this.redraw();
 }
 
+AnnCanvas.prototype.resetActionVars = function ()
+{
+  this.sqrStart = null;
+  this.lastSqr = null;
+  this.polygon = null;
+  this.dragStart = null;
+  this.dragged = false;
+}
+
 /*panzoom*/
 AnnCanvas.prototype.enterzero = function () {
+  this.resetActionVars();
   this.canvas.onmousedown = this.zeroOMD(this);
   this.canvas.onmousemove = this.zeroOMM(this);
   this.canvas.onmouseup = this.zeroOMU(this);
@@ -203,6 +200,7 @@ AnnCanvas.prototype.zeroOMS = function ( evt ) {
 
 /*polygon*/
 AnnCanvas.prototype.enterone = function () {
+  this.resetActionVars();
   this.canvas.onmousedown = this.oneOMD(this);
   this.canvas.onmousemove = this.oneOMM(this);
   this.canvas.onmouseup = this.oneOMU(this);
@@ -261,6 +259,7 @@ AnnCanvas.prototype.oneODC = function ( obj ) {
 
 /*rectangle*/
 AnnCanvas.prototype.entertwo = function () {
+  this.resetActionVars();
   this.canvas.onmousedown = this.twoOMD(this);
   this.canvas.onmousemove = this.twoOMM(this);
   this.canvas.onmouseup = this.twoOMU(this);
