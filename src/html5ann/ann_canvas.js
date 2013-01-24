@@ -50,14 +50,10 @@ function AnnCanvas ( name, parent, width, height )
   this.scaleFactor = 1.1;
 
   /*
-   * The canvas can be in either of 3 states:
-   * 0 panzoom : Default state. User can pan zoom.
-   * 1 polygon : Enters state by holding keyCode 80.
-   *             Leaves state by releasing keyCode 80.
-   *             User can create general polygons.
-   * 2 rectangle : Enters state by holding keyCode 82.
-   *               Leaves state by releasing keyCode 82.
-   *               User can create only rectangles.
+   * Canvas in 3 states:
+   * 0 panzoom : Default.
+   * 1 polygon : Enters holding keyCode 80, leaves by releasing it.
+   * 2 rectangle : Enters holding keyCode 82, leaves by releasing it.
    */
   this.action = 0;
 
