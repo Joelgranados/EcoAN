@@ -54,10 +54,13 @@ function AnnCanvas ( name, parent, width, height )
    */
   this.action = 0;
 
-  /* Used in action = 0 */
+  /* For panzoom */
   this.dragStart = null;
   this.dragged = false;
   this.scaleFactor = 1.1;
+
+  /* For square */
+  this.sqrStart = null;
 
   /* Default action=0 */
   this.canvas.onmousedown = this.zeroOMD(this);
@@ -215,16 +218,42 @@ AnnCanvas.prototype.oneOMS = function ( evt ) {}
 
 /*rectangle*/
 AnnCanvas.prototype.twoOMU = function ( obj ) {
-  return function (evt){};
+  return function (evt){
+    if ( obj.sqrStart != null )
+    {
+      obj.twoOMM(evt);
+      obj.sqrStart = null;
+    }
+  };
 }
 AnnCanvas.prototype.twoOMD = function ( obj ) {
-  return function (evt){};
+  return function (evt) {
+    obj.lastX = evt.offsetX || (evt.pageX - obj.canvas.offsetLeft);
+    obj.lastY = evt.offsetY || (evt.pageY - obj.canvas.offsetTop);
+    obj.sqrStart = obj.ctx.transformedPoint(obj.lastX, obj.lastY);
+  };
 }
 AnnCanvas.prototype.twoOMM = function ( obj ) {
-  return function (evt){};
+  return function (evt){
+    obj.lastX = evt.offsetX || (evt.pageX - obj.canvas.offsetLeft);
+    obj.lastY = evt.offsetY || (evt.pageY - obj.canvas.offsetTop);
+
+    if ( obj.sqrStart == null )
+      return;
+
+    var curPt = obj.ctx.transformedPoint(obj.lastX, obj.lastY);
+    var x = Math.min(curPt.x,  obj.sqrStart.x),
+        y = Math.min(curPt.y,  obj.sqrStart.y),
+        w = Math.abs(curPt.x - obj.sqrStart.x),
+        h = Math.abs(curPt.y - obj.sqrStart.y);
+    if ( !w || !h )
+      return;
+
+    obj.ctx.clearRect(x, y, w, h);
+    obj.ctx.strokeRect(x, y, w, h);
+  };
 }
 AnnCanvas.prototype.twoOMS = function ( evt ) {}
-
 
 /* Handles and tracks the svg transformations */
 function trackTransforms(ctx) {
