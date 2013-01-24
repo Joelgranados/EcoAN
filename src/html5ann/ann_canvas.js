@@ -102,7 +102,6 @@ function AnnCanvas ( name, parent, width, height )
         obj.canvas.onmouseup = obj.twoOMU(obj);
         obj.action = 2;
       }
-      console.log(obj.action);
     };
   }) (this);
 
