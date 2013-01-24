@@ -55,12 +55,12 @@ function AnnCanvas ( name, parent, width, height )
    */
   this.action = 0;
 
-  /* For panzoom */
+  /* panzoom */
   this.dragStart = null;
   this.dragged = false;
   this.scaleFactor = 1.1;
 
-  /* For square */
+  /* square */
   this.sqrStart = null;
   this.lastSqr = null;
 
