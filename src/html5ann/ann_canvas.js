@@ -59,7 +59,7 @@ function AnnCanvas ( name, parent, width, height )
   this.dragged = false;
   this.scaleFactor = 1.1;
 
-  /* Default is action = 0 */
+  /* Default action=0 */
   this.canvas.onmousedown = this.zeroOMD(this);
   this.canvas.onmousemove = this.zeroOMM(this);
   this.canvas.onmouseup = this.zeroOMU(this);
@@ -201,7 +201,7 @@ AnnCanvas.prototype.zeroOMS = function ( evt ) {
   return evt.preventDefault() && false;
 }
 
-/* AnnCanvas function for this.actions == 1 */
+/*polygon*/
 AnnCanvas.prototype.oneOMU = function ( obj ) {
   return function (evt){};
 }
@@ -213,7 +213,7 @@ AnnCanvas.prototype.oneOMM = function ( obj ) {
 }
 AnnCanvas.prototype.oneOMS = function ( evt ) {}
 
-/* AnnCanvas function for this.actions == 2 */
+/*rectangle*/
 AnnCanvas.prototype.twoOMU = function ( obj ) {
   return function (evt){};
 }
