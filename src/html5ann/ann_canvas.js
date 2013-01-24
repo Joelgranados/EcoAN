@@ -64,8 +64,20 @@ function AnnCanvas ( name, parent, width, height )
   this.canvas.onmousedown = this.zeroOMD(this);
   this.canvas.onmousemove = this.zeroOMM(this);
   this.canvas.onmouseup = this.zeroOMU(this);
-  this.canvas.addEventListener('DOMMouseScroll', this.zeroOMS(this), false);
-  this.canvas.addEventListener('mousewheel', this.zeroOMS(this), false);
+
+  /* In function because cannot directly access scroll events */
+  var handleScroll = ( function (obj) {
+   return function (evt) {
+      if ( obj.action == 0 )
+        return ( obj.zeroOMS(evt) );
+      else if ( obj.action == 1 )
+        return ( obj.oneOMS(evt) );
+      else if ( obj.action == 2 )
+        return ( obj.twoOMS(evt) );
+    };
+  }) (this);
+  this.canvas.addEventListener('DOMMouseScroll', handleScroll, false);
+  this.canvas.addEventListener('mousewheel', handleScroll, false);
 
   //FIXME: We still need to analyze strange cases.
   //FIXME: Need to make sure that panzoom state is left sane
@@ -79,15 +91,11 @@ function AnnCanvas ( name, parent, width, height )
         obj.canvas.onmousedown = obj.oneOMD(obj);
         obj.canvas.onmousemove = obj.oneOMM(obj);
         obj.canvas.onmouseup = obj.oneOMU(obj);
-        obj.canvas.addEventListener('DOMMouseScroll', obj.oneOMS(obj), false);
-        obj.canvas.addEventListener('mousewheel', obj.oneOMS(obj), false);
         obj.action = 1;
       } else if ( evt.keyCode == 82 ) {
         obj.canvas.onmousedown = obj.twoOMD(obj);
         obj.canvas.onmousemove = obj.twoOMM(obj);
         obj.canvas.onmouseup = obj.twoOMU(obj);
-        obj.canvas.addEventListener('DOMMouseScroll', obj.twoOMS(obj), false);
-        obj.canvas.addEventListener('mousewheel', obj.twoOMS(obj), false);
         obj.action = 2;
       }
       console.log(obj.action);
@@ -101,7 +109,6 @@ function AnnCanvas ( name, parent, width, height )
         obj.canvas.onmousedown = obj.zeroOMD(obj);
         obj.canvas.onmousemove = obj.zeroOMM(obj);
         obj.canvas.onmouseup = obj.zeroOMU(obj);
-        obj.handleScroll = obj.zeroOMS(obj);
       }
       obj.action = 0;
     };
@@ -185,13 +192,11 @@ AnnCanvas.prototype.zeroOMM = function (obj) {
     }
   };
 }
-AnnCanvas.prototype.zeroOMS = function ( obj ) {
-  return function (evt) {
-    var delta = evt.wheelDelta ? evt.wheelDelta / 40 : evt.detail ? -evt.detail : 0;
-    if (delta)
-      obj.zoom(delta);
-    return evt.preventDefault() && false;
-  };
+AnnCanvas.prototype.zeroOMS = function ( evt ) {
+  var delta = evt.wheelDelta ? evt.wheelDelta / 40 : evt.detail ? -evt.detail : 0;
+  if (delta)
+    this.zoom(delta);
+  return evt.preventDefault() && false;
 }
 
 /* AnnCanvas function for this.actions == 1 */
@@ -204,9 +209,7 @@ AnnCanvas.prototype.oneOMD = function ( obj ) {
 AnnCanvas.prototype.oneOMM = function ( obj ) {
   return function (evt){};
 }
-AnnCanvas.prototype.oneOMS = function ( obj ) {
-  return function (evt){};
-}
+AnnCanvas.prototype.oneOMS = function ( evt ) {}
 
 /* AnnCanvas function for this.actions == 2 */
 AnnCanvas.prototype.twoOMU = function ( obj ) {
@@ -218,9 +221,7 @@ AnnCanvas.prototype.twoOMD = function ( obj ) {
 AnnCanvas.prototype.twoOMM = function ( obj ) {
   return function (evt){};
 }
-AnnCanvas.prototype.twoOMS = function ( obj ) {
-  return function (evt){};
-}
+AnnCanvas.prototype.twoOMS = function ( evt ) {}
 
 
 /* Handles and tracks the svg transformations */
