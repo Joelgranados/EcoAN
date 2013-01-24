@@ -74,10 +74,10 @@ function AnnCanvas ( name, parent, width, height )
    return function (evt) {
       if ( obj.action == 0 )
         return ( obj.zeroOMS(evt) );
-      else if ( obj.action == 1 )
+      /*else if ( obj.action == 1 )
         return ( obj.oneOMS(evt) );
       else if ( obj.action == 2 )
-        return ( obj.twoOMS(evt) );
+        return ( obj.twoOMS(evt) );*/
     };
   }) (this);
   this.canvas.addEventListener('DOMMouseScroll', handleScroll, false);
@@ -216,7 +216,7 @@ AnnCanvas.prototype.oneOMD = function ( obj ) {
 AnnCanvas.prototype.oneOMM = function ( obj ) {
   return function (evt){};
 }
-AnnCanvas.prototype.oneOMS = function ( evt ) {}
+/*AnnCanvas.prototype.oneOMS = function ( evt ) {}*/
 
 /*rectangle*/
 AnnCanvas.prototype.twoOMU = function ( obj ) {
@@ -263,7 +263,7 @@ AnnCanvas.prototype.twoOMM = function ( obj ) {
     obj.lastSqr.h=h;
   };
 }
-AnnCanvas.prototype.twoOMS = function ( evt ) {}
+/*AnnCanvas.prototype.twoOMS = function ( evt ) {}*/
 
 /* Handles and tracks the svg transformations */
 function trackTransforms(ctx) {
