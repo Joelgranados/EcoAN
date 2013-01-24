@@ -164,7 +164,7 @@ AnnFileList.prototype.ann_filelist_click = function ( obj )
     var csvReader = new FileReader();
     csvReader.onload = (function ( theFile ) {
       return function ( e ) {
-        obj.annCan.currAnns = new AnnCSVReader ( e.target.result );
+        obj.annCan.currAnns = new AnnCSV ( e.target.result );
       };
     }) ( obj.list.selected.csvObj );
     csvReader.readAsText ( obj.list.selected.csvObj );

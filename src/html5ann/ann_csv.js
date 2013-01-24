@@ -59,7 +59,7 @@ AnnCSVAnnotation.prototype.getPolyString = function ()
   return this.polyString;
 }
 
-function AnnCSVReader ( fileString )
+function AnnCSV ( fileString )
 {
   this.fileString = fileString;
   this.commentRegex = "[#|%].*";
