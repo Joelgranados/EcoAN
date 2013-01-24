@@ -28,6 +28,7 @@ function AnnCanvas ( name, parent, width, height )
 
   this.ctx = this.canvas.getContext('2d');
   trackTransforms(this.ctx);
+  this.ctx.fillStyle = "rgba(255, 0, 0, 0.2)";
   this.ctx.strokeStyle = "rgba(255, 0, 0, 0.2)";
   this.ctx.lineWidth = 1;
   this.ctx.font = "bold 30px Arial";
@@ -144,13 +145,13 @@ AnnCanvas.prototype.redraw = function ()
       this.ctx.moveTo(ann.polyInt[len-2], ann.polyInt[len-1]);
       for ( var j = 0; j < len; j=j+2 )
         this.ctx.lineTo(ann.polyInt[j], ann.polyInt[j+1]);
-      this.ctx.fillStyle = "rgba(255, 0, 0, 0.2)";
       this.ctx.stroke();
       this.ctx.fill();
       this.ctx.closePath();
 
       this.ctx.fillStyle = "rgb(255, 0, 0)";
       this.ctx.fillText(ann.label, ann.xmin, ann.ymin);
+      this.ctx.fillStyle = "rgba(255, 0, 0, 0.2)";
     }
 }
 
@@ -234,7 +235,6 @@ AnnCanvas.prototype.twoOMD = function ( obj ) {
     obj.lastY = evt.offsetY || (evt.pageY - obj.canvas.offsetTop);
     obj.sqrStart = obj.ctx.transformedPoint(obj.lastX, obj.lastY);
     obj.lastSqr = {};
-    obj.ctx.fillStyle = "rgba(255, 0, 0, 0.2)";
   };
 }
 AnnCanvas.prototype.twoOMM = function ( obj ) {
@@ -253,10 +253,9 @@ AnnCanvas.prototype.twoOMM = function ( obj ) {
     if ( !w || !h )
       return;
 
-    /* Clear the old square */
     if ( obj.lastSqr != null )
-      obj.ctx.clearRect(obj.lastSqr.x, obj.lastSqr.y,
-          obj.lastSqr.w, obj.lastSqr.h);
+      obj.redraw();
+
     obj.ctx.fillRect(x, y, w, h);
     obj.lastSqr.x=x;
     obj.lastSqr.y=y;
