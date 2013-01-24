@@ -101,12 +101,15 @@ function AnnCanvas ( name, parent, width, height )
   //FIXME: Need to make sure that 1,2 are left in a sane way.
   document.onkeyup = ( function (obj) {
     return function (evt) {
-      if ( evt.keyCode == 80 || evt.keyCode == 82 ) {
+      if ( (evt.keyCode == 80 && obj.action == 1)
+           || (evt.keyCode == 82 && obj.action == 2) )
+      {
         obj.canvas.onmousedown = obj.zeroOMD(obj);
         obj.canvas.onmousemove = obj.zeroOMM(obj);
         obj.canvas.onmouseup = obj.zeroOMU(obj);
-      }
-      obj.action = 0;
+        obj.action = 0;
+      } else
+        return;
     };
   }) (this);
 }
