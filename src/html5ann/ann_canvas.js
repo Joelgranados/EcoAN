@@ -64,10 +64,14 @@ function AnnCanvas ( name, parent, width, height )
   this.sqrStart = null;
   this.lastSqr = null;
 
+  /* polygon */
+  this.polygon = null;
+
   /* Default action=0 */
   this.canvas.onmousedown = this.zeroOMD(this);
   this.canvas.onmousemove = this.zeroOMM(this);
   this.canvas.onmouseup = this.zeroOMU(this);
+  this.canvas.ondblclick = null;
 
   /* In function because cannot directly access scroll events */
   var handleScroll = ( function (obj) {
@@ -95,6 +99,7 @@ function AnnCanvas ( name, parent, width, height )
         obj.canvas.onmousedown = obj.oneOMD(obj);
         obj.canvas.onmousemove = obj.oneOMM(obj);
         obj.canvas.onmouseup = obj.oneOMU(obj);
+        obj.canvas.ondblclick = obj.oneODC(obj);
         obj.action = 1;
       } else if ( evt.keyCode == 82 ) {
         obj.canvas.onmousedown = obj.twoOMD(obj);
@@ -114,6 +119,7 @@ function AnnCanvas ( name, parent, width, height )
         obj.canvas.onmousedown = obj.zeroOMD(obj);
         obj.canvas.onmousemove = obj.zeroOMM(obj);
         obj.canvas.onmouseup = obj.zeroOMU(obj);
+        obj.canvas.ondblclick = null;
         obj.action = 0;
       } else
         return;
@@ -210,10 +216,50 @@ AnnCanvas.prototype.oneOMU = function ( obj ) {
   return function (evt){};
 }
 AnnCanvas.prototype.oneOMD = function ( obj ) {
-  return function (evt){};
+  return function (evt){
+    obj.lastX = evt.offsetX || (evt.pageX - obj.canvas.offsetLeft);
+    obj.lastY = evt.offsetY || (evt.pageY - obj.canvas.offsetTop);
+    if ( obj.polygon == null )
+    { /* Start polygon */
+      obj.polygon = [];
+      obj.polygon[0] = obj.ctx.transformedPoint(obj.lastX, obj.lastY);
+    } else { /* Continue polygon */
+      var curPt = obj.ctx.transformedPoint(obj.lastX, obj.lastY);
+      var xdist = Math.abs(curPt.x-obj.polygon[obj.polygon.length-1].x);
+      var ydist = Math.abs(curPt.y-obj.polygon[obj.polygon.length-1].y);
+      var dist = Math.sqrt( Math.pow(xdist,2) + Math.pow(ydist,2) );
+      /* Improbable to move 3 units on a double click*/
+      if ( dist > 3 )
+        obj.polygon.push( obj.ctx.transformedPoint(obj.lastX, obj.lastY) );
+    }
+  };
 }
 AnnCanvas.prototype.oneOMM = function ( obj ) {
-  return function (evt){};
+  return function (evt){
+    obj.lastX = evt.offsetX || (evt.pageX - obj.canvas.offsetLeft);
+    obj.lastY = evt.offsetY || (evt.pageY - obj.canvas.offsetTop);
+
+    if ( obj.polygon == null )
+      return;
+
+    obj.redraw();
+    obj.ctx.beginPath();
+    obj.ctx.moveTo(obj.polygon[0].x, obj.polygon[0].y);
+    console.log(obj.polygon.length)
+    for ( var i = 1; i < obj.polygon.length ; i++ )
+      obj.ctx.lineTo(obj.polygon[i].x, obj.polygon[i].y);
+    var curPt = obj.ctx.transformedPoint(obj.lastX, obj.lastY);
+    obj.ctx.lineTo(curPt.x, curPt.y);
+    obj.ctx.stroke();
+    obj.ctx.fill();
+    obj.ctx.closePath();
+  };
+}
+AnnCanvas.prototype.oneODC = function ( obj ) {
+  return function (evt) {
+    obj.polygon = null;
+    //FIXME: We should add save the annotation logic here.
+  };
 }
 /*AnnCanvas.prototype.oneOMS = function ( evt ) {}*/
 
