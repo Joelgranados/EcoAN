@@ -61,6 +61,7 @@ function AnnCanvas ( name, parent, width, height )
 
   /* For square */
   this.sqrStart = null;
+  this.lastSqr = null;
 
   /* Default action=0 */
   this.canvas.onmousedown = this.zeroOMD(this);
@@ -223,6 +224,7 @@ AnnCanvas.prototype.twoOMU = function ( obj ) {
     {
       obj.twoOMM(evt);
       obj.sqrStart = null;
+      obj.lastSqr = null;
     }
   };
 }
@@ -231,6 +233,7 @@ AnnCanvas.prototype.twoOMD = function ( obj ) {
     obj.lastX = evt.offsetX || (evt.pageX - obj.canvas.offsetLeft);
     obj.lastY = evt.offsetY || (evt.pageY - obj.canvas.offsetTop);
     obj.sqrStart = obj.ctx.transformedPoint(obj.lastX, obj.lastY);
+    obj.lastSqr = {};
   };
 }
 AnnCanvas.prototype.twoOMM = function ( obj ) {
@@ -249,8 +252,18 @@ AnnCanvas.prototype.twoOMM = function ( obj ) {
     if ( !w || !h )
       return;
 
-    obj.ctx.clearRect(x, y, w, h);
+    /* Clear the old square */
+    if ( obj.lastSqr != null )
+      obj.ctx.clearRect(obj.lastSqr.x-obj.ctx.lineWidth,
+                        obj.lastSqr.y-obj.ctx.lineWidth,
+                        obj.lastSqr.w+(2*obj.ctx.lineWidth),
+                        obj.lastSqr.h+(2*obj.ctx.lineWidth));
+
     obj.ctx.strokeRect(x, y, w, h);
+    obj.lastSqr.x=x;
+    obj.lastSqr.y=y;
+    obj.lastSqr.w=w;
+    obj.lastSqr.h=h;
   };
 }
 AnnCanvas.prototype.twoOMS = function ( evt ) {}
