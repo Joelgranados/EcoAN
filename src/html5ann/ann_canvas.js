@@ -234,6 +234,7 @@ AnnCanvas.prototype.twoOMD = function ( obj ) {
     obj.lastY = evt.offsetY || (evt.pageY - obj.canvas.offsetTop);
     obj.sqrStart = obj.ctx.transformedPoint(obj.lastX, obj.lastY);
     obj.lastSqr = {};
+    obj.ctx.fillStyle = "rgba(255, 0, 0, 0.2)";
   };
 }
 AnnCanvas.prototype.twoOMM = function ( obj ) {
@@ -254,12 +255,9 @@ AnnCanvas.prototype.twoOMM = function ( obj ) {
 
     /* Clear the old square */
     if ( obj.lastSqr != null )
-      obj.ctx.clearRect(obj.lastSqr.x-obj.ctx.lineWidth,
-                        obj.lastSqr.y-obj.ctx.lineWidth,
-                        obj.lastSqr.w+(2*obj.ctx.lineWidth),
-                        obj.lastSqr.h+(2*obj.ctx.lineWidth));
-
-    obj.ctx.strokeRect(x, y, w, h);
+      obj.ctx.clearRect(obj.lastSqr.x, obj.lastSqr.y,
+          obj.lastSqr.w, obj.lastSqr.h);
+    obj.ctx.fillRect(x, y, w, h);
     obj.lastSqr.x=x;
     obj.lastSqr.y=y;
     obj.lastSqr.w=w;
