@@ -45,9 +45,6 @@ function AnnCanvas ( name, parent, width, height )
   this.currAnns = null;
   this.lastX = this.canvas.width / 2;
   this.lastY = this.canvas.height / 2;
-  this.dragStart = null;
-  this.dragged = false;
-  this.scaleFactor = 1.1;
 
   /*
    * Canvas in 3 states:
@@ -57,6 +54,12 @@ function AnnCanvas ( name, parent, width, height )
    */
   this.action = 0;
 
+  /* Used in action = 0 */
+  this.dragStart = null;
+  this.dragged = false;
+  this.scaleFactor = 1.1;
+
+  /* Default is action = 0 */
   this.canvas.onmousedown = this.zeroOMD(this);
   this.canvas.onmousemove = this.zeroOMM(this);
   this.canvas.onmouseup = this.zeroOMU(this);
