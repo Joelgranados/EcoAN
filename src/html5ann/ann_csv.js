@@ -1,6 +1,6 @@
 /*
  * Annotation.  An annotation creation tool for images.
- * Copyright (C) 2012 Joel Granados <joel.granados@gmail.com>
+ * Copyright (C) 2013 Joel Granados <joel.granados@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
