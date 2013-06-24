@@ -67,6 +67,11 @@ function annotation_gui_OpeningFcn(hObject, eventdata, handles, varargin)
 
     % Can be imrect, impoly or imfreehand.
     handles.roicreate = @impoly;
+    
+    % for the ghost annotations
+    handles.ghostOn = 0;
+    handles.ghost.regions = 0;
+    handles.ghost_offset = 0;
 
     % Update handles structure
     guidata(hObject, handles);
@@ -475,8 +480,28 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
     % We put the image in the axis.
     img = put_image_in_axis (local_file, axis_handler, ret_handles);
 
+    % Implement ghost annotations
+    if ret_handles.ghostOn == 1 && ret_handles.curr_ann.reg_offset > 0
+        ret_handles.ghost.regions = ret_handles.curr_ann.regions;
+        ret_handles.ghost.offset = ret_handles.curr_ann.reg_offset;
+    end
+
     % Modify ret_handles.ann_curr to reflect the change
     ret_handles.curr_ann = annotation_read(local_file);
+
+    % Implement ghost annotations
+    if ret_handles.ghostOn == 1
+        if  ret_handles.ghost.offset ~= 0 ...
+                && ret_handles.curr_ann.reg_offset == 0
+            ret_handles.curr_ann.regions = ret_handles.ghost.regions;
+            ret_handles.curr_ann.reg_offset = ret_handles.ghost.offset;
+        end
+
+        ret_handles.ghostOn = 0;
+        set(ret_handles.gcb, 'Value', 0);
+        ret_handles.ghost.regions = 0;
+        ret_handles.ghost.offset = 0;
+    end
 
     % Paint annotations.
     for i = 1:ret_handles.curr_ann.reg_offset
@@ -655,3 +680,20 @@ function figure1_ResizeFcn(hObject, eventdata, handles)
 
     % Remember to save the changes.
     guidata(hObject, handles);
+
+
+% --- Executes on button press in gcb.
+function gcb_Callback(hObject, eventdata, handles)
+% hObject    handle to gcb (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    state = get(hObject, 'Value');
+    if state == 1
+        handles.ghostOn = 1;
+    elseif state == 0
+        handles.ghostOn = 0;
+    end
+
+    % Remember to save the changes.
+    guidata(hObject, handles);
+
