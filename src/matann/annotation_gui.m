@@ -327,12 +327,12 @@ function button_press_on_line(hObject, ~, line_handle)
 
     % Create temp impoly for modification.
     delete(line_handle)
-    imroi_handle = impoly(handles.image_axis,...
-        curr_reg.vertices);
+    imroi_handle = imrect(handles.image_axis,...
+        [min(curr_reg.vertices) max(curr_reg.vertices) - min(curr_reg.vertices)]);
     % func handle that will pass pos and the related text.
     addNewPositionCallback( imroi_handle,...
         @(pos)on_move_roi(pos,imroi_handle, curr_reg.label) );
-    fcn = makeConstrainToRectFcn('impoly',...
+    fcn = makeConstrainToRectFcn('imrect',...
         get(handles.image_axis, 'XLim'),...
         get(handles.image_axis, 'YLim'));
     setPositionConstraintFcn(imroi_handle,fcn);
@@ -347,21 +347,30 @@ function button_press_on_line(hObject, ~, line_handle)
         curr_reg.rect = NaN;
         curr_reg.active = 0;
     else
-        curr_reg.vertices = round(waitResult);
+        %curr_reg.vertices = round(waitResult);
+        tmpRoi = round(waitResult);
         delete(imroi_handle);
 
         %recalculate everything for this region.
+        a = tmpRoi(1); b = tmpRoi(1) + tmpRoi(3);
+        c = tmpRoi(2); d = tmpRoi(2) + tmpRoi(4);
         curr_reg.line_handle =...
-            line( [curr_reg.vertices(:,1);curr_reg.vertices(1,1)],...
-                [curr_reg.vertices(:,2);curr_reg.vertices(1,2)],...
-                'Color',[1 0 0],'LineWidth',1);
+            line( [a a b b a], [c d d c c],'Color',[1 0 0],'LineWidth',1);
+
+        %curr_reg.line_handle =...
+        %    line( [curr_reg.vertices(:,1);curr_reg.vertices(1,1)],...
+        %        [curr_reg.vertices(:,2);curr_reg.vertices(1,2)],...
+        %        'Color',[1 0 0],'LineWidth',1);
         set(curr_reg.line_handle,'ButtonDownFcn',...
             @(src,event)button_press_on_line(src,event,curr_reg.line_handle));
-        xmin = min(curr_reg.vertices(:,1));
-        ymin = min(curr_reg.vertices(:,2));
-        xmax = max(curr_reg.vertices(:,1));
-        ymax = max(curr_reg.vertices(:,2));
-        curr_reg.rect = [xmin, ymin, xmax-xmin, ymax-ymin];
+        %xmin = min(curr_reg.vertices(:,1));
+        %ymin = min(curr_reg.vertices(:,2));
+        %xmax = max(curr_reg.vertices(:,1));
+        %ymax = max(curr_reg.vertices(:,2));
+        %curr_reg.rect = [xmin, ymin, xmax-xmin, ymax-ymin];
+        curr_reg.rect = tmpRoi;
+        curr_reg.vertices = [ a a b b a ; c d d c c]';
+        
     end
 
     handles.curr_ann.regions(offset) = curr_reg;
