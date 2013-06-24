@@ -486,14 +486,20 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
     % We select the corresponding file in the list of files.
     set(ret_handles.file_list, 'Value', ret_handles.list_selected_file);
 
-    % We put the image in the axis.
-    img = put_image_in_axis (local_file, axis_handler, ret_handles);
-
-    % Implement ghost annotations
+    % Implement ghost annotations. This is painful: transform all
+    % texthandles back to text, they will be invalid as soon as we execute
+    % put_image_in_axis.
     if ret_handles.ghostOn == 1 && ret_handles.curr_ann.reg_offset > 0
         ret_handles.ghost.regions = ret_handles.curr_ann.regions;
         ret_handles.ghost.offset = ret_handles.curr_ann.reg_offset;
+        for i = 1:ret_handles.ghost.offset
+            ret_handles.ghost.regions(i).label = ...
+                char(get(ret_handles.curr_ann.regions(i).label, 'string'));
+        end
     end
+
+    % We put the image in the axis.
+    img = put_image_in_axis (local_file, axis_handler, ret_handles);
 
     % Modify ret_handles.ann_curr to reflect the change
     ret_handles.curr_ann = annotation_read(local_file);
