@@ -357,17 +357,8 @@ function button_press_on_line(hObject, ~, line_handle)
         curr_reg.line_handle =...
             line( [a a b b a], [c d d c c],'Color',[1 0 0],'LineWidth',1);
 
-        %curr_reg.line_handle =...
-        %    line( [curr_reg.vertices(:,1);curr_reg.vertices(1,1)],...
-        %        [curr_reg.vertices(:,2);curr_reg.vertices(1,2)],...
-        %        'Color',[1 0 0],'LineWidth',1);
         set(curr_reg.line_handle,'ButtonDownFcn',...
             @(src,event)button_press_on_line(src,event,curr_reg.line_handle));
-        %xmin = min(curr_reg.vertices(:,1));
-        %ymin = min(curr_reg.vertices(:,2));
-        %xmax = max(curr_reg.vertices(:,1));
-        %ymax = max(curr_reg.vertices(:,2));
-        %curr_reg.rect = [xmin, ymin, xmax-xmin, ymax-ymin];
         curr_reg.rect = tmpRoi;
         curr_reg.vertices = [ a a b b a ; c d d c c]';
         
