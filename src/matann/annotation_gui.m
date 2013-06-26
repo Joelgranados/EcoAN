@@ -66,12 +66,15 @@ function annotation_gui_OpeningFcn(hObject, eventdata, handles, varargin)
     set(handles.figure1, 'KeyPressFcn', @on_key_press_callback);
 
     % Can be imrect, impoly or imfreehand.
-    handles.roicreate = @impoly;
+    handles.roicreate = @imrect;
+    % Distance from rect to label
+    handles.roiDistConst = 10;
     
     % for the ghost annotations
     handles.ghostOn = 0;
     handles.ghost.regions = 0;
     handles.ghost_offset = 0;
+
 
     % Update handles structure
     guidata(hObject, handles);
@@ -255,21 +258,19 @@ function button_pressed_on_image(hObject, eventdata)
             handles.isModifying ~= 0
         return;
     end
-    handles.isModifying = 1;guidata(hObject, handles);
-    hroi = handles.roicreate(handles.image_axis);
-    handles.isModifying = 0;guidata(hObject, handles);
-
-    % handle when user presses ESC
-    if (size(hroi,1) == 0), return; end;
-    hroi_vertices = round(getPosition(hroi));
-    if isa(hroi, 'imrect'),
-        hroi_vertices =...
-            [hroi_vertices(1) hroi_vertices(2);...
-             hroi_vertices(1) hroi_vertices(2)+hroi_vertices(4);...
-             hroi_vertices(1)+hroi_vertices(3) hroi_vertices(2)+hroi_vertices(4);...
-             hroi_vertices(1)+hroi_vertices(3) hroi_vertices(2)];
-    end
-    delete(hroi);
+    
+    % Get current mouse position
+    distConst = handles.roiDistConst;
+    xy = round(get(handles.image_axis, 'currentPoint'));
+    xy = xy(1,1:2);
+    a = xy(1) - distConst;
+    b = xy(1) + distConst;
+    c = xy(1) + (2 * distConst);
+    d = xy(2) - distConst;
+    e = xy(2) + distConst;
+    f = xy(2) - (2 * distConst);
+    
+    hroi_vertices = [a a b b c b a; d e e d f d d]';
 
     % increment offset for new box.
     handles.curr_ann.reg_offset = handles.curr_ann.reg_offset + 1;
@@ -277,32 +278,25 @@ function button_pressed_on_image(hObject, eventdata)
 
     % Create a new region in the next offset
     handles.curr_ann.regions(reg_offset) = annotation_init;
-    handles.curr_ann.regions(reg_offset).vertices = round(hroi_vertices);
+    handles.curr_ann.regions(reg_offset).vertices = hroi_vertices;
 
     % We will use the label that is currently selected.
     l_offset = get(handles.labels, 'Value');
     l_strings = get(handles.labels, 'String');
     % calculate pos based on object.
-    hroi_pos = [min(handles.curr_ann.regions(reg_offset).vertices(:,1)),...
-                min(handles.curr_ann.regions(reg_offset).vertices(:,2))];
     handles.curr_ann.regions(reg_offset).label =...
-        create_text_label(l_strings(l_offset),hroi_pos(1), hroi_pos(2));
+        create_text_label(l_strings(l_offset),c,f);
 
-    handles.curr_ann.regions(reg_offset).line_handle =...
-        line( [hroi_vertices(:,1);hroi_vertices(1,1)],...
-            [hroi_vertices(:,2);hroi_vertices(1,2)],...
-            'Color',[1 0 0],'LineWidth',1);
+    handles.curr_ann.regions(reg_offset).line_handle = ...
+        line ( [a a b b c b a], [d e e d f d d], ...
+        'Color',[1 0 0],'LineWidth',1);
     set(handles.curr_ann.regions(reg_offset).line_handle,...
         'ButtonDownFcn',...
         @(src,event)button_press_on_line(src,event,...
         handles.curr_ann.regions(reg_offset).line_handle));
 
-    xmin = min(handles.curr_ann.regions(reg_offset).vertices(:,1));
-    ymin = min(handles.curr_ann.regions(reg_offset).vertices(:,2));
-    xmax = max(handles.curr_ann.regions(reg_offset).vertices(:,1));
-    ymax = max(handles.curr_ann.regions(reg_offset).vertices(:,2));
     handles.curr_ann.regions(reg_offset).rect =...
-        [xmin, ymin, xmax-xmin, ymax-ymin];
+        [a, d, 2*distConst, 2*distConst];
 
     % new annotation is active
     handles.curr_ann.regions(reg_offset).active = 1;
@@ -325,10 +319,9 @@ function button_press_on_line(hObject, ~, line_handle)
     end
     if offset == -1; return ;end;
 
-    % Create temp impoly for modification.
+    % Create temp rect for modification.
     delete(line_handle)
-    imroi_handle = imrect(handles.image_axis,...
-        [min(curr_reg.vertices) max(curr_reg.vertices) - min(curr_reg.vertices)]);
+    imroi_handle = imrect(handles.image_axis, curr_reg.rect);
     % func handle that will pass pos and the related text.
     addNewPositionCallback( imroi_handle,...
         @(pos)on_move_roi(pos,imroi_handle, curr_reg.label) );
@@ -352,15 +345,21 @@ function button_press_on_line(hObject, ~, line_handle)
         delete(imroi_handle);
 
         %recalculate everything for this region.
-        a = tmpRoi(1); b = tmpRoi(1) + tmpRoi(3);
-        c = tmpRoi(2); d = tmpRoi(2) + tmpRoi(4);
+        distConst = handles.roiDistConst;
+        a = tmpRoi(1);
+        b = a + tmpRoi(3);
+        c = b + distConst;
+        d = tmpRoi(2);
+        e = d + tmpRoi(4);
+        f = d - distConst;
+
         curr_reg.line_handle =...
-            line( [a a b b a], [c d d c c],'Color',[1 0 0],'LineWidth',1);
+            line( [a a b b c b a], [d e e d f d d],'Color',[1 0 0],'LineWidth',1);
 
         set(curr_reg.line_handle,'ButtonDownFcn',...
             @(src,event)button_press_on_line(src,event,curr_reg.line_handle));
         curr_reg.rect = tmpRoi;
-        curr_reg.vertices = [ a a b b a ; c d d c c]';
+        curr_reg.vertices = [ a a b b a ; d e e d d]';
         
     end
 
@@ -394,7 +393,9 @@ function on_move_roi(pos, roi, text_handle)
 
     handles = guidata(gco);
     if isa(roi, 'imrect')
-        set(text_handle, 'Position', [pos(1), pos(2)]);
+        distConst = handles.roiDistConst;
+        set(text_handle, 'Position', [pos(1)+pos(3)+distConst,...
+            pos(2)]-distConst);
     elseif isa(roi, 'impoly') || isa(roi, 'imfreehand')
         set(text_handle, 'Position', [min(pos(:,1)),min(pos(:,2))]);
     end
@@ -512,23 +513,26 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
     end
 
     % Paint annotations.
-
+    distConst = handles.roiDistConst;
     for i = 1:ret_handles.curr_ann.reg_offset
         % we paint only the active ones.
         if ret_handles.curr_ann.regions(i).active == 1
             curr_reg = ret_handles.curr_ann.regions(i);
 
-            l = line( [curr_reg.vertices(:,1);curr_reg.vertices(1,1)],...
-                    [curr_reg.vertices(:,2);curr_reg.vertices(1,2)],...
-                    'Color',roiCol,'LineWidth',1);
+            a = curr_reg.rect(1);
+            b = a + curr_reg.rect(3);
+            c = b + distConst;
+            d = curr_reg.rect(2);
+            e = d + curr_reg.rect(4);
+            f = d - distConst;
+            
+            l = line ( [a a b b c b a], [d e e d f d d], 'Color', roiCol,...
+                        'LineWidth', 1);
             set(l,'ButtonDownFcn',...
                 @(src,event)button_press_on_line(src,event,l));
             curr_reg.line_handle = l;
+            curr_reg.label = create_text_label(char(curr_reg.label), c, f);
 
-            % Work with text ret_handles not strings.
-            curr_reg.label = create_text_label(char(curr_reg.label),...
-                                               curr_reg.rect(1),...
-                                               curr_reg.rect(2));
 
            %FIXME: HACK: matlab insists in creating a new object...
             ret_handles.curr_ann.regions(i) = curr_reg;
@@ -655,6 +659,8 @@ function annpanel_SelectionChangeFcn(hObject, eventdata, handles)
         handles.roicreate = @imfreehand;
     elseif get(handles.radio_poly, 'Value') == 1
         handles.roicreate = @impoly;
+    elseif get(handles.radio_dblclick, 'Value') == 1
+        handles.roicreate = @imrect;
     else
         handles.roicreate = @imrect;
     end
@@ -705,4 +711,3 @@ function gcb_Callback(hObject, eventdata, handles)
 
     % Remember to save the changes.
     guidata(hObject, handles);
-
