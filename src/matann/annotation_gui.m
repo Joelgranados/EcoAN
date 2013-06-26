@@ -505,11 +505,13 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
     ret_handles.curr_ann = annotation_read(local_file);
 
     % Implement ghost annotations
+    roiCol = [1 0 0];
     if ret_handles.ghostOn == 1
         if  ret_handles.ghost.offset ~= 0 ...
                 && ret_handles.curr_ann.reg_offset == 0
             ret_handles.curr_ann.regions = ret_handles.ghost.regions;
             ret_handles.curr_ann.reg_offset = ret_handles.ghost.offset;
+            roiCol = [0 0 1];
         end
 
         ret_handles.ghostOn = 0;
@@ -519,6 +521,7 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
     end
 
     % Paint annotations.
+
     for i = 1:ret_handles.curr_ann.reg_offset
         % we paint only the active ones.
         if ret_handles.curr_ann.regions(i).active == 1
@@ -526,7 +529,7 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
 
             l = line( [curr_reg.vertices(:,1);curr_reg.vertices(1,1)],...
                     [curr_reg.vertices(:,2);curr_reg.vertices(1,2)],...
-                    'Color',[1 0 0],'LineWidth',1);
+                    'Color',roiCol,'LineWidth',1);
             set(l,'ButtonDownFcn',...
                 @(src,event)button_press_on_line(src,event,l));
             curr_reg.line_handle = l;
