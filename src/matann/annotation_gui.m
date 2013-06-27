@@ -285,7 +285,7 @@ function button_pressed_on_image(hObject, eventdata)
     l_strings = get(handles.labels, 'String');
     % calculate pos based on object.
     handles.curr_ann.regions(reg_offset).label =...
-        create_text_label(l_strings(l_offset),c,f);
+        create_text_label(l_strings(l_offset),c,f,[1 0 0]);
 
     handles.curr_ann.regions(reg_offset).line_handle = ...
         line ( [a a b b c b a], [d e e d f d d], ...
@@ -370,9 +370,9 @@ function button_press_on_line(hObject, ~, line_handle)
     % Remember to save the changes.
     guidata(gcf, handles);
 
-function text_handle = create_text_label(str, X, Y)
+function text_handle = create_text_label(str, X, Y, col)
     text_handle = text(X, Y, str,...
-        'Color', [1 0 0], 'FontSize', 10,...
+        'Color', col, 'FontSize', 10,...
         'Clipping', 'on', 'VerticalAlignment', 'Bottom',...
         'ButtonDownFcn',...
         @(text_handle,~)button_pressed_on_text_label(text_handle));
@@ -481,7 +481,7 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
     % Implement ghost annotations. This is painful: transform all
     % texthandles back to text, they will be invalid as soon as we execute
     % put_image_in_axis.
-    if ret_handles.ghostOn == 1 && ret_handles.curr_ann.reg_offset > 0
+    if ret_handles.ghostOn == 1
         ret_handles.ghost.regions = ret_handles.curr_ann.regions;
         ret_handles.ghost.offset = ret_handles.curr_ann.reg_offset;
         for i = 1:ret_handles.ghost.offset
@@ -496,16 +496,23 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
     % Modify ret_handles.ann_curr to reflect the change
     ret_handles.curr_ann = annotation_read(local_file);
 
-    % Implement ghost annotations
-    roiCol = [1 0 0];
+    % Paint ghost annotations
+    distConst = handles.roiDistConst;
     if ret_handles.ghostOn == 1
-        if  ret_handles.ghost.offset ~= 0 ...
-                && ret_handles.curr_ann.reg_offset == 0
-            ret_handles.curr_ann.regions = ret_handles.ghost.regions;
-            ret_handles.curr_ann.reg_offset = ret_handles.ghost.offset;
-            roiCol = [0 0 1];
-        end
+        for i = 1:ret_handles.ghost.offset
+            curr_reg = ret_handles.ghost.regions(i);
 
+            a = curr_reg.rect(1);
+            b = a + curr_reg.rect(3);
+            c = b + distConst;
+            d = curr_reg.rect(2);
+            e = d + curr_reg.rect(4);
+            f = d - distConst;
+
+            line ( [a a b b c b a], [d e e d f d d], ...
+                    'Color', [0 0 1], 'LineWidth', 1, 'LineStyle', ':');
+            create_text_label(char(curr_reg.label), c, f, [0 0 1]);
+        end
         ret_handles.ghostOn = 0;
         set(ret_handles.gcb, 'Value', 0);
         ret_handles.ghost.regions = 0;
@@ -513,7 +520,6 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
     end
 
     % Paint annotations.
-    distConst = handles.roiDistConst;
     for i = 1:ret_handles.curr_ann.reg_offset
         % we paint only the active ones.
         if ret_handles.curr_ann.regions(i).active == 1
@@ -526,12 +532,13 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
             e = d + curr_reg.rect(4);
             f = d - distConst;
 
-            l = line ( [a a b b c b a], [d e e d f d d], 'Color', roiCol,...
+            l = line ( [a a b b c b a], [d e e d f d d], 'Color', [1 0 0],...
                         'LineWidth', 1);
             set(l,'ButtonDownFcn',...
                 @(src,event)button_press_on_line(src,event,l));
             curr_reg.line_handle = l;
-            curr_reg.label = create_text_label(char(curr_reg.label), c, f);
+            curr_reg.label = create_text_label(char(curr_reg.label),...
+                c, f, [1 0 0]);
 
 
            %FIXME: HACK: matlab insists in creating a new object...
