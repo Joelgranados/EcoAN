@@ -414,6 +414,17 @@ function on_key_press_callback(hObject, eventdata)
 
         % call the zoom callback..
         zoom_toggle_Callback(handles.zoom_toggle, [], handles);
+    elseif strcmp(key, 'p') == 1 || strcmp(key, 'P') == 1 ...
+            || strcmp(key, 't')
+        bstate = get(handles.grab_toggle, 'Value');
+        if bstate == get(handles.grab_toggle, 'Min')
+            set(handles.grab_toggle, 'Value', ...
+                get(handles.grab_toggle, 'Max'));
+        else
+            set(handles.grab_toggle, 'Value', ...
+                get(handles.grab_toggle, 'Min'));
+        end
+        grab_toggle_Callback(handles.grab_toggle, [], handles);
     end
 
     % Remember to save the changes.
@@ -525,17 +536,18 @@ function zoom_toggle_Callback(hObject, eventdata, handles)
 % --- Executes on button press in grab_toggle.
 function grab_toggle_Callback(hObject, eventdata, handles)
     state = get(hObject, 'Value');
-    h = pan;
+    ph = pan(handles.figure1);
+    zh = zoom(handles.figure1);
 
     if state == 0
-        set(h, 'Enable', 'off');
+        set(ph, 'Enable', 'off');
     elseif state == 1
 
         % make sure we disable the zoom first
-        set(zoom, 'Enable', 'off');
+        set(zh, 'Enable', 'off');
         set(handles.zoom_toggle, 'Value', 0);
 
-        set(h, 'Enable', 'on');
+        set(ph, 'Enable', 'on');
     else
         % this should not be reached.
     end
