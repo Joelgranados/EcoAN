@@ -63,7 +63,7 @@ function annotation_gui_OpeningFcn(hObject, eventdata, handles, varargin)
     handles.isModifying = 0;
 
     % Initialize the figure1 callback definitions.
-    set(handles.figure1, 'KeyPressFcn', @on_key_press_callback);
+    addlistener(handles.figure1, 'WindowKeyPress', @on_key_press_callback);
 
     % Can be imrect, impoly or imfreehand.
     handles.roicreate = @impoly;
@@ -401,27 +401,19 @@ function on_key_press_callback(hObject, eventdata)
     %initialize handles
     handles = guidata(hObject);
 
-    if strcmp(eventdata.Character, 'n') == 1 ||...
-            strcmp(eventdata.Character, 'N') == 1
-        % This function takes care of strange values in offset, so we will feel
-        % save putting the next offset that we see.
-        offset = handles.list_selected_file + 1;
-        [success, handles] = ...
-            select_offset_from_list(offset, handles, hObject);
-
-    elseif strcmp(eventdata.Character, 'z') == 1 ||...
-            strcmp(eventdata.Character, 'Z') == 1
-        % will ONLY turn on zoom.  Matlab has a cute feature that it redefines
-        % the KeyPressFcn when zoom is active.  This means that you cannot
-        % deactivate zoom with a key press.   Thankyou Matlab.  I guess this is
-        % bad for this particular situation but good in others.
+    key = get(eventdata.Source, 'CurrentCharacter');
+    if strcmp(key, 'z') == 1 || strcmp(key, 'Z') == 1
         bstate = get(handles.zoom_toggle, 'Value');
         if bstate == get(handles.zoom_toggle, 'Min') %it is not pressed.
             set(handles.zoom_toggle, 'Value',...
-                get(handles.zoom_toggle, 'Max'))
+                get(handles.zoom_toggle, 'Max'));
+        else
+            set(handles.zoom_toggle, 'Value',...
+                get(handles.zoom_toggle, 'Min'));
         end
+
         % call the zoom callback..
-        zoom_toggle_Callback(handles.zoom_toggle, '', handles)
+        zoom_toggle_Callback(handles.zoom_toggle, [], handles);
     end
 
     % Remember to save the changes.
@@ -513,17 +505,18 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
 % --- Executes on button press in zoom_toggle.
 function zoom_toggle_Callback(hObject, eventdata, handles)
     zoom_toggle_state = get(hObject, 'Value');
-    h = zoom;
+    zh = zoom(handles.figure1);
+    ph = pan(handles.figure1);
 
     if zoom_toggle_state == 0
-        set(h, 'Enable', 'off');
+        set(zh, 'Enable', 'off');
     elseif zoom_toggle_state == 1
 
         % make sure we disable the grab first
-        set(pan, 'Enable', 'off');
+        set(ph, 'Enable', 'off');
         set(handles.grab_toggle, 'Value', 0);
 
-        set(h, 'Enable', 'on');
+        set(zh, 'Enable', 'on');
     else
         % this should not be reached.
     end
