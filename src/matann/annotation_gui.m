@@ -425,6 +425,16 @@ function on_key_press_callback(hObject, eventdata)
                 get(handles.grab_toggle, 'Min'));
         end
         grab_toggle_Callback(handles.grab_toggle, [], handles);
+    elseif strcmp(key, '1') == 1
+        set(handles.labels, 'Value', 1);
+    elseif strcmp(key, '2') == 1
+        set(handles.labels, 'Value', 2);
+    elseif strcmp(key, '3') == 1
+        set(handles.labels, 'Value', 3);
+    elseif strcmp(key, '4') == 1
+        set(handles.labels, 'Value', 4);
+    elseif strcmp(key, '5') == 1
+        set(handles.labels, 'Value', 5);
     end
 
     % Remember to save the changes.
