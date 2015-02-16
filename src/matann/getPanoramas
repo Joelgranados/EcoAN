@@ -1,0 +1,59 @@
+#!/usr/bin/env python
+#coding=utf-8
+import os
+import os.path
+import fnmatch
+import sys
+import exifread
+import shutil
+
+imgPath = sys.argv[1]
+toPath = sys.argv[2]
+
+
+def panoramaCopy(imgPath, toPath):
+    for root, DIR, files in os.walk(imgPath):
+        items = fnmatch.filter(files, "*.jpg") \
+                + fnmatch.filter(files, "*.JPG")
+        for item in items:
+
+            fromF = os.path.join(root, item)
+            F = open( fromF, 'rb')
+            tags = exifread.process_file(F)
+            F.close()
+
+            try:
+                outputname = \
+                        str(tags["EXIF DateTimeDigitized"]).replace(" ", "_")+".jpg"
+                toF = os.path.join(toPath,outputname)
+
+                print ("Copying from %s to %s" % (fromF, toF))
+                shutil.copy(fromF, toF)
+            except KeyError:
+                continue
+
+def changeNames(imgPath):
+    """For all the image in imgPath change to correct timestamp name"""
+    for root, DIR, files in os.walk(imgPath):
+        items = fnmatch.filter(files, "*.jpg") \
+                + fnmatch.filter(files, "*.JPG")
+        for item in items:
+            f = os.path.join(root, item)
+            fd = open ( f, 'rb' )
+            tags = exifread.process_file(fd)
+            fd.close()
+
+            try:
+                of = str(tags["EXIF DateTimeDigitized"]).replace(" ", "_")+".jpg"
+                of = "converted-"+of
+                of = os.path.join(root,of)
+
+                shutil.move(f, of)
+
+                print ("Renaming from %s to %s" % (f, of))
+            except:
+                continue
+
+if __name__ == "__main__":
+    panoramaCopy(imgPath, toPath)
+    #changeNames(imgPath)

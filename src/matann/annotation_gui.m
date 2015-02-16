@@ -9,7 +9,7 @@
 % This program is distributed in the hope that it will be useful,
 % but WITHOUT ANY WARRANTY; without even the implied warranty of
 % MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
+% GNU General Public License for more details.C
 %
 % You should have received a copy of the GNU General Public License
 % along with this program; if not, write to the Free Software
@@ -47,26 +47,16 @@ function annotation_gui_OpeningFcn(hObject, eventdata, handles, varargin)
     handles.paths = [];
     handles.current_dir = pwd;
 
-    % Offset of current selected label
-    handles.label_selected_label = -1;
-
     % Offset of current selected file
     handles.list_selected_file = -1;
 
-    % The variable that will temporarily hold the annotation activity per
-    % image. curr_ann(current annotation)
-    handles.curr_ann.file_name = '';
-    handles.curr_ann.image = -1;
-    handles.curr_ann.reg_offset = 0;
-    handles.curr_ann.regions(1) = annotation_init;
+    % There will only be one annotation per timestream.
+    handles.annotation = annotation_init;
 
     handles.isModifying = 0;
 
     % Initialize the figure1 callback definitions.
     addlistener(handles.figure1, 'WindowKeyPress', @on_key_press_callback);
-
-    % Can be imrect, impoly or imfreehand.
-    handles.roicreate = @impoly;
 
     % Update handles structure
     guidata(hObject, handles);
@@ -93,11 +83,6 @@ function file_list_Callback(hObject, eventdata, handles)
         return;
     end
 
-    % We save before doing anything
-    if handles.list_selected_file ~= -1
-        annotation_save(handles, handles.curr_ann);
-    end
-
     % see what the user has chossen
     offset = get(hObject,'Value');
 
@@ -116,38 +101,8 @@ function file_list_CreateFcn(hObject, eventdata, handles)
 
 % --- Executes on button press in exit.
 function exit_Callback(hObject, eventdata, handles)
-    % We save before doing anything.  This will allow the lock to be
-    % released in the server.
-    if handles.list_selected_file ~= -1
-        annotation_save(handles, handles.curr_ann);
-    end
-
     close(handles.figure1);
     exit;
-
-% --- Executes on selection change in labels.
-function labels_Callback(hObject, eventdata, handles)
-    handles.label_selected_label = get(hObject, 'Value');
-    % Remember to save the changes.
-    guidata(hObject, handles);
-
-
-% --- Executes during object creation, after setting all properties.
-function labels_CreateFcn(hObject, eventdata, handles)
-    if ispc && isequal(get(hObject,'BackgroundColor'),...
-            get(0,'defaultUicontrolBackgroundColor'))
-        set(hObject,'BackgroundColor','white');
-    end
-    set (hObject, 'String', {'---','Default'});
-
-function labels = labels_addLabels(handles, pathname)
-    labels = get (handles.labels, 'String');
-    try
-        dirlabels = textread( strcat(pathname, 'labels.txt'), '%s\n' );
-    catch
-        dirlabels = '';
-    end
-     labels = cat (1, dirlabels, labels);
 
 % --- Executes on button press in add_files.
 function add_files_Callback(hObject, eventdata, handles)
@@ -164,9 +119,6 @@ function add_files_Callback(hObject, eventdata, handles)
         % just return, user pushed cancel.
         return
     end
-
-    % Add the labels specified in the pathname
-    set(handles.labels, 'String', labels_addLabels(handles, pathname));
 
     if ischar(filename) && ischar(pathname)
         % User only chose one file.  change to cellstr
@@ -192,47 +144,43 @@ function add_files_Callback(hObject, eventdata, handles)
 
 % --- Executes on button press in clear_files.
 function clear_files_Callback(hObject, eventdata, handles)
-% hObject    handle to clear_files (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-    if handles.list_selected_file ~= -1
-        annotation_save(handles, handles.curr_ann);
-    end
     % Set the label list back to its default.
-    labels_CreateFcn(handles.labels, '', handles);
     handles.paths = [];
     set(handles.file_list, 'String', '', 'Value', 0);
     cla(handles.image_axis, 'reset');
+    handles.annotation = annotation_init;
     guidata(hObject, handles);
 
 
 % --- Called when an image needs to be uploaded to an axis.
 % input_image   is the string that references the image
 % axis_handler  the handler use as parent of the image
-function retimg = put_image_in_axis (input_image, axis_handler, handles)
-    if exist (char(input_image)) > 0
-        img = imread(char(input_image));
-
-        % We maintain the zoom level if size allows.
-        XLim = get(axis_handler, 'XLim');
-        YLim = get(axis_handler, 'YLim');
-
-        image(img, 'Parent', axis_handler,...
-            'ButtonDownFcn', @button_pressed_on_image);
-        set(gca,'Units','pixels');
-
-        if XLim(2) < size(img,2) && XLim(2) > 1 &&...
-                YLim(2) < size(img,1) && YLim(2) > 1,
-            xlim('manual');xlim(axis_handler, XLim);
-            ylim('manual');ylim(axis_handler, YLim);
-        end
-
-        retimg = img;
-    else
+function [retimg, ret_handles]  = put_image_in_axis (input_image, ...
+            axis_handler, handles)
+    if exist (char(input_image)) <= 0,
         msgboxText{1} =  strcat('File not found: ', input_image);
         msgbox(msgboxText,'File Not Found', 'error');
         retimg = 0;
+        return;
     end
+
+    img = imread(char(input_image));
+
+    image(img, 'Parent', axis_handler,...
+        'ButtonDownFcn', @button_pressed_on_image);
+    set(gca,'Units','pixels');
+    axis equal;
+
+    if ~isnan(handles.annotation.vertices),
+        hroi_vertices = handles.annotation.vertices;
+        handles.annotation.line_handle = ...
+            line( [hroi_vertices(:,1);hroi_vertices(1,1)],...
+                [hroi_vertices(:,2);hroi_vertices(1,2)],...
+                'Color',[1 0 0],'LineWidth',1);
+    end
+
+    retimg = img;
+    ret_handles = handles;
 
 % --- Called when the a button is pressed on the figure/image
 function button_pressed_on_image(hObject, eventdata)
@@ -251,151 +199,35 @@ function button_pressed_on_image(hObject, eventdata)
         return;
     end
     handles.isModifying = 1;guidata(hObject, handles);
-    hroi = handles.roicreate(handles.image_axis);
+
+    if ~isnan(handles.annotation.line_handle),
+        set(handles.annotation.line_handle, 'Visible', 'off');
+    end
+    handles.annotation = annotation_init;
+
+    hroi = impoly(handles.image_axis);
     handles.isModifying = 0;guidata(hObject, handles);
 
     % handle when user presses ESC
-    if (size(hroi,1) == 0), return; end;
+    if (size(hroi,1) == 0), return; end
     hroi_vertices = round(getPosition(hroi));
-    if isa(hroi, 'imrect'),
-        hroi_vertices =...
-            [hroi_vertices(1) hroi_vertices(2);...
-             hroi_vertices(1) hroi_vertices(2)+hroi_vertices(4);...
-             hroi_vertices(1)+hroi_vertices(3) hroi_vertices(2)+hroi_vertices(4);...
-             hroi_vertices(1)+hroi_vertices(3) hroi_vertices(2)];
-    end
     delete(hroi);
 
-    % increment offset for new box.
-    handles.curr_ann.reg_offset = handles.curr_ann.reg_offset + 1;
-    reg_offset = handles.curr_ann.reg_offset;
-
     % Create a new region in the next offset
-    handles.curr_ann.regions(reg_offset) = annotation_init;
-    handles.curr_ann.regions(reg_offset).vertices = round(hroi_vertices);
-
-    % We will use the label that is currently selected.
-    l_offset = get(handles.labels, 'Value');
-    l_strings = get(handles.labels, 'String');
-    % calculate pos based on object.
-    hroi_pos = [min(handles.curr_ann.regions(reg_offset).vertices(:,1)),...
-                min(handles.curr_ann.regions(reg_offset).vertices(:,2))];
-    handles.curr_ann.regions(reg_offset).label =...
-        create_text_label(l_strings(l_offset),hroi_pos(1), hroi_pos(2));
-
-    handles.curr_ann.regions(reg_offset).line_handle =...
+    handles.annotation.vertices = round(hroi_vertices);
+    handles.annotation.line_handle = ...
         line( [hroi_vertices(:,1);hroi_vertices(1,1)],...
             [hroi_vertices(:,2);hroi_vertices(1,2)],...
             'Color',[1 0 0],'LineWidth',1);
-    set(handles.curr_ann.regions(reg_offset).line_handle,...
-        'ButtonDownFcn',...
-        @(src,event)button_press_on_line(src,event,...
-        handles.curr_ann.regions(reg_offset).line_handle));
 
-    xmin = min(handles.curr_ann.regions(reg_offset).vertices(:,1));
-    ymin = min(handles.curr_ann.regions(reg_offset).vertices(:,2));
-    xmax = max(handles.curr_ann.regions(reg_offset).vertices(:,1));
-    ymax = max(handles.curr_ann.regions(reg_offset).vertices(:,2));
-    handles.curr_ann.regions(reg_offset).rect =...
-        [xmin, ymin, xmax-xmin, ymax-ymin];
-
-    % new annotation is active
-    handles.curr_ann.regions(reg_offset).active = 1;
+    xmin = min(handles.annotation.vertices(:,1));
+    ymin = min(handles.annotation.vertices(:,2));
+    xmax = max(handles.annotation.vertices(:,1));
+    ymax = max(handles.annotation.vertices(:,2));
+    handles.annotation.rect = [xmin, ymin, xmax-xmin, ymax-ymin];
 
     % Remember to save the changes.
     guidata(hObject, handles);
-
-function button_press_on_line(hObject, ~, line_handle)
-    handles = guidata(hObject);
-    if handles.isModifying == 1; return; end
-    handles.isModifying = 1;
-    guidata(gcf, handles);
-
-    offset = -1;
-    for i=1:handles.curr_ann.reg_offset
-        if handles.curr_ann.regions(i).line_handle == line_handle,
-            offset = i;
-            curr_reg = handles.curr_ann.regions(i);
-        end
-    end
-    if offset == -1; return ;end;
-
-    % Create temp impoly for modification.
-    delete(line_handle)
-    imroi_handle = impoly(handles.image_axis,...
-        curr_reg.vertices);
-    % func handle that will pass pos and the related text.
-    addNewPositionCallback( imroi_handle,...
-        @(pos)on_move_roi(pos,imroi_handle, curr_reg.label) );
-    fcn = makeConstrainToRectFcn('impoly',...
-        get(handles.image_axis, 'XLim'),...
-        get(handles.image_axis, 'YLim'));
-    setPositionConstraintFcn(imroi_handle,fcn);
-    waitResult = wait(imroi_handle);
-
-    if size(waitResult,1) == 0.
-        % means that user wants to erase region.
-        set(curr_reg.label, 'Visible', 'off');
-        delete(curr_reg.label);
-        curr_reg.label = NaN;
-        curr_reg.line_handle = NaN;
-        curr_reg.rect = NaN;
-        curr_reg.active = 0;
-    else
-        curr_reg.vertices = round(waitResult);
-        delete(imroi_handle);
-
-        %recalculate everything for this region.
-        curr_reg.line_handle =...
-            line( [curr_reg.vertices(:,1);curr_reg.vertices(1,1)],...
-                [curr_reg.vertices(:,2);curr_reg.vertices(1,2)],...
-                'Color',[1 0 0],'LineWidth',1);
-        set(curr_reg.line_handle,'ButtonDownFcn',...
-            @(src,event)button_press_on_line(src,event,curr_reg.line_handle));
-        xmin = min(curr_reg.vertices(:,1));
-        ymin = min(curr_reg.vertices(:,2));
-        xmax = max(curr_reg.vertices(:,1));
-        ymax = max(curr_reg.vertices(:,2));
-        curr_reg.rect = [xmin, ymin, xmax-xmin, ymax-ymin];
-    end
-
-    handles.curr_ann.regions(offset) = curr_reg;
-
-    handles.isModifying = 0;
-
-    % Remember to save the changes.
-    guidata(gcf, handles);
-
-function text_handle = create_text_label(str, X, Y)
-    text_handle = text(X, Y, str,...
-        'Color', [1 0 0], 'FontSize', 16,...
-        'Clipping', 'on', 'VerticalAlignment', 'Bottom',...
-        'ButtonDownFcn',...
-        @(text_handle,~)button_pressed_on_text_label(text_handle));
-
-function button_pressed_on_text_label(text_handle)
-    handles = guidata(gco);
-
-    l_offset = get(handles.labels, 'Value');
-    l_strings = get(handles.labels, 'String');
-    set(text_handle, 'String', l_strings(l_offset));
-    % Remember to save the changes.
-    guidata(gcf, handles);
-
-function on_move_roi(pos, roi, text_handle)
-    %called whenever a rect is moved.
-    % FIXME (HACK) we could receive a move from a deleted object.
-    if (size(gco,1) == 0) return; end;
-
-    handles = guidata(gco);
-    if isa(roi, 'imrect')
-        set(text_handle, 'Position', [pos(1), pos(2)]);
-    elseif isa(roi, 'impoly') || isa(roi, 'imfreehand')
-        set(text_handle, 'Position', [min(pos(:,1)),min(pos(:,2))]);
-    end
-
-    % Remember to save the changes.
-    guidata(gcf, handles);
 
 function on_key_press_callback(hObject, eventdata)
     %initialize handles
@@ -425,16 +257,6 @@ function on_key_press_callback(hObject, eventdata)
                 get(handles.grab_toggle, 'Min'));
         end
         grab_toggle_Callback(handles.grab_toggle, [], handles);
-    elseif strcmp(key, '1') == 1
-        set(handles.labels, 'Value', 1);
-    elseif strcmp(key, '2') == 1
-        set(handles.labels, 'Value', 2);
-    elseif strcmp(key, '3') == 1
-        set(handles.labels, 'Value', 3);
-    elseif strcmp(key, '4') == 1
-        set(handles.labels, 'Value', 4);
-    elseif strcmp(key, '5') == 1
-        set(handles.labels, 'Value', 5);
     end
 
     % Remember to save the changes.
@@ -472,13 +294,6 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
     % We get the selected file name.
     selected_file = ret_handles.paths(offset);
 
-    % We make sure that the file is in the local filesystem
-    [local_file, success, ret_handles] =...
-        annotation_getfile(ret_handles, selected_file);
-    if ~success
-        return;
-    end% we have already shown an error.
-
     % We 'officialize' the selection
     ret_handles.list_selected_file = offset;
 
@@ -486,42 +301,11 @@ function [success, ret_handles] = select_offset_from_list(offset, handles, hObje
     set(ret_handles.file_list, 'Value', ret_handles.list_selected_file);
 
     % We put the image in the axis.
-    img = put_image_in_axis (local_file, axis_handler, ret_handles);
-
-    % Modify ret_handles.ann_curr to reflect the change
-    ret_handles.curr_ann = annotation_read(local_file);
-
-    % Paint annotations.
-    for i = 1:ret_handles.curr_ann.reg_offset
-        % we paint only the active ones.
-        if ret_handles.curr_ann.regions(i).active == 1
-            curr_reg = ret_handles.curr_ann.regions(i);
-
-            l = line( [curr_reg.vertices(:,1);curr_reg.vertices(1,1)],...
-                    [curr_reg.vertices(:,2);curr_reg.vertices(1,2)],...
-                    'Color',[1 0 0],'LineWidth',1);
-            set(l,'ButtonDownFcn',...
-                @(src,event)button_press_on_line(src,event,l));
-            curr_reg.line_handle = l;
-
-            % Work with text ret_handles not strings.
-            curr_reg.label = create_text_label(char(curr_reg.label),...
-                                               curr_reg.rect(1),...
-                                               curr_reg.rect(2));
-
-           %FIXME: HACK: matlab insists in creating a new object...
-            ret_handles.curr_ann.regions(i) = curr_reg;
-        end
-    end
-    iptPointerManager(gcf);
-    ret_handles.curr_ann.image = size(img);
-
-    % modify the review items.
-    ret_handles = update_review_items(ret_handles);
+    [img, ret_handles] = put_image_in_axis (char(selected_file), ...
+            axis_handler, ret_handles);
 
     % Remember to save the changes.
     guidata(hObject, ret_handles);
-
 
 % --- Executes on button press in zoom_toggle.
 function zoom_toggle_Callback(hObject, eventdata, handles)
@@ -537,11 +321,13 @@ function zoom_toggle_Callback(hObject, eventdata, handles)
         set(ph, 'Enable', 'off');
         set(handles.grab_toggle, 'Value', 0);
 
-        set(zh, 'Enable', 'on');
+        set(zh, 'Enable', 'on', 'ActionPostCallback',@zoomCallback);
     else
         % this should not be reached.
     end
 
+function zoomCallback(x, y)
+    axis equal;
 
 % --- Executes on button press in grab_toggle.
 function grab_toggle_Callback(hObject, eventdata, handles)
@@ -561,88 +347,6 @@ function grab_toggle_Callback(hObject, eventdata, handles)
     else
         % this should not be reached.
     end
-
-% --- Executes on button press in review_checkbox.
-function review_checkbox_Callback(hObject, eventdata, handles)
-    state = get(handles.review_checkbox, 'Value');
-    if state == 1
-        % This means the user wants to review.  let him modify the reviewer
-        % text and put todays date in the date text.
-        rev_date = datestr(now, 'dd-mm-yyyy');
-        rev_rev = 'Default_Reviewer';
-        set(handles.date_text, 'String', rev_date);
-        set(handles.reviewer_text, 'Enable', 'on');
-        set(handles.reviewer_text, 'String', rev_rev);
-        handles.curr_ann.review.date = rev_date;
-        handles.curr_ann.review.reviewer = rev_rev;
-    elseif state == 0
-        % turn off reviewes.
-        % FIXME: there could be an issue with the text left in date and
-        % reviewer text boxes.
-        set(handles.reviewer_text, 'Enable', 'off');
-    end
-
-    % Remember to save the changes.
-    guidata(hObject, handles);
-
-% --- Executes during object creation, after setting all properties.
-function date_text_CreateFcn(hObject, eventdata, handles)
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-function reviewer_text_Callback(hObject, eventdata, handles)
-    handles.curr_ann.review.reviewer =...
-        get(handles.reviewer_text, 'String');
-    % Remember to save the changes.
-    guidata(hObject, handles);
-
-% --- Executes during object creation, after setting all properties.
-function reviewer_text_CreateFcn(hObject, eventdata, handles)
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-function ret_handles = update_review_items(handles)
-    review_checkbox_state = get(handles.review_checkbox, 'Value');
-    if review_checkbox_state == 1
-        % They are reviewing, dont change the contents.
-        handles.curr_ann.review.date = get(handles.date_text, 'String');
-        handles.curr_ann.review.reviewer = get(handles.reviewer_text, 'String');
-    elseif review_checkbox_state == 0
-        % They are not reviewing and we should show the file info.  We
-        % don't change curr_ann because it already has the file info.
-        set(handles.reviewer_text, 'String', handles.curr_ann.review.reviewer);
-        set(handles.date_text, 'String', handles.curr_ann.review.date);
-    end
-    ret_handles = handles;
-
-% --- Executes when changing color space
-function vispanel_SelectionChangeFcn(hObject, eventdata, handles)
-    if handles.list_selected_file ~= -1
-        annotation_save(handles, handles.curr_ann);
-    end
-    [success, handles] = ...
-            select_offset_from_list(handles.list_selected_file,...
-                handles, hObject);
-
-    % Remember to save the changes.
-    guidata(hObject, handles);
-
-function annpanel_SelectionChangeFcn(hObject, eventdata, handles)
-    if get(handles.radio_rect, 'Value') == 1
-        handles.roicreate = @imrect;
-    elseif get(handles.radio_freehand, 'Value') == 1
-        handles.roicreate = @imfreehand;
-    elseif get(handles.radio_poly, 'Value') == 1
-        handles.roicreate = @impoly;
-    else
-        handles.roicreate = @imrect;
-    end
-
-    % Remember to save the changes.
-    guidata(hObject, handles);
-
 
 % --- Executes when figure1 is resized.
 function figure1_ResizeFcn(hObject, eventdata, handles)
@@ -670,3 +374,220 @@ function figure1_ResizeFcn(hObject, eventdata, handles)
 
     % Remember to save the changes.
     guidata(hObject, handles);
+
+function object = annotation_init()
+  object.roi = NaN; % a imroi
+  object.rect = NaN; % surrounding rectangle.
+  object.vertices = NaN; % vertices array.
+  object.line_handle = NaN; % handle to the drawn line.
+  object.filename = 'Signal.txt';
+  object.signal = [];
+
+% --- Executes on button press in createSignal.
+function createSignal_Callback(hObject, eventdata, handles)
+% hObject    handle to createSignal (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    if isnan(handles.annotation.line_handle),
+        msgboxText{1} =  strcat('Interaction Error:',...
+            'You must create a polygon first..');
+        msgbox(msgboxText,'');
+        return;
+    end
+
+    [filename, pathname, filterindex] =...
+        uiputfile({'*.txt'}, 'Save as', 'Signal.txt');
+    % Handle the cancel option
+    if ~ischar(filename) && ~ischar(pathname)
+        return;
+    end
+    sfn = fullfile(pathname,filename);
+
+    if size(sfn, 2) < 1,
+        msgboxText{1} = strcat('Interaction Error:',...
+            'You must have a filename');
+        msgbox(msgboxText, '');
+    end
+
+    prevColor = get(handles.rightpanel, 'BackgroundColor');
+    set(handles.rightpanel, 'BackgroundColor', 'red');
+    pause(2); %So we notice the color
+    if size(handles.annotation.signal,2) == 0,
+        signalAccum = {};
+        for i=1:size(handles.paths,2),
+            signalVal = calcSignal(handles.paths(i), ...
+                        handles.annotation.vertices);
+            signalAccum(i, 1) = cellstr(num2str(signalVal));
+
+            warning off;
+            info = imfinfo(char(handles.paths(i)));
+            warning on;
+            signalAccum(i, 2) = ...
+                cellstr(strrep(info.DigitalCamera.DateTimeDigitized, ...
+                                ' ', '_'));
+                    %datenum(info.DateTime, 'yyyy:mm:dd HH:MM:SS');
+        end;
+        signalAccum = expandDates(signalAccum);
+        handles.annotation.signal = signalAccum;
+    end;
+
+    annotation_save(handles.annotation, sfn);
+    set(handles.rightpanel, 'BackgroundColor', prevColor);
+
+function expDates = expandDates ( signalAccum )
+    dTemp = datevec(signalAccum(:,2), 'yyyy:mm:dd_HH:MM:SS');
+    dTemp(:,4:5) = 0;
+    dTemp = datenum(dTemp);
+
+    % Number of days between start and finish
+    minD = min(dTemp);
+    maxD = max(dTemp);
+
+    % +1 to count the last day.
+    numDays = round(abs(maxD - minD)) + 1;
+
+    % Day offset from minD
+    dayOffset = (0:1:numDays)+1;
+
+    expDates = {};
+    for i=dayOffset,
+        expDates(i,2) = cellstr(datestr(minD + i-1, 'yyyy-mm-dd'));
+        [val, ind] = min(abs(dTemp - (minD+i-1)));
+        expDates(i,1) = signalAccum(ind,1);
+    end
+
+function signalval = calcSignal(imgpath, vertices)
+    img = imread(char(imgpath));
+    mask = roipoly(img, vertices(:,1), vertices(:,2));
+    [c r] = find(mask);
+    Ind = sub2ind(size(img), c, r);
+    roiPixels = [];
+
+    imgt = img(:,:,1);
+    R = imgt(Ind);
+    imgt = img(:,:,2);
+    G = imgt(Ind);
+    imgt = img(:,:,3);
+    B = imgt(Ind);
+    T = R + G + B;
+    R = double(R)./(double(T)+0.0000001);
+    G = double(G)./(double(T)+0.0000001);
+    B = double(B)./(double(T)+0.0000001);
+
+    signalval = 2*G - B - R;
+    signalval = mean(signalval);
+
+function annotation_save(annotation, outputFile)
+    [fd,syserrmsg]=fopen(outputFile,'w+');
+
+    if (fd==-1),
+        msgboxText{1} =  strcat('Error saving to file');
+        msgbox(msgboxText,'Please try to save again.');
+        return;
+    end;
+
+    fprintf(fd, '#Xmin,Ymin,Width,Height,');
+    fprintf(fd, 'col1,row1,col2,row2...,colN,rowN\n');
+
+    fprintf(fd, 'Polygon,');
+    fprintf(fd, '%d,%d,%d,%d', annotation.rect);
+    vertices = annotation.vertices;
+    for j=1:size(vertices,1),
+        fprintf(fd, ',%d,%d', vertices(j,1), vertices(j,2));
+    end;
+    fprintf(fd, '\n');
+
+    fprintf(fd, '#filename,signalValue\n');
+    for i=1:size(annotation.signal,1),
+        fprintf(fd, '%s,%s\n', char(annotation.signal(i,2)), ...
+                char(annotation.signal(i,1)) );
+    end;
+    fprintf(fd, '\n');
+    fclose(fd);
+
+function annotation = annotation_read(file_name)
+    % No file case.
+    if exist (file_name) == 0,
+        msgboxText{1} =  strcat('Error getting file');
+        msgbox(msgboxText,'Please try again.');
+        return;
+    end
+
+    annotation = annotation_init();
+
+    % We try to read the file.
+    [fd,syserrmsg]=fopen(file_name,'rt');
+    if (fd==-1),
+        return
+    end;
+
+    lines = textscan(fd,'%s%d%d%d%d%[0123456789,]',...
+        'Delimiter', ',', 'CommentStyle', '#');
+    fclose(fd);
+    if (isempty(lines{1})),return;end;
+
+    vertices = [];
+    for i=1:size(lines{1},1),
+        if (~strcmp(lines{1}(1),'Polygon')),
+            continue;
+        end;
+
+        annotation.rect =...
+            [double(lines{2}(i)), double(lines{3}(i)),...
+             double(lines{4}(i)), double(lines{5}(i))];
+
+        %Create the vertieces
+        remain = lines{6}(i);
+        while strcmp(remain,'') ~= 1,
+            [X,remain] = strtok(remain, ',');
+            [Y,remain] = strtok(remain, ',');
+            X = round(str2double(X)); Y = round(str2double(Y));
+            vertices = [vertices; [X Y]];
+        end
+        annotation.vertices = vertices;
+
+        break;
+    end
+
+    if (length(vertices) > 0),
+        xmin = min(annotation.vertices(:,1));
+        ymin = min(annotation.vertices(:,2));
+        xmax = max(annotation.vertices(:,1));
+        ymax = max(annotation.vertices(:,2));
+        annotation.rect = [xmin, ymin, xmax-xmin, ymax-ymin];
+    else
+        annotation = annotation_init();
+        return;
+    end
+
+% --- Executes on button press in loadSignal.
+function loadSignal_Callback(hObject, eventdata, handles)
+    [filename, pathname, filterindex] =...
+        uigetfile({'*.txt'}, 'Pick a signal file', 'MultiSelect', 'off',...
+            handles.current_dir);
+
+    % Handle the cancel option
+    if ~ischar(filename) && ~ischar(pathname),
+        return;
+    end
+
+    file_name = fullfile(pathname, filename);
+    annotation = annotation_read(file_name);
+    if (isnan(annotation.rect)),
+        msgboxText{1} =  strcat('Error reading file: ', file_name);
+        msgbox(msgboxText,'Please try to load again.');
+        return;
+    end
+
+    % Create a new region in the next offset
+    handles.annotation = annotation;
+    handles.annotation.vertices = round(annotation.vertices);
+    handles.annotation.line_handle = ...
+        line( [annotation.vertices(:,1);annotation.vertices(1,1)],...
+            [annotation.vertices(:,2);annotation.vertices(1,2)],...
+            'Color',[1 0 0],'LineWidth',1);
+
+    % Remember to save the changes.
+    guidata(hObject, handles);
+
+
