@@ -415,14 +415,17 @@ function createSignal_Callback(hObject, eventdata, handles)
     if size(handles.annotation.signal,2) == 0,
         signalAccum = {};
         for i=1:size(handles.paths,2),
-            signalVal = calcSignal(handles.paths(i), ...
+            [gcc, r_m, g_m, b_m] = calcSignal(handles.paths(i), ...
                         handles.annotation.vertices);
-            signalAccum(i, 1) = cellstr(num2str(signalVal));
+            signalAccum(i, 1) = cellstr(num2str(gcc));
+            signalAccum(i, 2) = cellstr(num2str(r_m));
+            signalAccum(i, 3) = cellstr(num2str(g_m));
+            signalAccum(i, 4) = cellstr(num2str(b_m));
 
             warning off;
             info = imfinfo(char(handles.paths(i)));
             warning on;
-            signalAccum(i, 2) = ...
+            signalAccum(i, 5) = ...
                 cellstr(strrep(info.DigitalCamera.DateTimeDigitized, ...
                                 ' ', '_'));
                     %datenum(info.DateTime, 'yyyy:mm:dd HH:MM:SS');
@@ -435,7 +438,7 @@ function createSignal_Callback(hObject, eventdata, handles)
     set(handles.rightpanel, 'BackgroundColor', prevColor);
 
 function expDates = expandDates ( signalAccum )
-    dTemp = datevec(signalAccum(:,2), 'yyyy:mm:dd_HH:MM:SS');
+    dTemp = datevec(signalAccum(:,5), 'yyyy:mm:dd_HH:MM:SS');
     dTemp(:,4:5) = 0;
     dTemp = datenum(dTemp);
 
@@ -451,12 +454,15 @@ function expDates = expandDates ( signalAccum )
 
     expDates = {};
     for i=dayOffset,
-        expDates(i,2) = cellstr(datestr(minD + i-1, 'yyyy-mm-dd'));
+        expDates(i,5) = cellstr(datestr(minD + i-1, 'yyyy-mm-dd'));
         [val, ind] = min(abs(dTemp - (minD+i-1)));
         expDates(i,1) = signalAccum(ind,1);
+        expDates(i,2) = signalAccum(ind,2);
+        expDates(i,3) = signalAccum(ind,3);
+        expDates(i,4) = signalAccum(ind,4);
     end
 
-function signalval = calcSignal(imgpath, vertices)
+function [gcc, m_r, m_g, m_b] = calcSignal(imgpath, vertices)
     img = imread(char(imgpath));
     mask = roipoly(img, vertices(:,1), vertices(:,2));
     [c r] = find(mask);
@@ -474,8 +480,11 @@ function signalval = calcSignal(imgpath, vertices)
     G = double(G)./(double(T)+0.0000001);
     B = double(B)./(double(T)+0.0000001);
 
-    signalval = 2*G - B - R;
-    signalval = mean(signalval);
+    gcc = 2*G - B - R;
+    gcc = mean(gcc);
+    m_r = mean(R);
+    m_g = mean(G);
+    m_b = mean(B);
 
 function annotation_save(annotation, outputFile)
     [fd,syserrmsg]=fopen(outputFile,'w+');
@@ -497,10 +506,13 @@ function annotation_save(annotation, outputFile)
     end;
     fprintf(fd, '\n');
 
-    fprintf(fd, '#filename,signalValue\n');
+    fprintf(fd, '#filename,signalValue,RedMean,GreenMean,BlueMean\n');
     for i=1:size(annotation.signal,1),
-        fprintf(fd, '%s,%s\n', char(annotation.signal(i,2)), ...
-                char(annotation.signal(i,1)) );
+        fprintf(fd, '%s,%s,%s,%s,%s\n', char(annotation.signal(i,5)), ...
+                char(annotation.signal(i,1)), ...
+                char(annotation.signal(i,2)), ...
+                char(annotation.signal(i,3)), ...
+                char(annotation.signal(i,4)));
     end;
     fprintf(fd, '\n');
     fclose(fd);
